@@ -1,8 +1,46 @@
-from core import HomeAssistant
-from constants import (DOMAIN)
+"""The BLUETTI integration."""
+
+from __future__ import annotations
+
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import aiohttp_client, config_entry_oauth2_flow
+
+from . import api
+
+# TODO List the platforms that you want to support.
+# For your initial PR, limit it to 1 platform.
+_PLATFORMS: list[Platform] = [Platform.LIGHT]
+
+# Create ConfigEntry type alias with ConfigEntryAuth or AsyncConfigEntryAuth object
+type Oauth2ConfigEntry = ConfigEntry[api.AsyncConfigEntryAuth]
 
 
-async def async_setup(hass: HomeAssistant, config):
-    #hass.data.setdefault(DOMAIN, {})
-    hass.states.async_set("bluetti.world", "Hello World")
+async def async_setup_entry(hass: HomeAssistant, entry: Oauth2ConfigEntry) -> bool:
+    """OAUTH2: get the access token."""
+    implementation = (
+        await config_entry_oauth2_flow.async_get_config_entry_implementation(
+            hass, entry
+        )
+    )
+
+    session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
+
+    # If using a requests-based API lib
+    entry.runtime_data = api.ConfigEntryAuth(hass, session)
+
+    # If using an aiohttp-based API lib
+    # entry.runtime_data = api.AsyncConfigEntryAuth(
+    #     aiohttp_client.async_get_clientsession(hass), session
+    # )
+
+    # await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
+
     return True
+
+
+# TODO Update entry annotation
+async def async_unload_entry(hass: HomeAssistant, entry: Oauth2ConfigEntry) -> bool:
+    """Unload a config entry."""
+    return await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)
