@@ -7,11 +7,14 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_entry_oauth2_flow
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from . import api
 from .models import BluettiData
+from .oauth import ConfigEntryAuth
+from .api.clientapi import ProductClient
 
-_LOGGER = logging.getLogger(__name__)
+__LOGGER__ = logging.getLogger(__name__)
+
 
 # TODO List the platforms that you want to support.
 # For your initial PR, limit it to 1 platform.
@@ -29,12 +32,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
             hass, entry
         )
     )
-    _LOGGER.debug("OAuth implementation is: %s", implementation.__class__)
+    __LOGGER__.debug("OAuth implementation is: %s", implementation.__class__)
 
-    session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
+    httpSession = async_get_clientsession(hass)
+    oAuth2Session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
 
     # If using a requests-based API lib
-    entry.runtime_data = api.ConfigEntryAuth(hass, session)
+    entry.runtime_data = ConfigEntryAuth(hass, oAuth2Session)
 
     # If using an aiohttp-based API lib
     # entry.runtime_data = api.AsyncConfigEntryAuth(
@@ -42,6 +46,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     # )
 
     # await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
+    access_token = oAuth2Session.token["access_token"]
+    product_client = ProductClient(httpSession, access_token)
+    products = await product_client.get_user_products()
+    print(products.data)
 
     return True
 
