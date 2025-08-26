@@ -13,7 +13,7 @@
   "homekit": {},
   "iot_class": "local_polling",
   "quality_scale": "bronze",
-  "requirements": [],
+  "requirements": ["pydantic"],
   "ssdp": [],
   "zeroconf": []
 }

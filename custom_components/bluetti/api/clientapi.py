@@ -32,6 +32,7 @@ class ProductClient(Bluetti):
         请求接口，获取用户所属的发电站/设备信息。
         """
         return await self._request(
+            list[UserProduct],
             Method.GET,
             "/api/bluiotdata/ha/v1/devices",
         )

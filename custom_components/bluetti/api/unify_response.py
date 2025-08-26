@@ -1,17 +1,20 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
+from typing import TypeVar, Generic
+from pydantic.v1.generics import GenericModel
+
+T = TypeVar('T')
 
 
-@dataclass
-class UnifyResponse[T]:
+class UnifyResponse(BaseModel, Generic[T]):
     """The Unify Server Response class"""
 
     msgId: str
     msgCode: int
     data: T | None = None
 
-    def __init__(self, msgId: str, msgCode: int):
-        self.msgId = msgId
-        self.msgCode = msgCode
+    # def __init__(self, msgId: str, msgCode: int):
+    #     self.msgId = msgId
+    #     self.msgCode = msgCode
 
     def is_ok(self) -> bool:
         """Returns true if the server response is success."""

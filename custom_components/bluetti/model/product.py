@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 
+from pydantic import BaseModel
+
 
 @dataclass
-class UserProduct:
+class UserProduct(BaseModel):
     """"""
     sn: str

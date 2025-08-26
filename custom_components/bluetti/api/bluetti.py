@@ -4,14 +4,19 @@ import logging
 
 from abc import abstractmethod
 from json import dumps, loads
-from typing import Any
+from typing import Any, TypeVar, Generic
+
+from pydantic import TypeAdapter
 
 from .unify_response import UnifyResponse
 from ..application_exception import ApplicationRuntimeException
 from ..const import BLUETTI_GATEWAY_SERVER, Method
+from ..model.product import UserProduct
+
+T = TypeVar('T')
 
 
-class Bluetti[T]:
+class Bluetti(Generic[T]):
     """Base class describing interactions with BLUETTI cloud service."""
     _accessToken: str | None = None
     _headers: dict[str, str]
@@ -32,6 +37,7 @@ class Bluetti[T]:
 
     async def _request(
             self,
+            responseType: Any,
             method: Method,
             path: str,
             params: dict[str, Any] | None = None,
@@ -51,10 +57,10 @@ class Bluetti[T]:
         # Remove None values from params and json
         if params:
             params = {k: v for k, v in params.items() if v is not None}
-            self.logger.debug("Client request parameters: %s", params)
+            self.logger.debug("======> Client request parameters: %s", params)
         if body:
             body = {k: v for k, v in body.items() if v is not None}
-            self.logger.debug("Client request body: %s", dumps(body))
+            self.logger.debug("======> Client request body: %s", dumps(body))
             headers["Content-Type"] = "application/json"
 
         async with self._httpSession.request(
@@ -78,10 +84,15 @@ class Bluetti[T]:
                 data = await response.json()  # read response body to JSON
                 # self.logger.debug("<====== Server response body: %s", dumps(data, indent=4, ensure_ascii=False))
                 # unify_response: UnifyResponse[T] = UnifyResponse(**data)
-                # return unify_response
 
-                unify_response: UnifyResponse[T] = UnifyResponse(data["msgId"], data["msgCode"])
-                unify_response.data = data["data"]
+                # unify_response = UnifyResponse.model_validate(data)
+                # unify_response = UnifyResponse.parse_obj(data)
+                unify_response = TypeAdapter(UnifyResponse[responseType]).validate_python(data)
+                # print(repr(unify_response))
+
+                # unify_response: UnifyResponse[T] = UnifyResponse(data["msgId"], data["msgCode"])
+                # unify_response.data = data["data"]
+
                 return unify_response
             else:
                 data = await response.text()
