@@ -7,7 +7,7 @@ INTEGRATION_NAME: str = 'BLUETTI'
 # TODO Update with your own urls
 BLUETTI_SSO_SERVER: str = "https://local-sso.poweroak.ltd:18443"
 BLUETTI_GATEWAY_SERVER: str = "https://local-gw.poweroak.ltd:18443"
-
+BLUETTI_WSS_SERVER: str = "wss://"
 
 class StringEnum(str, Enum):
     """String Enum define."""

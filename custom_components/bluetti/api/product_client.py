@@ -1,5 +1,6 @@
-import aiohttp
 import logging
+
+import aiohttp
 
 from .bluetti import Bluetti
 from .unify_response import UnifyResponse

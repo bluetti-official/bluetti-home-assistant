@@ -14,13 +14,15 @@ from .oauth import ConfigEntryAuth
 from .api.bluetti import APPLICATION_PROFILE
 from .api.product_client import ProductClient
 from .profile.application_profile import ApplicationProfile
+from .const import DOMAIN
+from .api.webSocket import BluettiWebSocket
 
 __LOGGER__ = logging.getLogger(__name__)
 
 
 # TODO List the platforms that you want to support.
-# For your initial PR, limit it to 1 platform.
-_PLATFORMS: list[Platform] = [Platform.LIGHT]
+# For your initial PR, limit it to 1 platform. Platform.LIGHT,
+_PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SWITCH, Platform.SELECT]
 
 # Create ConfigEntry type alias with ConfigEntryAuth or AsyncConfigEntryAuth object
 type BluettiConfigEntry = ConfigEntry[BluettiData]
@@ -55,6 +57,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     products = await product_client.get_user_products()
     print(products.data[0].__class__)
     print(products.data)
+
+    bluetti_devices = BluettiData(products.data)
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
+        "bluettiDevices": bluetti_devices
+    }
+
+    await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
+    # Register WebSocket
+    ws_manager = BluettiWebSocket(bluetti_devices)
+
+    hass.data[DOMAIN][entry.entry_id]["ws_manager"] = ws_manager
+    await ws_manager.connect()
 
     return True
 
