@@ -1,4 +1,4 @@
 bluetti:
   server:
+    sso: 'https://sso.bluettipower.com'
     gateway: 'https://gw.bluettipower.com'
-    oauth20: 'https://sso.bluettipower.com'

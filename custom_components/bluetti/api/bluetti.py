@@ -9,11 +9,14 @@ from typing import Any, TypeVar, Generic
 from pydantic import TypeAdapter
 
 from .unify_response import UnifyResponse
+from ..const import Method
 from ..application_exception import ApplicationRuntimeException
-from ..const import BLUETTI_GATEWAY_SERVER, Method
-from ..model.product import UserProduct
+from ..profile.application_profile import ApplicationProfile
 
 T = TypeVar('T')
+
+# The application profile
+APPLICATION_PROFILE = ApplicationProfile()
 
 
 class Bluetti(Generic[T]):
@@ -43,7 +46,11 @@ class Bluetti(Generic[T]):
             params: dict[str, Any] | None = None,
             body: dict[str, Any] | None = {}
     ) -> UnifyResponse[T] | str:
-        """Send a request to the server."""
+        """
+        Send a request to the server.\n
+        - **responseType**: The type of response data type, do not include wrapper class `UnifyResponse`.
+        - **method**: The HTTP method.
+        """
 
         # when the method is 'GET', the request body must be null.
         if method == Method.GET:
@@ -65,7 +72,7 @@ class Bluetti(Generic[T]):
 
         async with self._httpSession.request(
                 method,
-                f"{BLUETTI_GATEWAY_SERVER}{path}",
+                f"{APPLICATION_PROFILE.config["server"]["gateway"]}{path}",
                 headers=headers,
                 json=body,
                 params=params,
@@ -82,17 +89,9 @@ class Bluetti(Generic[T]):
 
             if response.content_type.lower().startswith("application/json"):
                 data = await response.json()  # read response body to JSON
-                # self.logger.debug("<====== Server response body: %s", dumps(data, indent=4, ensure_ascii=False))
-                # unify_response: UnifyResponse[T] = UnifyResponse(**data)
-
-                # unify_response = UnifyResponse.model_validate(data)
-                # unify_response = UnifyResponse.parse_obj(data)
                 unify_response = TypeAdapter(UnifyResponse[responseType]).validate_python(data)
+                # self.logger.debug("<====== Server response body: %s", dumps(data, indent=4, ensure_ascii=False))
                 # print(repr(unify_response))
-
-                # unify_response: UnifyResponse[T] = UnifyResponse(data["msgId"], data["msgCode"])
-                # unify_response.data = data["data"]
-
                 return unify_response
             else:
                 data = await response.text()

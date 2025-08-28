@@ -1,10 +1,9 @@
 import json
 import logging
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from asyncio import run_coroutine_threadsafe
 from aiohttp import ClientSession
-# import my_pypi_package
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
@@ -46,7 +45,6 @@ class AbstractAuth(ABC):
         return self.token["access_token"]
 
 
-# class ConfigEntryAuth(my_pypi_package.AbstractAuth):
 class ConfigEntryAuth(AbstractAuth):
     """Provide BLUETTI authentication tied to an OAuth2 based config entry."""
 
@@ -69,7 +67,6 @@ class ConfigEntryAuth(AbstractAuth):
         return self.session.token["access_token"]
 
 
-# class AsyncConfigEntryAuth(my_pypi_package.AbstractAuth):
 class AsyncConfigEntryAuth(AbstractAuth):
     """Provide BLUETTI authentication tied to an OAuth2 based config entry."""
 

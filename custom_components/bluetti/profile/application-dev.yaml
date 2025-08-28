@@ -1,4 +1,4 @@
 bluetti:
   server:
+    sso: 'https://dev-sso.poweroak.ltd:18443'
     gateway: 'https://dev-gw.poweroak.ltd:18443'
-    oauth20: 'https://dev-sso.poweroak.ltd:18443'

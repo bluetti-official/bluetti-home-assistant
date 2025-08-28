@@ -1,5 +1,5 @@
 from .bluetti import Bluetti
-from .clientapi import ProductClient
+from .product_client import ProductClient
 
 __all__ = [
     "Bluetti",

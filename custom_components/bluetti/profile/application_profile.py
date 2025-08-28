@@ -5,17 +5,19 @@ import yaml
 
 from ..const import INTEGRATION_NAME
 
-_LOGGER = logging.getLogger(__name__)
+__LOGGER__ = logging.getLogger(__name__)
 
 
-class ApplicationConfig:
+class ApplicationProfile:
     __active: str = ""
     __configFile: str = ""
     __configPath: str = ""
-    data: dict = {}
+    config: dict = {}
 
     def __init__(self, active=None):
         self.__active = active or os.getenv("bluetti.profile.active", "").lower()
+        __LOGGER__.info("Setting up application profile: %s", "prod" if self.__active == "" else self.__active)
+
         if self.__active != "":
             self.__active = "-" + self.__active
 
@@ -28,7 +30,8 @@ class ApplicationConfig:
 
     def __load_config(self):
         with open(self.__configPath, "r") as file:
-            yamlConfig = yaml.safe_load(file)
-            _LOGGER.info("Load profile " f"{self.__configFile} of `{INTEGRATION_NAME}` integration successfully.")
+            __yaml__ = yaml.safe_load(file)
+            __LOGGER__.info("Load profile " f"{self.__configFile} of `{INTEGRATION_NAME}` integration successfully.")
 
-        self.data = yamlConfig['bluetti']
+        self.config = __yaml__['bluetti']
+        # print(self.config)

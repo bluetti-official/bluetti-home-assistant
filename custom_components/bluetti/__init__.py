@@ -11,7 +11,9 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .models import BluettiData
 from .oauth import ConfigEntryAuth
-from .api.clientapi import ProductClient
+from .api.bluetti import APPLICATION_PROFILE
+from .api.product_client import ProductClient
+from .profile.application_profile import ApplicationProfile
 
 __LOGGER__ = logging.getLogger(__name__)
 
@@ -26,6 +28,8 @@ type BluettiConfigEntry = ConfigEntry[BluettiData]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
+    APPLICATION_PROFILE.load_config(hass)
+
     """OAUTH2: get the access token."""
     implementation = (
         await config_entry_oauth2_flow.async_get_config_entry_implementation(
