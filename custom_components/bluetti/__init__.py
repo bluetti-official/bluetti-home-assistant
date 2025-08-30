@@ -13,9 +13,9 @@ from .models import BluettiData
 from .oauth import ConfigEntryAuth
 from .api.bluetti import APPLICATION_PROFILE
 from .api.product_client import ProductClient
+from .api.websocket import BluettiWebSocket
 from .profile.application_profile import ApplicationProfile
 from .const import DOMAIN
-from .api.webSocket import BluettiWebSocket
 
 __LOGGER__ = logging.getLogger(__name__)
 
