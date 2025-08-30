@@ -13,7 +13,7 @@ from .models import BluettiData
 from .oauth import ConfigEntryAuth
 from .api.bluetti import APPLICATION_PROFILE
 from .api.product_client import ProductClient
-from .api.websocket import BluettiWebSocket
+from .api.websocket import WebSocketClient
 from .profile.application_profile import ApplicationProfile
 from .const import DOMAIN
 
@@ -65,7 +65,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
     # Register WebSocket
-    ws_manager = BluettiWebSocket(bluetti_devices)
+    ws_manager = WebSocketClient(bluetti_devices)
 
     hass.data[DOMAIN][entry.entry_id]["ws_manager"] = ws_manager
     await ws_manager.connect()
