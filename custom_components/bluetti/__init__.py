@@ -13,12 +13,11 @@ from .models import BluettiData
 from .oauth import ConfigEntryAuth
 from .api.bluetti import APPLICATION_PROFILE
 from .api.product_client import ProductClient
-from .api.websocket import WebSocketClient
+from .api.websocket import WebSocketClient, StompClient
 from .profile.application_profile import ApplicationProfile
-from .const import DOMAIN
+from .const import DOMAIN, BLUETTI_WSS_SERVER
 
 __LOGGER__ = logging.getLogger(__name__)
-
 
 # TODO List the platforms that you want to support.
 # For your initial PR, limit it to 1 platform. Platform.LIGHT,
@@ -26,6 +25,8 @@ _PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SWITCH, Platform.SELECT]
 
 # Create ConfigEntry type alias with ConfigEntryAuth or AsyncConfigEntryAuth object
 type BluettiConfigEntry = ConfigEntry[BluettiData]
+
+
 # type Oauth2ConfigEntry = ConfigEntry[api.AsyncConfigEntryAuth]
 
 
@@ -64,13 +65,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
-    # Register WebSocket
-    ws_manager = WebSocketClient(bluetti_devices)
 
-    hass.data[DOMAIN][entry.entry_id]["ws_manager"] = ws_manager
-    await ws_manager.connect()
+    # Register WebSocket
+    stomp_client = StompClient(BLUETTI_WSS_SERVER, access_token, web_socket_message_handler)
+    stomp_client.connect()
+    # stomp_client.subscribe("/ws-subscribe/user/177b9298c4907ab0b46e04d2d15/notify")
+
+    # ws_manager = WebSocketClient(bluetti_devices)
+
+    # hass.data[DOMAIN][entry.entry_id]["ws_manager"] = ws_manager
+    # await ws_manager.connect()
 
     return True
+
+
+def web_socket_message_handler(message: str):
+    print(message)
 
 
 # TODO Update entry annotation
