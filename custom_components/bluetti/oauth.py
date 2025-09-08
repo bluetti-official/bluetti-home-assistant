@@ -8,7 +8,12 @@ from aiohttp import ClientSession
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_entry_oauth2_flow
+import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+import voluptuous as vol
+
+from .api.product_client import ProductClient
 from .const import DOMAIN, INTEGRATION_NAME
 
 __LOGGER__ = logging.getLogger(__name__)
@@ -25,8 +30,44 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
         return logging.getLogger(__name__)
 
     async def async_oauth_create_entry(self, data: dict) -> config_entries.ConfigFlowResult:
-        return self.async_create_entry(title=f"{INTEGRATION_NAME} Power Integration", data=data)
+        # return self.async_create_entry(title=f"{INTEGRATION_NAME} Power Integration", data=data)
+        self._oauth_data = data
+        return await self.async_step_select_devices()
 
+    async def async_step_select_devices(self, user_input=None):
+        """Let user select devices after OAuth2 login."""
+        if user_input is not None:
+            print(user_input)
+            await self._product_client.bind_devices({"bindSnList": user_input['devices']})
+            return self.async_create_entry(
+                title=f"{INTEGRATION_NAME} Power Integration",
+                data={"auth_token": self._oauth_data, "products":  self._products},
+                options=user_input,
+            )
+
+        httpSession = async_get_clientsession(self.hass)
+        product_client = ProductClient(httpSession, self._oauth_data['token']['access_token'])
+        products = await product_client.get_user_products()
+        print(products.data[0].__class__)
+        print(products.data)
+
+        self._product_client = product_client
+        self._products = products.data
+
+        all_devices = {prod.sn: prod.name or prod.sn for prod in products.data}
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    "devices",
+                    default=list(all_devices.keys())
+                ): cv.multi_select(all_devices)
+            }
+        )
+
+        return self.async_show_form(
+            step_id="select_devices",
+            data_schema=schema,
+        )
 
 # TODO the following two API examples are based on our suggested best practices
 # for libraries using OAuth2 with requests or aiohttp. Delete the one you won't use.

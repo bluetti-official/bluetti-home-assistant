@@ -32,6 +32,8 @@ class BluettiData:
     def get_device_by_sn(self, sn):
         return self.devices
 
+    def web_socket_message_handler(self, message: str):
+        print(f"收到ws消息 {message}")
 
 class BluettiState:
     """Represents a single function/state of the device."""
@@ -69,7 +71,7 @@ class BluettiDevice:
     """Represents a single Bluetti device."""
 
     def __init__(self, device_id: str, on_line: str, name: str, sn: str, state_list: Optional[List[dict]] = None, api_client=None,
-                 ws_manager=None):
+                ws_manager=None):
         self.device_id = device_id
         self.on_line = on_line
         self.name = name

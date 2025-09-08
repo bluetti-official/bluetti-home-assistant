@@ -15,7 +15,8 @@ from .api.bluetti import APPLICATION_PROFILE
 from .api.product_client import ProductClient
 from .api.websocket import StompClient
 from .profile.application_profile import ApplicationProfile
-from .const import DOMAIN, BLUETTI_WSS_SERVER
+from .const import DOMAIN
+from .model.product import UserProduct
 
 __LOGGER__ = logging.getLogger(__name__)
 
@@ -32,19 +33,27 @@ type BluettiConfigEntry = ConfigEntry[BluettiData]
 async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
     APPLICATION_PROFILE.load_config(hass)
 
+    enabled_devices = entry.options.get("devices", [])
+    auth_token = entry.data.get('auth_token')
+    all_products_data: list[dict] = entry.data.get("products", [])
+    all_products: list[UserProduct] = [
+        UserProduct.model_validate(p) if isinstance(p, dict) else p
+        for p in all_products_data
+    ]
+    
     """OAUTH2: get the access token."""
-    implementation = (
-        await config_entry_oauth2_flow.async_get_config_entry_implementation(
-            hass, entry
-        )
-    )
-    __LOGGER__.debug("OAuth implementation is: %s", implementation.__class__)
+    # implementation = (
+    #     await config_entry_oauth2_flow.async_get_config_entry_implementation(
+    #         hass, entry
+    #     )
+    # )
+    # __LOGGER__.debug("OAuth implementation is: %s", implementation.__class__)
 
     httpSession = async_get_clientsession(hass)
-    oAuth2Session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
+    # oAuth2Session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
 
     # If using a requests-based API lib
-    entry.runtime_data = ConfigEntryAuth(hass, oAuth2Session)
+    # entry.runtime_data = ConfigEntryAuth(hass, oAuth2Session)
 
     # If using an aiohttp-based API lib
     # entry.runtime_data = api.AsyncConfigEntryAuth(
@@ -52,16 +61,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     # )
 
     # await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
-    access_token = oAuth2Session.token["access_token"]
+    # access_token = oAuth2Session.token["access_token"]
+    access_token = auth_token['token']["access_token"]
     product_client = ProductClient(httpSession, access_token)
-    products = await product_client.get_user_products()
-    print(products.data[0].__class__)
-    print(products.data)
+    # products = await product_client.get_user_products()
+    # print(products.data[0].__class__)
+    # print(products.data)
 
-    bluetti_devices = BluettiData(products.data)
+    selected_products = [p for p in all_products if p.sn in enabled_devices]
+
+    bluetti_devices = BluettiData(selected_products)
 
     # Register WebSocket
-    stomp_client = StompClient(BLUETTI_WSS_SERVER, access_token, web_socket_message_handler)
+    stomp_client = StompClient(APPLICATION_PROFILE.config["server"]["wss"], access_token, bluetti_devices.web_socket_message_handler)
     stomp_client.connect()
 
     for device in bluetti_devices.devices:
@@ -77,8 +89,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     return True
 
 def web_socket_message_handler(message: str):
+    
     print(message)
-
 
 # TODO Update entry annotation
 async def async_unload_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:

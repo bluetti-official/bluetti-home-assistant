@@ -101,13 +101,13 @@ class BluettiSensor(SensorEntity):
     def available(self) -> bool:
         return self._device.online
 
-    # 同步 TODO
-    def update(self):
-        print('同步方式：Home Assistant 定时调用')
+    # # 同步 TODO
+    # def update(self):
+    #     print('同步方式：Home Assistant 定时调用')
 
-    # 异步 TODO
+    # # 异步 TODO
     async def async_update(self):
-        print('异步方式: Home Assistant 定时调用')
+        # print('异步方式: Home Assistant 定时调用')
         await self._device.async_update()
 
     async def async_added_to_hass(self):
@@ -149,12 +149,11 @@ class BluettiBinarySensor(BinarySensorEntity):
         return self._device.online
 
     # 同步 TODO
-    def update(self):
-        print('同步方式：Home Assistant 定时调用')
+    # def update(self):
 
     # 异步 TODO
     async def async_update(self):
-        print('异步方式: Home Assistant 定时调用')
+        # print('异步方式: Home Assistant 定时调用')
         await self._device.async_update()
 
     async def async_added_to_hass(self):

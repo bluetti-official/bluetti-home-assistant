@@ -2,4 +2,4 @@ bluetti:
   server:
     sso: 'https://local-sso.poweroak.ltd:18443'
     gateway: 'https://local-gw.poweroak.ltd:18443'
-    wss: 'wss://'
+    wss: 'ws://local-gw.poweroak.ltd:18888/api/edgeiotgw/ws-coordination/websocket'
