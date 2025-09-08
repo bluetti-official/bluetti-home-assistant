@@ -37,3 +37,25 @@ class ProductClient(Bluetti):
             Method.GET,
             "/api/bluiotdata/ha/v1/devices",
         )
+
+    async def get_device_status(self, sns: str = None) -> UnifyResponse[list[UserProduct]]:
+        """
+        轮询获取设备状态
+        """
+        return await self._request(
+            list[UserProduct],
+            Method.GET,
+            "/api/bluiotdata/ha/v1/deviceStates",
+            params={'sns': sns}
+        )
+
+    async def control_device(self, payload: str = None, ):
+        """
+        控制设备
+        """
+        return await self._request(
+            dict,
+            method=Method.POST,
+            path="/api/bluiotdata/ha/v1/fulfillment",
+            body=payload
+        )

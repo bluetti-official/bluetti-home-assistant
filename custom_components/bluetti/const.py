@@ -5,8 +5,7 @@ DOMAIN: str = "bluetti"
 INTEGRATION_NAME: str = 'BLUETTI'
 
 # TODO Update with your own urls
-BLUETTI_WSS_SERVER: str = "ws://local-gw.poweroak.ltd:18888/api/edgeiotgw/ws-coordination"
-
+BLUETTI_WSS_SERVER: str = "ws://local-gw.poweroak.ltd:18888/api/edgeiotgw/ws-coordination/websocket"
 
 class StringEnum(str, Enum):
     """String Enum define."""

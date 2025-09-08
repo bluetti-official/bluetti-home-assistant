@@ -13,7 +13,7 @@ from .models import BluettiData
 from .oauth import ConfigEntryAuth
 from .api.bluetti import APPLICATION_PROFILE
 from .api.product_client import ProductClient
-from .api.websocket import WebSocketClient, StompClient
+from .api.websocket import StompClient
 from .profile.application_profile import ApplicationProfile
 from .const import DOMAIN, BLUETTI_WSS_SERVER
 
@@ -28,7 +28,6 @@ type BluettiConfigEntry = ConfigEntry[BluettiData]
 
 
 # type Oauth2ConfigEntry = ConfigEntry[api.AsyncConfigEntryAuth]
-
 
 async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
     APPLICATION_PROFILE.load_config(hass)
@@ -60,24 +59,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     print(products.data)
 
     bluetti_devices = BluettiData(products.data)
+
+    # Register WebSocket
+    stomp_client = StompClient(BLUETTI_WSS_SERVER, access_token, web_socket_message_handler)
+    stomp_client.connect()
+
+    for device in bluetti_devices.devices:
+        device._api_client = product_client
+        device._ws_manager = stomp_client
+
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "bluettiDevices": bluetti_devices
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
-    # Register WebSocket
-    stomp_client = StompClient(BLUETTI_WSS_SERVER, access_token, web_socket_message_handler)
-    stomp_client.connect()
-    # stomp_client.subscribe("/ws-subscribe/user/177b9298c4907ab0b46e04d2d15/notify")
-
-    # ws_manager = WebSocketClient(bluetti_devices)
-
-    # hass.data[DOMAIN][entry.entry_id]["ws_manager"] = ws_manager
-    # await ws_manager.connect()
-
     return True
-
 
 def web_socket_message_handler(message: str):
     print(message)
