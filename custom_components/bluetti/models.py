@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Callable, Optional, List
 import asyncio
 import random
+import json
 
 # todo 后期改用websocket
 from homeassistant.util import Throttle, dt
@@ -12,7 +13,7 @@ manufacturer = "Bluetti"
 class BluettiData:
     """Data for the BLUETTI integration."""
 
-    def __init__(self, devices: Optional[List[dict]] = None):
+    def __init__(self, hass, devices: Optional[List[dict]] = None):
         self.devices = [
             BluettiDevice(
                 device_id=dev.sn,
@@ -23,6 +24,7 @@ class BluettiData:
             )
             for dev in devices or []
         ]
+        self.loop = hass.loop
 
     async def test_connection(self) -> bool:
         """Test connectivity to devices."""
@@ -34,6 +36,13 @@ class BluettiData:
 
     def web_socket_message_handler(self, message: str):
         print(f"收到ws消息 {message}")
+        res = json.loads(message)
+        # load api
+        sn = res["data"]["deviceSn"]
+
+        for device in self.devices:
+            if device.device_id == sn:
+                asyncio.run_coroutine_threadsafe(device.async_update(), self.loop)
 
 class BluettiState:
     """Represents a single function/state of the device."""
@@ -70,8 +79,7 @@ class BluettiState:
 class BluettiDevice:
     """Represents a single Bluetti device."""
 
-    def __init__(self, device_id: str, on_line: str, name: str, sn: str, state_list: Optional[List[dict]] = None, api_client=None,
-                ws_manager=None):
+    def __init__(self, device_id: str, on_line: str, name: str, sn: str, state_list: Optional[List[dict]] = None, api_client=None):
         self.device_id = device_id
         self.on_line = on_line
         self.name = name
@@ -91,16 +99,16 @@ class BluettiDevice:
 
         # TODO 后期用websocket
         self._api_client = api_client
-        self._ws_manager = ws_manager
+        # self._ws_manager = ws_manager
 
-        # TODO 创建一个定时任务轮询获取设备状态 后期用websocket
-        self.async_update = Throttle(timedelta(seconds=10))(self._async_update)
+        # 创建一个定时任务轮询获取设备状态
+        self.async_update = Throttle(timedelta(seconds=1))(self._async_update)
 
     def __repr__(self):
         return f"<BluettiDevice id={self.device_id} name={self.name}>"
 
     def get_state(self, fn_code: str) -> Optional[BluettiState]:
-        print('poll get device status')
+        # print('poll get device status')
         """Return state object by fn_code."""
         for s in self.states:
             if s.fn_code == fn_code:

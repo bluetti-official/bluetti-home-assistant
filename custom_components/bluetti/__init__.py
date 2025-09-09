@@ -70,7 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
     selected_products = [p for p in all_products if p.sn in enabled_devices]
 
-    bluetti_devices = BluettiData(selected_products)
+    bluetti_devices = BluettiData(hass, selected_products)
 
     # Register WebSocket
     stomp_client = StompClient(APPLICATION_PROFILE.config["server"]["wss"], access_token, bluetti_devices.web_socket_message_handler)
@@ -78,7 +78,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
     for device in bluetti_devices.devices:
         device._api_client = product_client
-        device._ws_manager = stomp_client
+        # device._ws_manager = stomp_client
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "bluettiDevices": bluetti_devices

@@ -70,10 +70,9 @@ async def async_setup_entry(
 
 class BluettiSensor(SensorEntity):
     """Bluetti sensor for numeric or enum states."""
-    # TODO
-    #should_poll = False
+    should_poll = False
 
-    should_poll = True
+    # should_poll = True
 
     def __init__(self, device: BluettiDevice, state: BluettiState, meta: dict):
         self._device = device
@@ -106,9 +105,9 @@ class BluettiSensor(SensorEntity):
     #     print('同步方式：Home Assistant 定时调用')
 
     # # 异步 TODO
-    async def async_update(self):
+    # async def async_update(self):
         # print('异步方式: Home Assistant 定时调用')
-        await self._device.async_update()
+        # await self._device.async_update()
 
     async def async_added_to_hass(self):
         self._device.register_callback(self.async_write_ha_state)
@@ -119,10 +118,8 @@ class BluettiSensor(SensorEntity):
 
 class BluettiBinarySensor(BinarySensorEntity):
     """Bluetti binary sensor for online/offline state."""
-
-    # TODO
-    # should_poll = False
-    should_poll = True
+    should_poll = False
+    # should_poll = True
 
     def __init__(self, device: BluettiDevice, state: BluettiState, meta: dict):
         self._device = device
@@ -152,9 +149,9 @@ class BluettiBinarySensor(BinarySensorEntity):
     # def update(self):
 
     # 异步 TODO
-    async def async_update(self):
+    # async def async_update(self):
         # print('异步方式: Home Assistant 定时调用')
-        await self._device.async_update()
+        # await self._device.async_update()
 
     async def async_added_to_hass(self):
         self._device.register_callback(self.async_write_ha_state)
