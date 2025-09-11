@@ -2,4 +2,6 @@ bluetti:
   server:
     sso: 'https://test-sso.poweroak.ltd:18443'
     gateway: 'https://test-gw.poweroak.ltd:18443'
-    wss: 'wss://'
+    client-id: 'HomeAssistant'
+    client-secret: 'SG9tZUFzc2lzdGFudA=='
+    wss: 'ws://test-gw.poweroak.ltd:18888/api/edgeiotgw/ws-coordination/'
