@@ -1,6 +1,6 @@
 bluetti:
   server:
-    sso: 'https://test-sso.poweroak.ltd:18443'
+    sso: 'https://test-sso.poweroak.ltd'
     gateway: 'https://test-gw.poweroak.ltd:18443'
     client-id: 'HomeAssistant'
     client-secret: 'SG9tZUFzc2lzdGFudA=='
