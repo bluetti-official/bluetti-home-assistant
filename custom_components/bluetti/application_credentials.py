@@ -9,7 +9,7 @@ from .const import DOMAIN
 
 async def async_get_authorization_server(hass: HomeAssistant) -> AuthorizationServer:
     """Return authorization server."""
-    APPLICATION_PROFILE.load_config(hass)
+    await APPLICATION_PROFILE.load_config(hass)
     #set default client_id and secret
     await async_import_client_credential(
             hass,

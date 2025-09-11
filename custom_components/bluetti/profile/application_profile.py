@@ -26,7 +26,7 @@ class ApplicationProfile:
 
     """加载运行环境的配置文件"""
     def load_config(self, hass):
-        hass.async_add_executor_job(self.__load_config)
+        return hass.async_add_executor_job(self.__load_config)
 
     def __load_config(self):
         with open(self.__configPath, "r") as file:

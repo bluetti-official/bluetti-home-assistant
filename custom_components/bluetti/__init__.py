@@ -31,7 +31,7 @@ type BluettiConfigEntry = ConfigEntry[BluettiData]
 # type Oauth2ConfigEntry = ConfigEntry[api.AsyncConfigEntryAuth]
 
 async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
-    APPLICATION_PROFILE.load_config(hass)
+    await APPLICATION_PROFILE.load_config(hass)
 
     enabled_devices = entry.options.get("devices", [])
     auth_token = entry.data.get('auth_token')
