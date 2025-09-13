@@ -4,9 +4,9 @@ import asyncio
 import random
 import json
 
-# todo 后期改用websocket
 from homeassistant.util import Throttle, dt
 from datetime import timedelta
+from .const import DOMAIN
 
 manufacturer = "Bluetti"
 
@@ -97,12 +97,20 @@ class BluettiDevice:
             for s in state_list or []
         ]
 
-        # TODO 后期用websocket
         self._api_client = api_client
         # self._ws_manager = ws_manager
 
         # 创建一个定时任务轮询获取设备状态
         self.async_update = Throttle(timedelta(seconds=1))(self._async_update)
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {(DOMAIN, self.sn)},
+            "name": self.name,
+            "manufacturer": self.manufacturer,
+            "model": "Bluetti",
+        }
 
     def __repr__(self):
         return f"<BluettiDevice id={self.device_id} name={self.name}>"
