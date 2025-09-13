@@ -10,7 +10,7 @@ SELECT_CODES = {
     "SetCtrlWorkMode": {"name": "Working Mode", "icon": "mdi:cog"},
     "SetDCECO": {"name": "DC ECO Mode", "icon": "mdi:flash"},
     "SetACECO": {"name": "AC ECO Mode", "icon": "mdi:power-plug"},
-    "InvWorkState": {"name": "Inverter Status", "icon": "mdi:solar-power"},  # 也可以只读
+    "InvWorkState": {"name": "Inverter Status", "icon": "mdi:solar-power", "readonly": True},  # 也可以只读
 }
 
 async def async_setup_entry(
@@ -60,6 +60,14 @@ class BluettiSelect(SelectEntity):
         # 可选项 = supportModeValues 的 name
         self._attr_options = [v["name"] for v in state.support_mode_values]
 
+        # 是否只读
+        self._readonly = meta.get("readonly", False)
+
+        # 如果只读，让 Home Assistant 前端显示为只读（灰掉）
+        if self._readonly:
+            self._attr_options = []  # 不显示可选项
+            self._attr_entity_category = "diagnostic"  # 可选，标记为非操作类实体
+
     @property
     def available(self) -> bool:
         return self._device.online
@@ -69,6 +77,10 @@ class BluettiSelect(SelectEntity):
         return self._state_obj.get_name_for_value()
 
     async def async_select_option(self, option: str) -> None:
+        if self._readonly:
+            # 只读的选项不允许修改
+            raise ValueError(f"{self._state_obj.fn_code} is read-only and cannot be changed")
+
         # 找到对应的 code
         for v in self._state_obj.support_mode_values:
             if v["name"] == option:
