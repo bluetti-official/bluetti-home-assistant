@@ -16,12 +16,12 @@ SENSOR_MAP = {
         "icon": "mdi:battery",
         "name": "Battery Level",
     },
-    "ChgFullTime": {
-        "device_class": SensorDeviceClass.DURATION,
-        "unit": "min",
-        "icon": "mdi:timer-sand",
-        "name": "Charge Full Time",
-    },
+    # "ChgFullTime": {
+    #     "device_class": SensorDeviceClass.DURATION,
+    #     "unit": "min",
+    #     "icon": "mdi:timer-sand",
+    #     "name": "Charge Full Time",
+    # },
     "InvWorkState": {
         "device_class": SensorDeviceClass.ENUM,
         "unit": None,
@@ -85,10 +85,12 @@ class BluettiSensor(SensorEntity):
         self._attr_native_unit_of_measurement = meta.get("unit")
         self._attr_icon = meta.get("icon")
         self._attr_device_info = {
-            "identifiers": {(DOMAIN, device.device_id)},
+            "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID
             "name": device.name,
             "manufacturer": device.manufacturer,
+            "model": "Bluetti",
         }
+        # self._attr_icon = "mdi:generator-portable"
 
     @property
     def native_value(self):

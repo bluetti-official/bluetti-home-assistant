@@ -35,7 +35,7 @@ class BluettiData:
         return self.devices
 
     def web_socket_message_handler(self, message: str):
-        print(f"收到ws消息 {message}")
+        # print(f"收到ws消息 {message}")
         res = json.loads(message)
         # load api
         sn = res["data"]["deviceSn"]
@@ -103,15 +103,6 @@ class BluettiDevice:
         # 创建一个定时任务轮询获取设备状态
         self.async_update = Throttle(timedelta(seconds=1))(self._async_update)
 
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {(DOMAIN, self.sn)},
-            "name": self.name,
-            "manufacturer": self.manufacturer,
-            "model": "Bluetti",
-        }
-
     def __repr__(self):
         return f"<BluettiDevice id={self.device_id} name={self.name}>"
 
@@ -144,12 +135,12 @@ class BluettiDevice:
             # # 假设服务器会通过 WebSocket 返回确认或状态更新
             # state.set_value(value)
 
-            print({'sn': self.device_id, 'fnCode': fn_code, 'fnValue': value})
+            # print({'sn': self.device_id, 'fnCode': fn_code, 'fnValue': value})
 
             api_client = self._api_client
             result = await api_client.control_device({'sn': self.device_id, 'fnCode': fn_code, 'fnValue': value})
 
-            print(result)
+            # print(result)
             if result.msgCode == 0:
                 state.set_value(value)
 
@@ -206,7 +197,7 @@ class BluettiDevice:
         api_client = self._api_client
 
         device_status = await api_client.get_device_status(self.device_id)
-        print(device_status.data[0])
+        # print(device_status.data[0])
         data = device_status.data[0]
 
         sn = data.sn

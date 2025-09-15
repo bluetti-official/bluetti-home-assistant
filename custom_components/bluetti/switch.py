@@ -1,6 +1,7 @@
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+# from homeassistant.helpers.entity import EntityCategory
 
 from . import BluettiConfigEntry
 from .const import DOMAIN
@@ -49,14 +50,19 @@ class BluettiSwitch(SwitchEntity):
         self._state_obj = state
         self._meta = meta
 
+        # print(f'device.device_id= {device.device_id}')
+
         self._attr_unique_id = f"{device.device_id}_{state.fn_code}"
         self._attr_name = f"{device.name} {meta['name']}"
         self._attr_icon = meta.get("icon")
         self._attr_device_info = {
-            "identifiers": {(DOMAIN, device.device_id)},
+            "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID
             "name": device.name,
             "manufacturer": device.manufacturer,
+            "model": "Bluetti",
         }
+        # self._attr_icon = "mdi:generator-portable"
+        # self._attr_entity_category = EntityCategory.CONFIG
 
     @property
     def available(self) -> bool:

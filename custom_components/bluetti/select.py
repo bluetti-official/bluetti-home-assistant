@@ -52,10 +52,12 @@ class BluettiSelect(SelectEntity):
         self._attr_name = f"{device.name} {meta['name']}"
         self._attr_icon = meta.get("icon")
         self._attr_device_info = {
-            "identifiers": {(DOMAIN, device.device_id)},
+            "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID
             "name": device.name,
             "manufacturer": device.manufacturer,
+            "model": "Bluetti",
         }
+        # self._attr_icon = "mdi:generator-portable"
 
         # 可选项 = supportModeValues 的 name
         self._attr_options = [v["name"] for v in state.support_mode_values]

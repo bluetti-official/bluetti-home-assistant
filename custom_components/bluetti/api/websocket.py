@@ -97,7 +97,7 @@ class StompListener:
             self.__on_subscribe(ws, destination)
         elif frame.cmd == "MESSAGE":
             self.__callback(self.__handler, frame.body)
-            print(frame.body)
+            # print(frame.body)
 
     @staticmethod
     def on_error(ws, error):
