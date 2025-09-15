@@ -20,6 +20,7 @@ class BluettiData:
                 on_line=dev.online or '0',
                 name=dev.name,
                 sn=dev.sn,
+                model=dev.model,
                 state_list=dev.stateList or []
             )
             for dev in devices or []
@@ -79,11 +80,12 @@ class BluettiState:
 class BluettiDevice:
     """Represents a single Bluetti device."""
 
-    def __init__(self, device_id: str, on_line: str, name: str, sn: str, state_list: Optional[List[dict]] = None, api_client=None):
+    def __init__(self, device_id: str, on_line: str, name: str, sn: str, model: str, state_list: Optional[List[dict]] = None, api_client=None):
         self.device_id = device_id
         self.on_line = on_line
         self.name = name
         self.sn = sn
+        self.model = model
         self.manufacturer = manufacturer
         self._callbacks: set[Callable[[], None]] = set()
         self._loop = asyncio.get_event_loop()

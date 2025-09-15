@@ -7,6 +7,7 @@ from pydantic import BaseModel
 class UserProduct(BaseModel):
     """"""
     sn: str
+    model: str
     stateList: list
     online: str
     name: Optional[str] = None

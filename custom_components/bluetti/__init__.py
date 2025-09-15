@@ -78,6 +78,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
     for device in bluetti_devices.devices:
         device._api_client = product_client
+
         # device._ws_manager = stomp_client
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
@@ -86,6 +87,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
+    if entry.disabled_by is not None:
+        hass.config_entries.async_update_entry(entry, disabled_by=None)
+        
     return True
 
 def web_socket_message_handler(message: str):
@@ -95,4 +99,6 @@ def web_socket_message_handler(message: str):
 # TODO Update entry annotation
 async def async_unload_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
     """Unload a config entry."""
+    if entry.disabled_by is not None:
+        hass.config_entries.async_update_entry(entry, disabled_by=None)
     return await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)

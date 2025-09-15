@@ -88,8 +88,9 @@ class BluettiSensor(SensorEntity):
             "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID
             "name": device.name,
             "manufacturer": device.manufacturer,
-            "model": "Bluetti",
+            "model": device.model,
         }
+        print(f"注册设备: {device.name}, identifiers= {(DOMAIN, device.device_id)}")
         # self._attr_icon = "mdi:generator-portable"
 
     @property
@@ -100,8 +101,16 @@ class BluettiSensor(SensorEntity):
 
     @property
     def available(self) -> bool:
-        return self._device.online
-
+       # 如果设备离线，直接不可用
+        if not self._device.online:
+            return False
+        # 如果当前是电源开关自己，则不受限制
+        if self._state_obj.fn_code == "SetCtrlPowerOn":
+            return True
+        # 其它开关要依赖 PowerOn 状态
+        power_state = self._device.get_state("SetCtrlPowerOn")
+        return power_state and power_state.fn_value == "1"
+    
     # # 同步 TODO
     # def update(self):
     #     print('同步方式：Home Assistant 定时调用')
@@ -133,10 +142,12 @@ class BluettiBinarySensor(BinarySensorEntity):
         self._attr_icon = meta.get("icon")
         self._attr_device_class = meta.get("device_class")
         self._attr_device_info = {
-            "identifiers": {(DOMAIN, device.device_id)},
+            "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID
             "name": device.name,
             "manufacturer": device.manufacturer,
+            "model": device.model,
         }
+        print(f"注册设备: {device.name}, identifiers= {(DOMAIN, device.device_id)}")
 
     @property
     def is_on(self) -> bool:
