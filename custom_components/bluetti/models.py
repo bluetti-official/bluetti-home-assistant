@@ -33,17 +33,23 @@ class BluettiData:
         return True
 
     def get_device_by_sn(self, sn):
-        return self.devices
+       for dev in self.devices:
+        print(f"device_id= {dev.device_id}, sn= {sn}")
+        if dev.device_id == sn:
+            return dev
+        return None
 
     def web_socket_message_handler(self, message: str):
-        # print(f"收到ws消息 {message}")
+        print(f"收到ws消息 {message}")
+
         res = json.loads(message)
         # load api
         sn = res["data"]["deviceSn"]
 
-        for device in self.devices:
-            if device.device_id == sn:
-                asyncio.run_coroutine_threadsafe(device.async_update(), self.loop)
+        device = self.get_device_by_sn(sn)
+        if device:
+            print(f'开始调用api获取设备状态: {sn}')
+            asyncio.run_coroutine_threadsafe(device.async_update(), self.loop)
 
 class BluettiState:
     """Represents a single function/state of the device."""
@@ -103,7 +109,7 @@ class BluettiDevice:
         # self._ws_manager = ws_manager
 
         # 创建一个定时任务轮询获取设备状态
-        self.async_update = Throttle(timedelta(seconds=1))(self._async_update)
+        self.async_update = Throttle(timedelta(microseconds=1))(self._async_update)
 
     def __repr__(self):
         return f"<BluettiDevice id={self.device_id} name={self.name}>"
@@ -154,12 +160,14 @@ class BluettiDevice:
 
     def register_callback(self, callback: Callable[[], None]):
         self._callbacks.add(callback)
+        print(len(self._callbacks))
 
     def remove_callback(self, callback: Callable[[], None]):
         self._callbacks.discard(callback)
 
     async def publish_updates(self):
         """Call registered callbacks."""
+        print(len(self._callbacks))
         for cb in self._callbacks:
             cb()
 
@@ -194,7 +202,6 @@ class BluettiDevice:
     def schedule_state(self):
         return self._schedule_state
 
-    # TODO 后期删掉 用websocket
     async def _async_update(self):
         api_client = self._api_client
 
@@ -202,9 +209,13 @@ class BluettiDevice:
         # print(device_status.data[0])
         data = device_status.data[0]
 
+        print(f'device_status: {data}')
+
         sn = data.sn
         if sn != self.device_id:
             return
+
+        self.on_line = data.online
 
         new_states = data.stateList
 

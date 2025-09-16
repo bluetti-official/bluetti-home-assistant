@@ -39,7 +39,6 @@ BINARY_SENSOR_MAP = {
     }
 }
 
-
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: BluettiConfigEntry,
@@ -52,7 +51,6 @@ async def async_setup_entry(
         return False
 
     bluetti_devices: BluettiData = entry_data["bluettiDevices"]
-
     entities = []
 
     for device in bluetti_devices.devices:

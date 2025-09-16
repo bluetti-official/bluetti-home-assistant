@@ -48,6 +48,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
         httpSession = async_get_clientsession(self.hass)
         product_client = ProductClient(httpSession, self._oauth_data['token']['access_token'])
         products = await product_client.get_user_products()
+        print(products)
         # print(products.data[0].__class__)
         # print(products.data)
 
