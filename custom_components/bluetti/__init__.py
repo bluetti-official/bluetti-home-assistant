@@ -9,6 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_entry_oauth2_flow, device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers import storage
+from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 
 from .models import BluettiData
 from .oauth import ConfigEntryAuth
@@ -87,6 +88,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
+
+    async def _after_start(event):
+        print(event)
+        for device in bluetti_devices.devices:
+            await device.async_update()
+
+    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _after_start)
 
     return True
 
