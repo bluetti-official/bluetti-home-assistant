@@ -33,10 +33,10 @@ class BluettiData:
         return True
 
     def get_device_by_sn(self, sn):
-       for dev in self.devices:
-        print(f"device_id= {dev.device_id}, sn= {sn}")
-        if dev.device_id == sn:
-            return dev
+        for dev in self.devices:
+            print(f"device_id= {dev.device_id}, sn= {sn}")
+            if dev.device_id == sn:
+                return dev
         return None
 
     def web_socket_message_handler(self, message: str):
