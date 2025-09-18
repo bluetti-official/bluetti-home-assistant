@@ -10,7 +10,8 @@
             "oauth_failed": "Error while obtaining access token.",
             "oauth_timeout": "Timeout resolving OAuth token.",
             "oauth_unauthorized": "OAuth authorization error while obtaining access token.",
-            "user_rejected_authorize": "Account linking rejected: {error}"
+            "user_rejected_authorize": "Account linking rejected: {error}",
+			"no_devices_available": "All the devices and physical items under this account have already been included in the BLUETTI integrated package."
         },
         "create_entry": {
             "default": "Successfully authenticated"
