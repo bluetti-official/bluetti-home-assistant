@@ -70,7 +70,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                 # 重新加载集成以包含新设备
                 await self.hass.config_entries.async_reload(existing_entry.entry_id)
                 
-                return self.async_abort(reason="already_configured")
+                return self.async_abort(reason="success")
             else:
                 # 创建新的集成条目
                 return self.async_create_entry(
