@@ -34,7 +34,6 @@ class BluettiData:
 
     def get_device_by_sn(self, sn):
         for dev in self.devices:
-            print(f"device_id= {dev.device_id}, sn= {sn}")
             if dev.device_id == sn:
                 return dev
         return None
@@ -131,20 +130,6 @@ class BluettiDevice:
             raise ValueError(f"No state with code {fn_code}")
 
         try:
-            # TODO websocket
-            # ws_manager = self._ws_manager # 需要在初始化时传入
-            #
-            # payload = {
-            #     "action": "set", #
-            #     "sn": self.sn,
-            #     "fnCode": fn_code,
-            #     "value": value
-            # }
-            # await ws_manager.send_message(payload)
-            #
-            # # 假设服务器会通过 WebSocket 返回确认或状态更新
-            # state.set_value(value)
-
             # print({'sn': self.device_id, 'fnCode': fn_code, 'fnValue': value})
 
             api_client = self._api_client
@@ -182,7 +167,7 @@ class BluettiDevice:
         state = self.get_state("SOC")
         if state:
             return int(state.fn_value)
-        return random.randint(0, 100)
+        return 0
 
     @property
     def battery_voltage(self) -> float:

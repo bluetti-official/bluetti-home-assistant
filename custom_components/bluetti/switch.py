@@ -61,15 +61,20 @@ class BluettiSwitch(SwitchEntity):
 
     @property
     def available(self) -> bool:
-        # 如果设备离线，直接不可用
-        if not self._device.online:
-            return False
+        # # 如果设备离线，直接不可用
+        # if not self._device.online:
+        #     return False
+        # # 如果当前是电源开关自己，则不受限制
+        # if self._state_obj.fn_code == "SetCtrlPowerOn":
+        #     return True
+        # # 其它开关要依赖 PowerOn 状态
+        # power_state = self._device.get_state("SetCtrlPowerOn")
+        # return power_state and power_state.fn_value == "1"
         # 如果当前是电源开关自己，则不受限制
         if self._state_obj.fn_code == "SetCtrlPowerOn":
             return True
-        # 其它开关要依赖 PowerOn 状态
-        power_state = self._device.get_state("SetCtrlPowerOn")
-        return power_state and power_state.fn_value == "1"
+        # 如果设备离线，直接不可用
+        return self._device.online
     
     @property
     def is_on(self) -> bool:
