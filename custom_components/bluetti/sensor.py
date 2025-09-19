@@ -7,25 +7,18 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import BluettiConfigEntry
 from .const import DOMAIN
 from .models import BluettiData, BluettiDevice, BluettiState
+from .icon_config import get_icon_for_fn_code
 
 # 映射 sensor 类
 SENSOR_MAP = {
     "SOC": {
         "device_class": SensorDeviceClass.BATTERY,
         "unit": PERCENTAGE,
-        "icon": "mdi:battery",
         "name": "Battery Level",
     },
-    # "ChgFullTime": {
-    #     "device_class": SensorDeviceClass.DURATION,
-    #     "unit": "min",
-    #     "icon": "mdi:timer-sand",
-    #     "name": "Charge Full Time",
-    # },
     "InvWorkState": {
         "device_class": SensorDeviceClass.ENUM,
         "unit": None,
-        "icon": "mdi:solar-power",
         "name": "Inverter Status",
     },
 }
@@ -34,7 +27,6 @@ SENSOR_MAP = {
 BINARY_SENSOR_MAP = {
     "onLine": {
         "device_class": BinarySensorDeviceClass.CONNECTIVITY,
-        "icon": "mdi:lan-connect",
         "name": "Online",
     }
 }
@@ -55,9 +47,9 @@ async def async_setup_entry(
 
     for device in bluetti_devices.devices:
         for state in device.states:
-            if state.fn_code in SENSOR_MAP:
+            if state.fn_type == "SENSOR" and state.fn_code in SENSOR_MAP:
                 entities.append(BluettiSensor(device, state, SENSOR_MAP[state.fn_code]))
-            elif state.fn_code in BINARY_SENSOR_MAP:
+            elif state.fn_type == "SENSOR" and state.fn_code in BINARY_SENSOR_MAP:
                 entities.append(BluettiBinarySensor(device, state, BINARY_SENSOR_MAP[state.fn_code]))
 
     if entities:
@@ -81,7 +73,7 @@ class BluettiSensor(SensorEntity):
         self._attr_name = f"{device.name} {meta['name']}"
         self._attr_device_class = meta.get("device_class")
         self._attr_native_unit_of_measurement = meta.get("unit")
-        self._attr_icon = meta.get("icon")
+        self._attr_icon = get_icon_for_fn_code(state.fn_code)
         self._attr_device_info = {
             "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID
             "name": device.name,
@@ -137,7 +129,7 @@ class BluettiBinarySensor(BinarySensorEntity):
 
         self._attr_unique_id = f"{device.device_id}_{state.fn_code}"
         self._attr_name = f"{device.name} {meta['name']}"
-        self._attr_icon = meta.get("icon")
+        self._attr_icon = get_icon_for_fn_code(state.fn_code)
         self._attr_device_class = meta.get("device_class")
         self._attr_device_info = {
             "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID

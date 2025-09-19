@@ -100,10 +100,14 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
             for prod in products.data 
             if prod.sn not in integrated_devices
         }
-        
+
         # 如果没有可用设备，显示错误
+        if not products.data:
+           return self.async_abort(reason="no_devices_available")
+        
+        # 已全部集成
         if not available_devices:
-            return self.async_abort(reason="no_devices_available")
+            return self.async_abort(reason="all_devices_exists")
 
         schema = vol.Schema(
             {

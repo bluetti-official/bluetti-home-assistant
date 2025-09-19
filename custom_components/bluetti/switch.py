@@ -6,14 +6,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import BluettiConfigEntry
 from .const import DOMAIN
 from .models import BluettiData, BluettiDevice, BluettiState
-
-
-SWITCH_CODES = {
-    "SetCtrlAc": {"name": "AC Switch", "icon": "mdi:power-socket-us"},
-    "SetCtrlDc": {"name": "DC Switch", "icon": "mdi:car-battery"},
-    "SetCtrlPowerOn": {"name": "Power", "icon": "mdi:power"},
-    "Storm_Mode_Cloud_Ctrl": {"name": "Disaster Warning", "icon": "mdi:weather-lightning"},
-}
+from .icon_config import get_icon_for_fn_code
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -31,8 +24,9 @@ async def async_setup_entry(
     entities = []
     for device in bluetti_devices.devices:
         for state in device.states:
-            if state.fn_code in SWITCH_CODES:
-                entities.append(BluettiSwitch(device, state, SWITCH_CODES[state.fn_code]))
+            print(f'fn_type= {state.fn_type}, fn_name = {state.fn_name}, fn_code = {state.fn_code}')
+            if state.fn_type == "SWITCH":
+                entities.append(BluettiSwitch(device, state))
 
     if entities:
         async_add_entities(entities)
@@ -45,22 +39,21 @@ class BluettiSwitch(SwitchEntity):
 
     should_poll = False
 
-    def __init__(self, device: BluettiDevice, state: BluettiState, meta: dict):
+    def __init__(self, device: BluettiDevice, state: BluettiState):
         self._device = device
         self._state_obj = state
-        self._meta = meta
-
         # print(f'device.device_id= {device.device_id}')
 
         self._attr_unique_id = f"{device.device_id}_{state.fn_code}"
-        self._attr_name = f"{device.name} {meta['name']}"
-        self._attr_icon = meta.get("icon")
+        self._attr_name = f"{device.name} {state.fn_name}"
+        self._attr_icon = get_icon_for_fn_code(state.fn_code)
         self._attr_device_info = {
             "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID
             "name": device.name,
             "manufacturer": device.manufacturer,
             "model": "Bluetti",
         }
+        self._meta = {"name": state.fn_name, "icon": self._attr_icon}
         # self._attr_icon = "mdi:generator-portable"
         # self._attr_entity_category = EntityCategory.CONFIG
 

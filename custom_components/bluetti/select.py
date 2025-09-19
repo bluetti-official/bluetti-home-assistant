@@ -6,13 +6,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import BluettiConfigEntry
 from .const import DOMAIN
 from .models import BluettiData, BluettiDevice, BluettiState
-
-SELECT_CODES = {
-    "SetCtrlWorkMode": {"name": "Working Mode", "icon": "mdi:cog"},
-    "SetDCECO": {"name": "DC ECO Mode", "icon": "mdi:flash"},
-    "SetACECO": {"name": "AC ECO Mode", "icon": "mdi:power-plug"},
-    "InvWorkState": {"name": "Inverter Status", "icon": "mdi:solar-power", "readonly": True},  # 也可以只读
-}
+from .icon_config import get_icon_for_fn_code
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -30,8 +24,8 @@ async def async_setup_entry(
     entities = []
     for device in bluetti_devices.devices:
         for state in device.states:
-            if state.fn_code in SELECT_CODES and state.support_mode_values:
-                entities.append(BluettiSelect(device, state, SELECT_CODES[state.fn_code]))
+            if state.fn_type == 'SELECT' and state.support_mode_values:
+                entities.append(BluettiSelect(device, state))
 
     if entities:
         async_add_entities(entities)
@@ -44,27 +38,25 @@ class BluettiSelect(SelectEntity):
 
     should_poll = False
 
-    def __init__(self, device: BluettiDevice, state: BluettiState, meta: dict):
+    def __init__(self, device: BluettiDevice, state: BluettiState):
         self._device = device
         self._state_obj = state
-        self._meta = meta
 
         self._attr_unique_id = f"{device.device_id}_{state.fn_code}"
-        self._attr_name = f"{device.name} {meta['name']}"
-        self._attr_icon = meta.get("icon")
+        self._attr_name = f"{device.name} {state.fn_name}"
+        self._attr_icon = get_icon_for_fn_code(state.fn_code)
         self._attr_device_info = {
             "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID
             "name": device.name,
             "manufacturer": device.manufacturer,
             "model": device.model,
         }
-        # self._attr_icon = "mdi:generator-portable"
 
         # 可选项 = supportModeValues 的 name
         self._attr_options = [v["name"] for v in state.support_mode_values]
 
-        # 是否只读
-        self._readonly = meta.get("readonly", False)
+        # 检查是否为只读（根据fn_code判断）
+        self._readonly = state.fn_code == "InvWorkState"
 
         # 如果只读，让 Home Assistant 前端显示为只读（灰掉）
         if self._readonly:

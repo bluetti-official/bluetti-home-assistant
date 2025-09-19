@@ -54,10 +54,11 @@ class BluettiData:
 class BluettiState:
     """Represents a single function/state of the device."""
 
-    def __init__(self, fn_code: str, fn_name: str, fn_value: str, support_mode_values: Optional[List[dict]] = None):
+    def __init__(self, fn_code: str, fn_name: str, fn_value: str, fn_type: str, support_mode_values: Optional[List[dict]] = None):
         self.fn_code = fn_code
         self.fn_name = fn_name
         self.fn_value = fn_value
+        self.fn_type = fn_type
         self.support_mode_values = support_mode_values or []
 
     def is_switch(self) -> bool:
@@ -100,6 +101,7 @@ class BluettiDevice:
                 fn_code=s.get("fnCode"),
                 fn_name=s.get("fnName") or "",
                 fn_value=s.get("fnValue"),
+                fn_type=s.get("fnType"),
                 support_mode_values=s.get("supportModeValues")
             )
             for s in state_list or []
