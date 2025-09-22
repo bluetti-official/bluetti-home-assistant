@@ -52,6 +52,9 @@ class StompClient(object):
         # Run until interruption to client or server terminates connection.
         Thread(target=self.websocket.run_forever).start()
 
+    def disconnect(self):
+        self.websocket.close()
+
     def __on_open(self, ws):
         # Initial CONNECT required to initialize the server's client registries.
         connect = ("CONNECT\n"

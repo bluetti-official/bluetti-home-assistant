@@ -37,7 +37,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
     async def async_step_select_devices(self, user_input=None):
         """Let user select devices after OAuth2 login."""
         if user_input is not None:
-            print(user_input)
+            # print(user_input)
             await self._product_client.bind_devices({"bindSnList": user_input['devices']})
             
             # 检查是否存在同名的集成条目
@@ -82,7 +82,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
         httpSession = async_get_clientsession(self.hass)
         product_client = ProductClient(httpSession, self._oauth_data['token']['access_token'])
         products = await product_client.get_user_products()
-        print(products)
+        # print(products)
         # print(products.data[0].__class__)
         # print(products.data)
 
@@ -136,7 +136,7 @@ class AbstractAuth(ABC):
     # @abstractmethod
     async def async_get_access_token(self) -> str:
         """Return a valid access token."""
-        print(self)
+        # print(self)
         return self.token["access_token"]
 
 

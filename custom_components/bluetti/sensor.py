@@ -80,7 +80,7 @@ class BluettiSensor(SensorEntity):
             "manufacturer": device.manufacturer,
             "model": device.model,
         }
-        print(f"注册设备: {device.name}, identifiers= {(DOMAIN, device.device_id)}")
+        # print(f"注册设备: {device.name}, identifiers= {(DOMAIN, device.device_id)}")
         # self._attr_icon = "mdi:generator-portable"
 
     @property

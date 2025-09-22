@@ -47,7 +47,7 @@ class BluettiData:
 
         device = self.get_device_by_sn(sn)
         if device:
-            print(f'开始调用api获取设备状态: {sn}')
+            # print(f'开始调用api获取设备状态: {sn}')
             asyncio.run_coroutine_threadsafe(device.async_update(), self.loop)
 
 class BluettiState:
@@ -147,14 +147,14 @@ class BluettiDevice:
 
     def register_callback(self, callback: Callable[[], None]):
         self._callbacks.add(callback)
-        print(len(self._callbacks))
+        # print(len(self._callbacks))
 
     def remove_callback(self, callback: Callable[[], None]):
         self._callbacks.discard(callback)
 
     async def publish_updates(self):
         """Call registered callbacks."""
-        print(len(self._callbacks))
+        # print(len(self._callbacks))
         for cb in self._callbacks:
             cb()
 
@@ -179,12 +179,10 @@ class BluettiDevice:
         # TODO
         return random.randint(0, 500)
 
-    # TODO 后期删掉
     @property
     def throttle(self):
         return self._t
 
-    # TODO 后期删掉
     @property
     def schedule_state(self):
         return self._schedule_state
@@ -196,7 +194,7 @@ class BluettiDevice:
         # print(device_status.data[0])
         data = device_status.data[0]
 
-        print(f'device_status: {data}')
+        # print(f'device_status: {data}')
 
         sn = data.sn
         if sn != self.device_id:

@@ -63,7 +63,7 @@ class BluettiSelect(SelectEntity):
             self._attr_options = []  # 不显示可选项
             self._attr_entity_category = EntityCategory.DIAGNOSTIC  # 可选，标记为非操作类实体
 
-        print(f"注册设备: {device.name}, identifiers= {(DOMAIN, device.device_id)}")
+        # print(f"注册设备: {device.name}, identifiers= {(DOMAIN, device.device_id)}")
 
     @property
     def available(self) -> bool:

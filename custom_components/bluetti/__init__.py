@@ -84,13 +84,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
         # device._ws_manager = stomp_client
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
-        "bluettiDevices": bluetti_devices
+        "bluettiDevices": bluetti_devices,
+        "stompClient": stomp_client,
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
     async def _after_start(event):
-        print(event)
+        # print(event)
         for device in bluetti_devices.devices:
             await device.async_update()
 
@@ -109,6 +110,13 @@ async def async_unload_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> 
 
 async def async_remove_entry(hass, entry):
     """Handle removal of an entry."""
+    data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+    if data and "stompClient" in data:
+        stomp_client = data["stompClient"]
+        try:
+            stomp_client.disconnect()
+        except Exception as e:
+            __LOGGER__.warning("Error while disconnecting websocket: %s", e)
 
     device_registry = dr.async_get(hass)
     for device in dr.async_entries_for_config_entry(device_registry, entry.entry_id):
@@ -120,6 +128,8 @@ async def async_remove_entry(hass, entry):
 
     if DOMAIN in hass.data:
         hass.data[DOMAIN].pop(entry.entry_id, None)
+        if not hass.data[DOMAIN]:
+            hass.data.pop(DOMAIN)
 
     store = storage.Store(hass, 1, f"{DOMAIN}_data_{entry.entry_id}.json")
     await store.async_remove()
