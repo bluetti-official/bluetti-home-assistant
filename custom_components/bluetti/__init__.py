@@ -63,7 +63,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     # )
 
     # await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
-    # access_token = oAuth2Session.token["access_token"]
+    #if auth_token is None
+    #    access_token = oAuth2Session.token["access_token"]
     access_token = auth_token['token']["access_token"]
     product_client = ProductClient(httpSession, access_token)
     # products = await product_client.get_user_products()
