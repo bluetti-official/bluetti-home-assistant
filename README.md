@@ -14,7 +14,7 @@ The Integration's github repository is: https://github.com/bluetti-official/blue
 - ✅ AC/DC ECO 
 - ✅ AC/DC Switch  
 - ✅ Main unit power switch  
-- ✅ Work mode switch: 自发自用，备用电源，削峰填谷 
+- ✅ Work mode switch: Backup, Self-consumption, Peak and Off-Peak 
 - ✅ Disaster Warning 
 
 # 🎮 Power Station Support List
@@ -61,4 +61,35 @@ As the `BLUETTI Power Station Integration` has not yet been submitted to the off
 # ⚙️ Integration configuration
 
 1. Follow the steps "Settings -> Devices & services", click to enter the `Integration List` page.   
-   <img src="./doc/images/1-setting_devices_and_services.png">
+   <img src="./doc/images/1-setting_devices_and_services.png" width="880">
+2. Click the "Add Integration" button, then search for the brand keyword `bluetti`; select the `BLUETTI` integration to proceed with the OAUTH authorization login.  
+   <img src="./doc/images/2-search_and_add_integration.png" width="880">
+3. You must agree that `Home Assistant` can access your BLUETTI account and establish a connection with the BLUETTI cloud service.  
+   <img src="./doc/images/3-oauth_agree_to_connect_with_bluetti.png">
+4. Enter your BLUETTI account to authorize and login.  
+   <img src="./doc/images/4-oauth_enter_bluetti_account.png">
+5. You must agree that `Home Assistant` link to your BLUETTI account.  
+   <img src="./doc/images/5-oauth_link_account_to_ha.png">
+6. Select your BLUETTI power station devices that need to be used and managed in Home Assistant.  
+   <img src="./doc/images/6-choose_bluetti_devices.png" width="880">  
+   <img src="./doc/images/7-bluetti_device_in_ha.png" width="880">
+
+# ❓ FAQ
+
+- **Not found `BLUETTI Integration` after installation?**  
+  Please check whether the `custom_components` path is correct and confirm whether the `Home Assistant` system has been restarted.
+
+- **always offline or failed connect to BLUETTI server?**  
+  Please check the network, ports and firewall to ensure that `Home Assistant` can access the power station devices.
+
+- **How to update the `BLUETTI Integration`?**  
+  1) Enter the HACS management page to perform the update.
+  2) Update using `git`
+```shell
+$ cd /<ha workspaces>/config/custom_components/bluetti
+$ git pull
+```
+
+# 📮 Support & Feedback
+
+- GitHub Issues: https://github.com/bluetti-official/bluetti-home-assistant/issues

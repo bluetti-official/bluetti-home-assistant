@@ -63,9 +63,9 @@ https://github.com/bluetti-official/bluetti-home-assistant.git
 ## 通过界面添加集成
 
 1. 进入`Home Assistant` → 设置 → 设备与服务。  
-   <img src="./doc/images/1-setting_devices_and_services.png">
-2. 点击“添加集成”，然后搜索品牌关键词`bluetti`；选择`BLUETTI`集成进行下一步的OAUTH授权登录。  
-   <img src="./doc/images/2-search_and_add_integration.png">
+   <img src="./doc/images/1-setting_devices_and_services.png" width="880">
+2. 点击“添加集成”按钮，然后搜索品牌关键词`bluetti`；选择`BLUETTI`集成进行下一步的OAUTH授权登录。  
+   <img src="./doc/images/2-search_and_add_integration.png" width="880">
 3. 您必须同意`Home Assistant`访问您的BLUETTI账号并与BLUETTI云服务建立联系。  
    <img src="./doc/images/3-oauth_agree_to_connect_with_bluetti.png">
 4. 输入您的BLUETTI账号以进行授权登录。  
@@ -73,12 +73,12 @@ https://github.com/bluetti-official/bluetti-home-assistant.git
 5. 您必须同意`Home Assistant`链接使用您的BLUETTI账号。  
    <img src="./doc/images/5-oauth_link_account_to_ha.png">
 6. 选择需要在`Home Assistant`中使用和管理的BLUETTI电站设备。  
-   <img src="./doc/images/6-choose_bluetti_devices.png">  
-   <img src="./doc/images/7-bluetti_device_in_ha.png">
+   <img src="./doc/images/6-choose_bluetti_devices.png" width="880">  
+   <img src="./doc/images/7-bluetti_device_in_ha.png" width="880">
 
 # ❓ 常见问题
 
-- **安装后没有显示集成？**  
+- **没有显示BLUETTI集成？**  
   检查`custom_components`路径是否正确，并确认是否已经重启`Home Assistant`系统。
 
 - **设备不在线、设备联网失败**  
