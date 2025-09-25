@@ -46,7 +46,6 @@ $ git clone https://github.com/bluetti-official/bluetti-home-assistant.git
 $ unzip xxx.zip -d /<ha workspaces>/core/config/custom_components/bluetti
 ```
 4. Reboot your `Home Assistant` system.
-<hr/>
 
 ## Install by HACS
 
@@ -61,5 +60,5 @@ As the `BLUETTI Power Station Integration` has not yet been submitted to the off
 
 # ⚙️ Integration configuration
 
-1. Follow the steps "Settings -> Devices & services", click to enter the integrated list page.   
+1. Follow the steps "Settings -> Devices & services", click to enter the `Integration List` page.   
    <img src="./doc/images/1-setting_devices_and_services.png">

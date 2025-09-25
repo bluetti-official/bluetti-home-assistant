@@ -11,20 +11,20 @@ BLUETTI储能集成github仓库地址：https://github.com/bluetti-official/blue
 - ✅ 设备运行状态（Inverter Status）  
 - ✅ 查询电量SOC（Battery Level）  
 - ✅ 预估续航时间（Charge Full Time）
-- ✅ AC / DC 开关（AC Switch，DC Switch）  
+- ✅ ECO模式切换（AC ECO，DC ECO） 
+- ✅ AC/DC开关（AC Switch，DC Switch）  
 - ✅ 整机电源开关（Power）  
-- ✅ 工作模式切换（Working Mode）：自发自用，备用电源，削峰填谷
-- ✅ ECO模式切换（AC ECO，DC ECO）  
+- ✅ 工作模式切换（Working Mode）：自发自用，备用电源，削峰填谷 
 - ✅ 灾害预警功能（Disaster Warning）  
 
 # 🎮 机型支持清单
 
-|        | 设备<br/>运行状态 | 查询<br/>电量SOC | 预估<br/>续航时间 | AC/DC开关 | 整机电源开关 | 工作模式切换 | ECO模式切换 | 灾害预警功能 |
-|--------|--------|---------|--------|---------|--------|--------|---------|--------|
-| EP13K  | ✅      | ✅       | ✅      |         | ✅      | ✅      |         | ✅      |
-| EP6K   | ✅      | ✅       | ✅      |         | ✅      | ✅      |         | ✅      |
-| EP2000 | ✅      | ✅       | ✅      |         | ✅      | ✅      |         | ✅      |
-| FP     | ✅      | ✅       | ✅      | ✅       | ✅      | ✅      | ✅       | ✅      |
+|        | 设备运行状态 | 查询电量SOC | 预估续航时间 | ECO模式切换 | AC/DC开关 | 整机电源开关 | 工作模式切换 | 灾害预警功能 |
+|--------|------------|------------|-------------|------------|----------|-------------|-------------|------------|
+| EP13K  | ✅         | ✅        | ✅          |            |          | ✅         | ✅          | ✅         |
+| EP6K   | ✅         | ✅        | ✅          |            |          | ✅         | ✅          | ✅         |
+| EP2000 | ✅         | ✅        | ✅          |            |          | ✅         | ✅          | ✅         |
+| FP     | ✅         | ✅        | ✅          | ✅         | ✅      | ✅         | ✅          | ✅         |
  
 # 📦 安装方法
 
@@ -32,7 +32,7 @@ BLUETTI储能集成github仓库地址：https://github.com/bluetti-official/blue
 
 1. 进入Home Assistant配置目录：
 ```shell
-$ cd /<ha workspaces>/core/config/custom_components
+$ cd /<ha workspaces>/config/custom_components
 ```
 2. 克隆BLUETTI储能集成github仓库：
 ```shell
@@ -57,15 +57,41 @@ https://github.com/bluetti-official/bluetti-home-assistant.git
 类型选择：Integration  
 3. 接着在 HACS 的“集成”页面，就能看到Bluetti的插件，点击安装。
 4. 安装后，重启Home Assistant。
-<hr/>
 
 # ⚙️ 配置集成
 
 ## 通过界面添加集成
 
-1. 进入`Home Assistant` → 设置 → 设备与服务；  
+1. 进入`Home Assistant` → 设置 → 设备与服务。  
    <img src="./doc/images/1-setting_devices_and_services.png">
-2. 搜索并选择`BLUETTI`
-3. 链接BLUETTI APP账号，使用OAUTH授权登录。
+2. 点击“添加集成”，然后搜索品牌关键词`bluetti`；选择`BLUETTI`集成进行下一步的OAUTH授权登录。  
+   <img src="./doc/images/2-search_and_add_integration.png">
+3. 您必须同意`Home Assistant`访问您的BLUETTI账号并与BLUETTI云服务建立联系。  
+   <img src="./doc/images/3-oauth_agree_to_connect_with_bluetti.png">
+4. 输入您的BLUETTI账号以进行授权登录。  
+   <img src="./doc/images/4-oauth_enter_bluetti_account.png">
+5. 您必须同意`Home Assistant`链接使用您的BLUETTI账号。  
+   <img src="./doc/images/5-oauth_link_account_to_ha.png">
+6. 选择需要在`Home Assistant`中使用和管理的BLUETTI电站设备。  
+   <img src="./doc/images/6-choose_bluetti_devices.png">  
+   <img src="./doc/images/7-bluetti_device_in_ha.png">
 
-BLUETTI储能集成是UI配置型（config flow），非configuration.yaml文件配置的方式，所以用户只需要通过BLUETTI集成的授权登录页面输入用户在Bluetti APP上注册的账号密码即可。
+# ❓ 常见问题
+
+- **安装后没有显示集成？**  
+  检查`custom_components`路径是否正确，并确认是否已经重启`Home Assistant`系统。
+
+- **设备不在线、设备联网失败**  
+  请检查网络、端口、防火墙，确保`Home Assistant`能访问储能设备。
+
+- **如何更新BLUETTI集成？**  
+  1) 进入HACS管理页面进行更新。
+  2) 借助git进行更新
+```shell
+$ cd /<ha workspaces>/config/custom_components/bluetti
+$ git pull
+```
+
+# 📮 支持 & 反馈
+
+- GitHub Issues: https://github.com/bluetti-official/bluetti-home-assistant/issues
