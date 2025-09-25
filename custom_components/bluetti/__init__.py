@@ -12,7 +12,7 @@ from homeassistant.helpers import storage
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 
 from .models import BluettiData
-from .oauth import ConfigEntryAuth
+from .oauth import AsyncConfigEntryAuth
 from .api.bluetti import APPLICATION_PROFILE
 from .api.product_client import ProductClient
 from .api.websocket import StompClient
@@ -36,7 +36,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     await APPLICATION_PROFILE.load_config(hass)
 
     enabled_devices = entry.options.get("devices", [])
-    auth_token = entry.data.get('auth_token')
     all_products_data: list[dict] = entry.data.get("products", [])
     all_products: list[UserProduct] = [
         UserProduct.model_validate(p) if isinstance(p, dict) else p
@@ -44,28 +43,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     ]
     
     """OAUTH2: get the access token."""
-    # implementation = (
-    #     await config_entry_oauth2_flow.async_get_config_entry_implementation(
-    #         hass, entry
-    #     )
-    # )
-    # __LOGGER__.debug("OAuth implementation is: %s", implementation.__class__)
+    implementation = (
+        await config_entry_oauth2_flow.async_get_config_entry_implementation(
+            hass, entry
+        )
+    )
+    __LOGGER__.debug("OAuth implementation is: %s", implementation.__class__)
 
     httpSession = async_get_clientsession(hass)
-    # oAuth2Session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
+    oAuth2Session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
 
     # If using a requests-based API lib
     # entry.runtime_data = ConfigEntryAuth(hass, oAuth2Session)
 
     # If using an aiohttp-based API lib
-    # entry.runtime_data = api.AsyncConfigEntryAuth(
-    #     aiohttp_client.async_get_clientsession(hass), session
-    # )
+    entry.runtime_data = AsyncConfigEntryAuth(
+        httpSession, oAuth2Session
+    )
 
     # await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
-    #if auth_token is None
-    #    access_token = oAuth2Session.token["access_token"]
-    access_token = auth_token['token']["access_token"]
+    await oAuth2Session.async_ensure_token_valid()
+    access_token = oAuth2Session.token["access_token"]
     product_client = ProductClient(httpSession, access_token)
     # products = await product_client.get_user_products()
     # print(products.data[0].__class__)

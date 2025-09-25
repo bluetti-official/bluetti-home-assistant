@@ -56,7 +56,6 @@ class Bluetti(Generic[T]):
         if method == Method.GET:
             body = None
 
-        # prepare the request header.
         headers = {
             "Authorization": f"{self._accessToken}",
         }
