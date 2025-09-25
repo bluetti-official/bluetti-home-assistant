@@ -79,7 +79,7 @@ As the `BLUETTI Power Station Integration` has not yet been submitted to the off
 - **Not found `BLUETTI Integration` after installation?**  
   Please check whether the `custom_components` path is correct and confirm whether the `Home Assistant` system has been restarted.
 
-- **always offline or failed connect to BLUETTI server?**  
+- **Always offline or failed connect to BLUETTI server?**  
   Please check the network, ports and firewall to ensure that `Home Assistant` can access the power station devices.
 
 - **How to update the `BLUETTI Integration`?**  
