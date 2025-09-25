@@ -19,7 +19,6 @@ BLUETTI储能集成github仓库地址：https://github.com/bluetti-official/blue
 
 # 🎮 机型支持清单
 
-
 |        | 设备<br/>运行状态 | 查询<br/>电量SOC | 预估<br/>续航时间 | AC/DC开关 | 整机电源开关 | 工作模式切换 | ECO模式切换 | 灾害预警功能 |
 |--------|--------|---------|--------|---------|--------|--------|---------|--------|
 | EP13K  | ✅      | ✅       | ✅      |         | ✅      | ✅      |         | ✅      |
@@ -55,7 +54,7 @@ $ unzip xxx.zip -d /<ha workspaces>/core/config/custom_components/bluetti
 ```shell
 https://github.com/bluetti-official/bluetti-home-assistant.git
 ```
-类型选择：Integration
+类型选择：Integration  
 3. 接着在 HACS 的“集成”页面，就能看到Bluetti的插件，点击安装。
 4. 安装后，重启Home Assistant。
 <hr/>
