@@ -101,8 +101,8 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
 
         # 过滤掉已经集成过的设备
         available_devices = {
-            prod.sn: prod.name or prod.sn 
-            for prod in products.data 
+            prod.sn: f"{prod.name} - {prod.sn}"   
+            for prod in products.data
             if prod.sn not in integrated_devices
         }
 
