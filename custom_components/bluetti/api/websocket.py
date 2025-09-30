@@ -1,5 +1,6 @@
 import logging
 import json
+import time
 from threading import Thread
 from typing import Callable
 
@@ -18,8 +19,9 @@ class StompClient(object):
             "Host": self.__get_host(url),
             "Authorization": access_token
         }
-        self.listener = StompListener(handler)
+        self.listener = StompListener(self,handler)
         self.websocket = None
+        self.running = False
 
     @staticmethod
     def __get_host(connection_url: str):
@@ -45,15 +47,19 @@ class StompClient(object):
 
         self.websocket = websocket.WebSocketApp(self.__url,
                                                 on_message=self.listener.on_message,
-                                                on_error=self.listener.on_error)
+                                                on_error=self.listener.on_error,
+                                                on_close=self.listener.on_close,)
         # bind the `on_open` function
         self.websocket.on_open = self.__on_open
-
+        self.running = True
+        self.reconnect_delay = 1  # 初始重连延迟（秒）
+        self.max_reconnect_delay = 30  # 最大重连延迟（秒）
         # Run until interruption to client or server terminates connection.
         Thread(target=self.websocket.run_forever).start()
 
     def disconnect(self):
         self.websocket.close()
+        self.running = False
 
     def __on_open(self, ws):
         # Initial CONNECT required to initialize the server's client registries.
@@ -66,10 +72,20 @@ class StompClient(object):
         __LOGGER__.info("Connect the BLUETTI WebSocket Server successfully.")
         ws.send(connect)
 
+    def reconnect(self):
+        __LOGGER__.info("Websocket reconnect")
+        if self.running:
+            time.sleep(self.reconnect_delay)
+            self.reconnect_delay = min(self.reconnect_delay * 2, self.max_reconnect_delay)
+            self.connect()
+        else:
+            __LOGGER__.info("Websocket have stop do not reconnect")
+
 
 class StompListener:
-    def __init__(self, handler: Callable[[str], None] = None):
+    def __init__(self, stompCliet:StompClient, handler: Callable[[str], None] = None):
         self.__handler = handler
+        self.client = stompCliet
 
     def __callback(self, callback, *args) -> None:
         if callback:
@@ -111,4 +127,8 @@ class StompListener:
           error(str): Error received.
 
         """
-        print("The Error is:- " + error)
+        print("The Error is:- " , error)
+
+    def on_close(self, ws, close_status_code, close_msg):
+        print(f"WebSocket 断开连接。状态码: {close_status_code}, 消息: {close_msg}")
+        self.client.reconnect()

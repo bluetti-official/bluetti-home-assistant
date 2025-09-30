@@ -96,8 +96,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
             await device.async_update()
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _after_start)
+    __LOGGER__.info('bluetti init ok')
 
     return True
+
 
 def web_socket_message_handler(message: str):
     
