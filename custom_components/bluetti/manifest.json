@@ -1,5 +1,19 @@
 {
   "domain": "bluetti",
   "name": "BLUETTI",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "codeowners": [
+    "@bluetti-official"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "application_credentials"
+  ],
+  "documentation": "https://www.home-assistant.io/integrations/bluetti",
+  "homekit": {},
+  "iot_class": "local_polling",
+  "quality_scale": "bronze",
+  "requirements": ["pydantic", "stomper","websocket-client"],
+  "ssdp": [],
+  "zeroconf": []
 }

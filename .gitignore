@@ -20,6 +20,7 @@ parts/
 sdist/
 var/
 wheels/
+bluetti-bak/
 share/python-wheels/
 *.egg-info/
 .installed.cfg

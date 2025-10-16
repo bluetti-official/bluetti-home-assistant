@@ -1,0 +1,5 @@
+bluetti:
+  server:
+    sso: 'https://test-sso.poweroak.net'
+    gateway: 'https://test-gw.poweroak.ltd:18443'
+    wss: 'ws://test-gw.poweroak.ltd:18888/api/edgeiotgw/ws-coordination/'
