@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Environment configuration file
+application-*.yaml
+
 # Distribution / packaging
 .Python
 build/
@@ -20,7 +23,6 @@ parts/
 sdist/
 var/
 wheels/
-bluetti-bak/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
