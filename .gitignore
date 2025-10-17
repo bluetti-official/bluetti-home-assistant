@@ -7,7 +7,7 @@ __pycache__/
 *.so
 
 # Environment configuration file
-profile/application-*.yaml
+application-*.yaml
 
 # Distribution / packaging
 .Python
