@@ -9,23 +9,23 @@ The Integration's github repository is: https://github.com/bluetti-official/blue
 # ✨ Features
 
 - ✅ Inverter Status  
-- ✅ Battery state of charge (SOC)  
-- ✅ Estimated battery life
-- ✅ AC/DC ECO 
-- ✅ AC/DC Switch  
+- ✅ Battery state of charge (SOC)
+- ✅ AC Switch  
+- ✅ DC Switch  
 - ✅ Main unit power switch  
+- ✅ AC ECO 
 - ✅ Work mode switch: Backup, Self-consumption, Peak and Off-Peak 
 - ✅ Disaster Warning 
 
 # 🎮 Power Station Support List
 > tips: More power station models will be added successively in the future.
 
-|        | Inverter Status | Battery SOC | Estimated battery life  | AC/DC ECO | AC/DC Switch | power switch | Work mode switch | Disaster Warning |
-|--------|-----------------|-------------|-------------------------|-----------|--------------|--------------|------------------|------------------|
-| EP13K  | ✅              | ✅         | ✅                      |           |              | ✅          | ✅               | ✅               |
-| EP6K   | ✅              | ✅         | ✅                      |           |              | ✅          | ✅               | ✅               |
-| EP2000 | ✅              | ✅         | ✅                      |           |              | ✅          | ✅               | ✅               |
-| FP     | ✅              | ✅         | ✅                      | ✅        | ✅          | ✅          | ✅               | ✅               |
+|        | Inverter Status | Battery SOC | AC Switch | DC Switch | power switch | AC ECO | Work mode switch | Disaster Warning |
+|--------|-----------------|-------------|-----------|-----------|--------------|--------|------------------|------------------|
+| EP13K  | ✅              | ✅         |           |            | ✅          |        | ✅               | ✅               |
+| EP6K   | ✅              | ✅         |           |            | ✅          |        | ✅               | ✅               |
+| EP2000 | ✅              | ✅         |           |            | ✅          |        | ✅               | ✅               |
+| FP     | ✅              | ✅         | ✅        |            | ✅          | ✅     | ✅               | ✅               |
 
 # 📦 Integration installation
 
