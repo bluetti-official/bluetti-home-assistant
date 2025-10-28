@@ -1,0 +1,26 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "A conta já está configurada",
+            "already_in_progress": "O processo de configuração já se encontra em progresso",
+            "authorize_url_timeout": "Tempo para gerar URL de autenticação esgotado.",
+            "missing_configuration": "O componente não está configurado. Por favor, consulte e siga a documentação.",
+            "no_url_available": "Nenhum URL disponível. Para mais informação sobre este erro, [consulte a secção de ajuda]({docs_url})",
+            "oauth_error": "Recebidos dados de token invalidos.",
+            "oauth_failed": "Erro durante a obtenção do token de acesso.",
+            "oauth_timeout": "Tempo para resolver o token de OAuth esgotado.",
+            "oauth_unauthorized": "Erro de autorização OAuth durante a obtenção do token de acesso.",
+            "user_rejected_authorize": "Vinculação de conta rejeitada: {error}",
+			"all_devices_exists": "Todos os dispositivos e itens físicos desta conta já foram incluídos no pacote de integração BLUETTI.",
+            "no_devices_available": "A conta actual não tem dispositivos disponíveis/compatíveis."
+        },
+        "create_entry": {
+            "default": "Autenticação bem sucedida"
+        },
+        "step": {
+            "pick_implementation": {
+                "title": "Escolha o metodo de autenticação"
+            }
+        }
+    }
+}
