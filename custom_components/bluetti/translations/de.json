@@ -1,0 +1,26 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Das Konto ist bereits eingerichtet.",
+            "already_in_progress": "Die Konfiguration wird umgesetzt.",
+            "authorize_url_timeout": "Die Zeit zum Generieren der Authentifizierungs-URL ist abgelaufen.",
+            "missing_configuration": "Diese Integration ist nicht konfiguriert. Bitte lesen und befolgen Sie die Dokumentation.",
+            "no_url_available": "Keine URL verfügbar. Weitere Informationen zu diesem Fehler finden Sie [im Hilfebereich]({docs_url}).",
+            "oauth_error": "OAuth: Ungültige Token-Daten empfangen.",
+            "oauth_failed": "OAuth: Fehler beim Abrufen des Zugriffstokens.",
+            "oauth_timeout": "OAuth: Zeitüberschreitng beim verarbeiten des Zugrifftokens.",
+            "oauth_unauthorized": "OAuth: Autorisierungsfehler beim Abrufen des Zugriffstokens.",
+            "user_rejected_authorize": "Kontoverknüpfung fehlgeschlagen: {error}",
+			"all_devices_exists": "Alle unterstützten Geräte dieses Kontos wurden bereits konfiguriert.",
+            "no_devices_available": "Das aktuelle Konto verfügt über keine verfügbaren/kompatiblen Geräte."
+        },
+        "create_entry": {
+            "default": "Erfolgreiche Authentifizierung"
+        },
+        "step": {
+            "pick_implementation": {
+                "title": "Wählen Sie die Authentifizierungsmethode"
+            }
+        }
+    }
+}
