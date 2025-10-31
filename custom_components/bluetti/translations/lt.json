@@ -1,0 +1,26 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Paskyra jau sukonfigūruota",
+            "already_in_progress": "Konfigūracija jau vykdoma",
+            "authorize_url_timeout": "Baigėsi skirtas laikas generuojant autorizacijos URL.",
+            "missing_configuration": "Komponentas nesukonfigūruotas. Prašome vadovautis dokumentacija.",
+            "no_url_available": "URL nepasiekiamas. Daugiau informacijos apie klaidą rasite [pagalbos skyriuje]({docs_url})",
+            "oauth_error": "Gautas negaliojantis prieigos žetonas.",
+            "oauth_failed": "Gaunant prieigos žetoną įvyko klaida.",
+            "oauth_timeout": "Baigėsi skirtas laikas apdoroti OAuth prieigos žetoną.",
+            "oauth_unauthorized": "Gaunant prieigos žetoną, įvyko OAuth protokolo autorizavimo klaida.",
+            "user_rejected_authorize": "Paskyros susiejimo klaida: {error}",
+            "all_devices_exists": "Visi paskyroje esantys įrenginiai jau yra įtraukti į integruotą BLUETTI paketą.",
+            "no_devices_available": "Paskyroje nėra palaikomų įrenginių."
+        },
+        "create_entry": {
+            "default": "Autentifikacija sėkminga"
+        },
+        "step": {
+            "pick_implementation": {
+                "title": "Pasirinkite autentifikavimo metodą"
+            }
+        }
+    }
+}
