@@ -15,11 +15,11 @@
             "no_devices_available": "Paskyroje nėra palaikomų įrenginių."
         },
         "create_entry": {
-            "default": "Autentikacija sėkminga"
+            "default": "Autentifikacija sėkminga"
         },
         "step": {
             "pick_implementation": {
-                "title": "Pasirinkite autentikavimo metodą"
+                "title": "Pasirinkite autentifikavimo metodą"
             }
         }
     }
