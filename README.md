@@ -8,7 +8,7 @@ supported by BLUETTI official. It allows you to use BLUETTI smart Power Station
 devices in Home Assistant.
 
 The Integration's github repository is:
-<https://github.com/bluetti-official/bluetti-home-assistant>.
+[https://github.com/bluetti-official/bluetti-home-assistant](https://github.com/bluetti-official/bluetti-home-assistant).
 
 ## ✨ Features
 
