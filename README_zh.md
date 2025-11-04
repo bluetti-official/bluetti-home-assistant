@@ -5,7 +5,7 @@
 
 BLUETTI储能集成是一个由BLUETTI官方提供的Home Assistant集成插件，支持在Home Assistant系统中使用您的BLUETTI智能储能设备。
 
-BLUETTI储能集成github仓库地址：https://github.com/bluetti-official/bluetti-home-assistant
+BLUETTI储能集成github仓库地址：[https://github.com/bluetti-official/bluetti-home-assistant](https://github.com/bluetti-official/bluetti-home-assistant)
 
 ## ✨ 功能特性
 
@@ -121,4 +121,5 @@ BLUETTI储能集成github仓库地址：https://github.com/bluetti-official/blue
 
 ## 📮 支持 & 反馈
 
-- GitHub Issues: https://github.com/bluetti-official/bluetti-home-assistant/issues
+- GitHub Issues:
+  [https://github.com/bluetti-official/bluetti-home-assistant/issues](https://github.com/bluetti-official/bluetti-home-assistant/issues)
