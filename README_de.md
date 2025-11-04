@@ -20,10 +20,6 @@ Das GitHub-Repository der Integration ist: https://github.com/bluetti-official/b
 # 🎮 Liste der unterstützen Geräte
 > Hinweis: Mit der Zeit werden mehr Geräte dazukommen.
 
-## 🎮 Liste der unterstützten Geräte
-
-> Hinweis: Mit der Zeit werden mehr Geräte dazukommen.
-
 | Gerät   | Wechselrichter-Status | Batteriestand | AC Schalter | DC Schalter | Gerät ausschalten | AC ECO Modus | Arbeitsmodus wechseln | Unwetterwarnung |
 |---------|------------------------|----------------|--------------|--------------|--------------------|----------------|------------------------|------------------|
 | EP13K   | ✅                     | ✅             |              |              | ✅                |                | ✅                    | ✅               |
