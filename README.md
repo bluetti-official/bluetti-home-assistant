@@ -24,7 +24,7 @@ The Integration's github repository is:
 
 > [!NOTE]
 >
-> More power station models will be added successively in the future.
+> More power station models will be added in the future.
 
 | Power Station Model | Inverter Status | Battery SOC | AC Switch | DC Switch | power switch | AC ECO | Work mode switch | Disaster Warning |
 | :------------------ | :-------------: | :---------: | :-------: | :-------: | :----------: | :----: | :--------------: | :--------------: |
@@ -72,9 +72,9 @@ can be installed.
    upper right corner of the page)".
 
 2. Add repository and make the type selection:
-   - repository:
-     <https://github.com/bluetti-official/bluetti-home-assistant.git>
-   - type selection: Integration
+   - **Repository**:
+     [https://github.com/bluetti-official/bluetti-home-assistant.git](https://github.com/bluetti-official/bluetti-home-assistant.git)
+   - **Type:** Integration
 
 3. Then, on the "Integration" page of HACS, you can see the `BLUETTI`
    Integration. Click to install.
@@ -130,7 +130,7 @@ Please check the **network**, **ports** and **firewall** to ensure that
 1. Enter the HACS management page to perform the update.
 2. Update using `git`
 
-   ```shell
+   ```bash
    cd /<ha workspaces>/config/custom_components/bluetti
    git pull
    ```
