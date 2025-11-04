@@ -1,0 +1,146 @@
+# BLUETTI-integratie voor Home Assistant
+
+[🇬🇧 English](./README.md) | [🇳🇱 Dutch](./README_nl.md) |
+[🇩🇪 German](./README_de.md) | [🇨🇳 简体中文](./README_zh.md)
+
+De **BLUETTI powerstation-integratie** is een geïntegreerde component van Home
+Assistant, officieel ondersteund door BLUETTI. Hiermee kun je BLUETTI slimme
+powerstations gebruiken binnen Home Assistant.
+
+De GitHub-repository van de integratie is:
+[https://github.com/bluetti-official/bluetti-home-assistant](https://github.com/bluetti-official/bluetti-home-assistant).
+
+## ✨ Functies
+
+- ✅ Status van de omvormer
+- ✅ Batterijlading (SOC)
+- ✅ AC-schakelaar
+- ✅ DC-schakelaar
+- ✅ Hoofdschakelaar
+- ✅ AC ECO-modus
+- ✅ Werkmodusschakelaar: noodstroom, zelfverbruik, piek- en daluren
+- ✅ Rampenwaarschuwing
+
+## 🎮 Ondersteunde powerstationmodellen
+
+> [!NOTE]
+>
+> Meer powerstationmodellen zullen in de toekomst worden toegevoegd.
+
+| Powerstationmodel | Omvormerstatus | Batterij-SOC | AC-schakelaar | DC-schakelaar | Hoofdschakelaar | AC ECO | Werkmodusschakelaar | Rampenwaarschuwing |
+| :---------------- | :------------: | :----------: | :-----------: | :-----------: | :-------------: | -----: | :-----------------: | :----------------: |
+| EP13K             |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
+| EP6K              |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
+| EP2000            |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
+| FP                |       ✅       |      ✅      |      ✅       |               |       ✅        |     ✅ |         ✅          |         ✅         |
+
+## 📦 Installatie van de integratie
+
+Er zijn twee manieren om de `BLUETTI powerstation-integratie` te installeren:
+
+### Handmatige installatie
+
+1. Ga naar de configuratiemap van `Home Assistant`:
+
+   ```bash
+   cd /<ha workspaces>/core/config/custom_components
+   ```
+
+2. Clone de GitHub-repository van de `BLUETTI powerstation-integratie`:
+
+   ```bash
+   git clone https://github.com/bluetti-official/bluetti-home-assistant.git
+   ```
+
+3. Of download het zip-bestand van de integratie en pak het uit in de map
+   `custom_components` van `Home Assistant`:
+
+   ```bash
+   unzip xxx.zip -d /<ha workspaces>/core/config/custom_components/bluetti
+   ```
+
+4. Start vervolgens **Home Assistant** opnieuw op.
+
+### Installatie via HACS
+
+De **BLUETTI powerstation-integratie** is nog niet opgenomen in de officiële
+[HACS-repository](https://github.com/hacs/integration). Daarom moet je deze
+handmatig toevoegen als een **aangepaste repository**.
+
+**HACS** (Home Assistant Community Store) is een uitbreiding voor Home Assistant
+die fungeert als een soort **app store** voor integraties van derden. Zorg er
+dus eerst voor dat HACS is geïnstalleerd voordat je aangepaste repositories kan
+toevoegt.
+
+#### Stappenplan
+
+1. Open **HACS → Integraties → Aangepaste repository** (rechtsboven op de
+   pagina).
+
+2. Voeg de volgende repository toe en selecteer het juiste type:
+   - **Repository:**
+     [https://github.com/bluetti-official/bluetti-home-assistant.git](https://github.com/bluetti-official/bluetti-home-assistant.git)
+   - **Type:** Integration
+
+3. Ga daarna naar de pagina **Integraties** in HACS. De `BLUETTI`-integratie
+   verschijnt nu in de lijst. Klik om te installeren.
+
+4. Start vervolgens **Home Assistant** opnieuw op.
+
+## ⚙️ Configuratie van de integratie
+
+1. Ga naar “Instellingen → Apparaten en diensten” om de lijst met integraties te
+   openen.
+
+   <img src="./doc/images/1-setting_devices_and_services.png" width="880">
+
+2. Klik op “Integratie toevoegen”, zoek naar het merk `bluetti`, en selecteer de
+   `BLUETTI`-integratie om de OAuth-autorisatie te starten.
+
+   <img src="./doc/images/2-search_and_add_integration.png" width="880">
+
+3. Je moet toestemming geven zodat `Home Assistant` toegang krijgt tot je
+   BLUETTI-account en verbinding kan maken met de BLUETTI-cloudservice.
+
+   <img src="./doc/images/3-oauth_agree_to_connect_with_bluetti.png">
+
+4. Voer je BLUETTI-accountgegevens in om in te loggen en te autoriseren.
+
+   <img src="./doc/images/4-oauth_enter_bluetti_account.png">
+
+5. Bevestig dat `Home Assistant` je BLUETTI-account mag koppelen.
+
+   <img src="./doc/images/5-oauth_link_account_to_ha.png">
+
+6. Selecteer vervolgens de BLUETTI-apparaten die je wilt gebruiken en beheren in
+   Home Assistant.
+
+   <img src="./doc/images/6-choose_bluetti_devices.png" width="880">
+   <img src="./doc/images/7-bluetti_device_in_ha.png" width="880">
+
+## ❓ Veelgestelde vragen (FAQ)
+
+### De `BLUETTI-integratie` wordt niet gevonden na installatie
+
+Controleer of het pad `custom_components` correct is en of het
+`Home Assistant`-systeem opnieuw is opgestart.
+
+### De integratie blijft offline of maakt geen verbinding met de BLUETTI-server
+
+Controleer de **netwerkverbinding**, **poorten** en **firewall** om zeker te
+zijn dat `Home Assistant` toegang heeft tot de BLUETTI-powerstations.
+
+### Hoe update ik de `BLUETTI-integratie`?
+
+1. Voer de update uit via de HACS-beheerpagina.
+2. Of update via `git`:
+
+   ```bash
+   cd /<ha workspaces>/config/custom_components/bluetti
+   git pull
+   ```
+
+## 📮 Ondersteuning & feedback
+
+💬 Heb je problemen of suggesties? Maak een issue aan op GitHub:
+[https://github.com/bluetti-official/bluetti-home-assistant/issues](https://github.com/bluetti-official/bluetti-home-assistant/issues)

@@ -1,0 +1,26 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Account is al geconfigureerd",
+            "already_in_progress": "Configuratieproces is al bezig",
+            "authorize_url_timeout": "Time-out bij het genereren van de autorisatie-URL.",
+            "missing_configuration": "De component is niet geconfigureerd. Volg de documentatie.",
+            "no_url_available": "Geen URL beschikbaar. Voor meer informatie over deze fout, [bekijk de helpsectie]({docs_url})",
+            "oauth_error": "Ongeldige tokengegevens ontvangen.",
+            "oauth_failed": "Fout bij het verkrijgen van toegangstoken.",
+            "oauth_timeout": "Time-out bij het ophalen van OAuth-token.",
+            "oauth_unauthorized": "OAuth-autorisatiefout bij het verkrijgen van toegangstoken.",
+            "user_rejected_authorize": "Accountkoppeling geweigerd: {error}",
+            "all_devices_exists": "Alle apparaten en fysieke items onder dit account zijn al opgenomen in het BLUETTI-integratiepakket.",
+            "no_devices_available": "Het huidige account heeft geen beschikbare apparaten."
+        },
+        "create_entry": {
+            "default": "Succesvol geverifieerd"
+        },
+        "step": {
+            "pick_implementation": {
+              "title": "Kies een authenticatiemethode"
+            }
+        }
+    }
+}
