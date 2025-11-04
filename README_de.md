@@ -8,7 +8,7 @@ die von BLUETTI offiziell unterstützt wird. Mit dieser ist es möglich BLUETTI
 Smart Power Station-Geräte in Home Assistant verwenden.
 
 Das GitHub-Repository der Integration ist:
-<https://github.com/bluetti-official/bluetti-home-assistant>.
+[https://github.com/bluetti-official/bluetti-home-assistant](https://github.com/bluetti-official/bluetti-home-assistant).
 
 ## ✨ Funktionen
 
@@ -125,7 +125,7 @@ vergewissern Sie sich, dass das System `Home Assistant` neu gestartet wurde.
 
 ### Permanent offline oder Verbindung zu den Bluetti-Servern fehlgeschlagen?
 
-Bitte überprüfen Sie das Netzwerk, die Ports und die Firewall, um
+Bitte überprüfen Sie das **Netzwerk**, die **Ports** und die **Firewall**, um
 sicherzustellen, dass die `Home Assistant`-Integration auf die Geräte zugreifen
 kann.
 
