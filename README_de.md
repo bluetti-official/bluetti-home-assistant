@@ -1,145 +1,200 @@
-# BLUETTI Integration für HomeAssistant
+# BLUETTI-Integration für Home Assistant
 
-[🇬🇧 English](./README.md) | [🇳🇱 Dutch](./README_nl.md) |
-[🇩🇪 German](./README_de.md) | [🇨🇳 简体中文](./README_zh.md)
+[🇬🇧 Englisch](./README.md) | [🇳🇱 Niederländisch](./README_nl.md) |
+[🇩🇪 Deutsch](./README_de.md) | [🇨🇳 Chinesisch](./README_zh.md)
 
-Die BLUETTI Power Station Integration ist eine Komponente für Home Assistant,
-die von BLUETTI offiziell unterstützt wird. Mit dieser ist es möglich BLUETTI
-Smart Power Station-Geräte in Home Assistant verwenden.
-
-Das GitHub-Repository der Integration ist:
-[https://github.com/bluetti-official/bluetti-home-assistant](https://github.com/bluetti-official/bluetti-home-assistant).
+Die **BLUETTI-Integration** ist eine integrierte Komponente von Home Assistant
+und wird offiziell von **BLUETTI** unterstützt. Sie ermöglicht es dir,
+intelligente BLUETTI-Powerstations direkt in Home Assistant zu verwalten.
 
 ## ✨ Funktionen
 
 - ✅ Status des Wechselrichters
-- ✅ Batteriestand (SOC)
-- ✅ AC Schalter
-- ✅ DC Schalter
-- ✅ Gerät ausschalten
-- ✅ AC ECO Modus
-- ✅ Wechseln des Arbeitsmodus: Backup, Eigenverbrauch, Zeitsteuerung
-- ✅ Unwetterwarnung
+- ✅ Batterieladung (SoC)
+- ✅ AC-Schalter
+- ✅ DC-Schalter
+- ✅ Hauptschalter
+- ✅ AC-ECO-Modus
+- ✅ Betriebsmodus-Schalter: Notstrom, Eigenverbrauch, Spitzen- und
+  Schwachlastzeiten
+- ✅ Katastrophenwarnung
 
-## 🎮 Liste der unterstützen Geräte
+## 🎮 Unterstützte Powerstation-Modelle
 
 > [!NOTE]
 >
-> Mit der Zeit werden mehr Geräte dazukommen.
+> In zukünftigen Versionen wird die BLUETTI-Integration um die Unterstützung
+> zusätzlicher neuer und bestehender Powerstation-Modelle erweitert.
 
-| Gerät  | Wechselrichter-Status | Batteriestand | AC Schalter | DC Schalter | Gerät ausschalten | AC ECO Modus | Arbeitsmodus wechseln | Unwetterwarnung |
-| :----- | :-------------------: | :-----------: | :---------: | :---------: | :---------------: | :----------: | :-------------------: | :-------------: |
-| EP13K  |          ✅           |      ✅       |             |             |        ✅         |              |          ✅           |       ✅        |
-| EP6K   |          ✅           |      ✅       |             |             |        ✅         |              |          ✅           |       ✅        |
-| EP2000 |          ✅           |      ✅       |             |             |        ✅         |              |          ✅           |       ✅        |
-| FP     |          ✅           |      ✅       |     ✅      |             |        ✅         |      ✅      |          ✅           |       ✅        |
+| Powerstation-Modell | Wechselrichterstatus | Batterie-SoC | AC-Schalter | DC-Schalter | Hauptschalter | AC ECO | Modusschalter | Katastrophenwarnung |
+| :------------------ | :------------------: | :----------: | :---------: | :---------: | :-----------: | -----: | :-----------: | :-----------------: |
+| EP13K               |          ✅          |      ✅      |             |             |      ✅       |        |      ✅       |         ✅          |
+| EP6K                |          ✅          |      ✅      |             |             |      ✅       |        |      ✅       |         ✅          |
+| EP2000              |          ✅          |      ✅      |             |             |      ✅       |        |      ✅       |         ✅          |
+| FP                  |          ✅          |      ✅      |     ✅      |             |      ✅       |     ✅ |      ✅       |         ✅          |
 
-## 📦 Integration Installation
+## 📦 Installation der BLUETTI-Integration
 
-Es gibt zwei Wege diese Integration zu installieren.
+### Home Assistant Operating System
 
-### Manuelle Installation
+Befolge die folgenden Schritte, um die **BLUETTI-Integration** in **Home
+Assistant** zu installieren.
 
-1. Öffne den `Home Assistant` Konfigurationsordner
+Du kannst entweder das **Advanced SSH & Web Terminal**-Add-on verwenden oder
+dich über **SSH** mit deinem **Home Assistant-Server** verbinden.
+
+```bash
+ssh benutzername@ip-adresse-des-hosts
+```
+
+Verwendest du Home Assistant als Docker-Container unter **Windows**, **macOS**
+oder **Linux**? Dann melde dich zuerst auf dem Host an (dem Computer, auf dem
+Docker läuft):
+
+```bash
+ssh benutzername@ip-adresse-des-hosts
+```
+
+Öffne anschließend eine Shell im Home Assistant-Container:
+
+```bash
+docker exec -it container-name /bin/bash
+```
+
+### Installationsschritte
+
+1. **Wechsle in das Konfigurationsverzeichnis von Home Assistant:**
 
    ```bash
-   cd /<ha workspaces>/core/config/custom_components
+   cd config/
    ```
 
-2. Klone das `BLUETTI Power Station Integration` Github Repository.
+2. **Erstelle den Ordner `custom_components`**, falls dieser noch nicht
+   existiert:
 
    ```bash
-   git clone https://github.com/bluetti-official/bluetti-home-assistant.git
+   mkdir -pv custom_components
    ```
 
-3. Oder lade den ZIP-Ordner herunter und entpacke den Inhalt in den
-   "custom-integration" Ordner von `Home Assistant`:
+3. **Klon die GitHub-Repository der BLUETTI-Integration:**
 
    ```bash
-   unzip xxx.zip -d /<ha workspaces>/core/config/custom_components/bluetti
+   git clone https://github.com/bluetti-official/bluetti-home-assistant.git /config/custom_components/bluetti-home-assistant/
    ```
 
-4. Starte dein `Home Assistant` System neu.
+4. **Starte Home Assistant neu**, um die neue Integration zu laden:
+   - Für **Home Assistant Operating System**:
 
-### Installation mit HACS
+     ```bash
+     ha core restart
+     ```
 
-Die `BLUETTI Power Station Integration` wurde bisher nicht dem offiziellem HACS
-Repository hinzugefügt, diese muss manuell als benutzerdefiniertes Repository
-hinzugefügt werden. HACS selbst ist ein Home Assistant-Plugin (Benutzer müssen
-HACS zuerst installieren) und ähnelt einem App Store . Über diesen App Store
-können andere Integrationen von Drittanbietern installiert werden.
+   - Für **Docker-Installationen**:
 
-1. Befolgen Sie folgende Schritte: „HACS -> Integration -> Benutzerdefiniertes
-   Repository (befindet sich in der oberen rechten Ecke der Seite)“.
+     ```bash
+     docker restart container-name
+     ```
 
-2. Fügen Sie das Repository hinzu und wählen Sie den Typ aus:
-   - **Repository:**
-     [https://github.com/bluetti-official/bluetti-home-assistant.git](https://github.com/bluetti-official/bluetti-home-assistant.git)
-   - **Typauswahl/Art:** Integration
+### Installation über Home Assistant Community Store (HACS)
 
-3. Auf der Seite „Integration“ von HACS sehen Sie dann die Integration
-   „BLUETTI“. Klicken Sie darauf, um sie zu installieren.
+Die **BLUETTI-Integration** ist noch nicht im offiziellen
+[HACS-Repository](https://github.com/hacs/integration) enthalten. Daher musst du
+sie manuell als **benutzerdefiniertes Repository** hinzufügen.
 
-4. Starten Sie abschließend Ihr `Home Assistant`-System neu.
+> [!NOTE]
+>
+> **Was ist HACS?** HACS (_Home Assistant Community Store_) ist eine Erweiterung
+> für Home Assistant, die als **App Store** für Integrationen von Drittanbietern
+> dient. Stelle sicher, dass HACS installiert ist, bevor du benutzerdefinierte
+> Repositories hinzufügst.
 
-## ⚙️ Konfiguration
+#### Installationsschritte
 
-1. Befolgen Sie folgende Schritte: Klicken Sie auf „Einstellungen -> Geräte &
-   Dienste“
+1. Öffne **HACS → Integrationen → Benutzerdefinierte Repositories** (oben rechts
+   auf der Seite).
 
+2. Füge das folgende Repository hinzu und wähle den richtigen Typ aus:
+   - **Repository:** [https://github.com/bluetti-official/bluetti-home-assistant.git](https://github.com/bluetti-official/bluetti-home-assistant.git)
+   - **Typ:** Integration
+
+3. Gehe anschließend zu **HACS → Integrationen**. Die **BLUETTI** integration
+   erscheint nun in der Liste. Klicke darauf, um sie zu installieren.
+
+4. **Starte Home Assistant neu**, um die Installation abzuschließen.
+
+## ⚙️ Konfiguration der Integration
+
+1. Gehe zu **_Einstellungen → Geräte & Dienste_**, um die Liste der
+   Integrationen zu öffnen.
    <img src="./doc/images/1-setting_devices_and_services.png" width="880">
 
-2. Klicken Sie auf die Schaltfläche „Integration hinzufügen“ und suchen Sie dann
-   nach dem Stichwort „bluetti“. Wählen Sie die Integration „BLUETTI“ aus, um
-   mit der Anmeldung fortzufahren.
-
+2. Klicke auf **_Integration hinzufügen_**, suche nach **bluetti** und wähle die
+   **BLUETTI-Integration** aus, um die OAuth-Autorisierung zu starten.
    <img src="./doc/images/2-search_and_add_integration.png" width="880">
 
-3. Sie müssen zustimmen, dass „Home Assistant“ auf Ihr BLUETTI-Konto zugreifen
-   und eine Verbindung mit dem BLUETTI-Cloud-Dienst herstellen darf.
-
+3. Erteile **Home Assistant** die Berechtigung, auf dein BLUETTI-Konto
+   zuzugreifen und eine Verbindung zum BLUETTI-Cloud-Dienst herzustellen.
    <img src="./doc/images/3-oauth_agree_to_connect_with_bluetti.png">
 
-4. Geben Sie Ihr BLUETTI-Konto ein, um die Anmeldung durchzuführen. Diese nutzen
-   Sie z.B bereits in der Bluetti-App
-
+4. Gib deine BLUETTI-Kontodaten ein, um dich anzumelden und zu autorisieren.
    <img src="./doc/images/4-oauth_enter_bluetti_account.png">
 
-5. Sie müssen zustimmen, dass „Home Assistant“ eine Verbindung zu Ihrem
-   BLUETTI-Konto herstellt.
-
+5. Bestätige, dass **Home Assistant** dein BLUETTI-Konto verknüpfen darf.
    <img src="./doc/images/5-oauth_link_account_to_ha.png">
 
-6. Wählen Sie Ihre BLUETTI-Geräte aus, die in Home Assistant verwendet und
-   verwaltet werden sollen. Es werden nur bestimmte Geräte unterstützt.
-
+6. Wähle anschließend die BLUETTI-Geräte aus, die du in Home Assistant verwenden
+   und verwalten möchtest.
    <img src="./doc/images/6-choose_bluetti_devices.png" width="880">
    <img src="./doc/images/7-bluetti_device_in_ha.png" width="880">
 
-## ❓ FAQ
+## ❓ Häufig gestellte Fragen (FAQ)
 
-### `BLUETTI Integration` wird nicht nach der Installation gefunden?
+### **Frage:** Die BLUETTI-Integration wird nach der Installation nicht gefunden?
 
-Bitte überprüfen Sie, ob der Pfad `custom_components` korrekt ist, und
-vergewissern Sie sich, dass das System `Home Assistant` neu gestartet wurde.
+**Antwort:** Überprüfe, ob sich der Ordner `custom_components` am richtigen
+Speicherort befindet, und starte Home Assistant neu.
 
-### Permanent offline oder Verbindung zu den Bluetti-Servern fehlgeschlagen?
+### **Frage:** Die Integration bleibt offline oder kann keine Verbindung zum BLUETTI-Server herstellen?
 
-Bitte überprüfen Sie das **Netzwerk**, die **Ports** und die **Firewall**, um
-sicherzustellen, dass die `Home Assistant`-Integration auf die Geräte zugreifen
-kann.
+**Antwort:** Überprüfe deine **Netzwerkverbindung**, **Port-Einstellungen** und
+**Firewall**, um sicherzustellen, dass **Home Assistant** Zugriff auf die
+BLUETTI-Powerstations hat.
 
-### Wie aktualiere ich die`BLUETTI Integration`?
+### **Frage:** Funktioniert die BLUETTI-Integration lokal?
 
-1. HACS aufrufen und Update durchführen
-2. Update mit `git`
+**Antwort:** Nein, die BLUETTI-Integration funktioniert derzeit über die Cloud.
+Ein lokaler Modus befindet sich in Entwicklung, aber die Fertigstellung wird
+noch etwas Zeit in Anspruch nehmen.
+
+## 🔄 Aktualisieren der BLUETTI-Integration
+
+### Home Assistant Operating System
+
+1. **Aktualisiere die BLUETTI-Integration** (falls erforderlich):
 
    ```bash
-   cd /<ha workspaces>/config/custom_components/bluetti
+   cd /config/custom_components/bluetti-home-assistant
    git pull
    ```
 
-## 📮 Unterstützung & Feedback
+2. **Starte Home Assistant neu**, um die aktualisierte Integration zu laden:
+   - Für **Home Assistant Operating System**:
 
-💬 Haben Sie Probleme oder Anregungen? Erstellen Sie ein Issue auf GitHub:
-[https://github.com/bluetti-official/bluetti-home-assistant/issues](https://github.com/bluetti-official/bluetti-home-assistant/issues)
+     ```bash
+     ha core restart
+     ```
+
+   - Für **Docker-Installationen**:
+
+     ```bash
+     docker restart container-name
+     ```
+
+### Home Assistant Community Store
+
+Führe das Update über die HACS-Verwaltungsseite aus.
+
+## 📮 Support & Feedback
+
+💬 Hast du Fragen, Probleme oder Vorschläge? Teile sie uns über **GitHub
+Issues** mit: [https://github.com/bluetti-official/bluetti-home-assistant/issues](https://github.com/bluetti-official/bluetti-home-assistant/issues)
