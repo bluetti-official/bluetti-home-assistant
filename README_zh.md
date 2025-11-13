@@ -1,7 +1,7 @@
 # BLUETTI储能HA集成
 
-[🇬🇧 English](./README.md) | [🇳🇱 Dutch](./README_nl.md) |
-[🇩🇪 German](./README_de.md) | [🇨🇳 简体中文](./README_zh.md)
+[🇬🇧 英文](./README.md) | [🇳🇱 荷兰语](./README_nl.md) | [🇩🇪 德语](./README_de.md)
+| [🇨🇳 简体中文](./README_zh.md)
 
 BLUETTI储能集成是一个由BLUETTI官方提供的Home Assistant集成插件，支持在Home Assistant系统中使用您的BLUETTI智能储能设备。
 
