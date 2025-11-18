@@ -5,6 +5,11 @@ FN_CODE_ICONS = {
     # SENSOR 类型
     "SOC": "mdi:battery",
     "InvWorkState": "mdi:solar-power",
+    "ChgFullTime": "mdi:clock-outline",
+    "ACLoadAllTotalPower": "mdi:power-socket-eu",
+    "DCLoadAllTotalPower": "mdi:current-dc",
+    "PVAllTotalPower": "mdi:solar-power",
+    "GridAllTotalPower": "mdi:transmission-tower",
     
     # SELECT 类型
     "SetCtrlWorkMode": "mdi:cog",
@@ -16,6 +21,7 @@ FN_CODE_ICONS = {
     "SetCtrlDc": "mdi:car-battery",
     "SetCtrlPowerOn": "mdi:power",
     "Storm_Mode_Cloud_Ctrl": "mdi:weather-lightning",
+    "SetCtrlPowerOn-2": "mdi:sleep",
     
     # BINARY_SENSOR 类型
     "onLine": "mdi:lan-connect",

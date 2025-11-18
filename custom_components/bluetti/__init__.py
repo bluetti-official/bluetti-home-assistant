@@ -80,6 +80,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
     for device in bluetti_devices.devices:
         device._api_client = product_client
+        device.name = device.sn
 
         # device._ws_manager = stomp_client
 
