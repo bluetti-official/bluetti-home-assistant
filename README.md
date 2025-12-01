@@ -12,14 +12,16 @@ The Integration's github repository is:
 
 ## ✨ Features
 
+- ✅ Power Switch
 - ✅ Inverter Status
 - ✅ Battery state of charge (SOC)
 - ✅ AC Switch
 - ✅ DC Switch
 - ✅ Main unit power switch
 - ✅ AC ECO
+- ✅ DC ECO
 - ✅ Work mode switch: Backup, Self-consumption, Peak and Off-Peak
-- ✅ Disaster Warning
+- ✅ Sleep Mode
 
 ## 🎮 Power Station Support List
 
@@ -27,20 +29,20 @@ The Integration's github repository is:
 >
 > More power station models will be added in the future.
 
-| Power Station Model | Inverter Status | Battery SOC | AC Switch | DC Switch | power switch | AC ECO | Work mode switch | Disaster Warning |
-| :------------------ | :-------------: | :---------: | :-------: | :-------: | :----------: | :----: | :--------------: | :--------------: |
-| EP13K               |       ✅        |     ✅      |           |           |      ✅      |        |        ✅        |        ✅        |
-| EP6K                |       ✅        |     ✅      |           |           |      ✅      |        |        ✅        |        ✅        |
-| EP2000              |       ✅        |     ✅      |           |           |      ✅      |        |        ✅        |        ✅        |
-| FP                  |       ✅        |     ✅      |    ✅     |           |      ✅      |   ✅   |        ✅        |        ✅        |
-| AP300               |       ✅        |     ✅      |    ✅     |           |      ✅      |   ✅   |        ✅        |        ✅        |
-| PR200V2,Elite 200 V2,AORA200               |       ✅        |     ✅      |    ✅     |           |      ✅      |   ✅   |        ✅        |        ✅        |
-| PR100V2,EL100V2,AORA100V2               |       ✅        |     ✅      |    ✅     |           |      ✅      |   ✅   |        ✅        |        ✅        |
-| PR30V2,EL30V2               |       ✅        |     ✅      |    ✅     |           |      ✅      |   ✅   |        ✅        |        ✅        |
-| EL300               |       ✅        |     ✅      |    ✅     |           |      ✅      |   ✅   |        ✅        |        ✅        |
-| EL320,AORA320               |       ✅        |     ✅      |    ✅     |           |      ✅      |   ✅   |        ✅        |        ✅        |
-| EL400               |       ✅        |     ✅      |    ✅     |           |      ✅      |   ✅   |        ✅        |        ✅        |
-| EP760               |       ✅        |     ✅      |    ✅     |           |      ✅      |   ✅   |        ✅        |        ✅        |
+| Power Station Model         | Inverter Status | Battery SOC | AC Switch | DC Switch | power switch | AC ECO | DC ECO | Work mode switch | Sleep Mode       | 
+| :-------------------------: | :-------------: | :---------: | :-------: | :-------: | :----------: | :----: | :----: | :--------------: | :--------------: | 
+| EP13K                       |       ✅        |     ✅      |           |           |      ✅      |        |        |        ✅        |                |
+| EP6K                        |       ✅        |     ✅      |           |           |      ✅      |        |        |        ✅        |                |
+| EP2000                      |       ✅        |     ✅      |           |           |      ✅      |        |        |        ✅        |                |
+| FP                          |       ✅        |     ✅      |    ✅     |    ✅    |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| AP300                       |                 |     ✅      |    ✅     |           |              |   ✅   |        |        ✅        |       ✅      |
+| PR200V2,Elite 200 V2,AORA200|                 |     ✅      |    ✅     |     ✅    |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| PR100V2,EL100V2,AORA100V2   |                 |     ✅      |    ✅     |     ✅    |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| PR30V2,EL30V2               |                 |     ✅      |    ✅     |     ✅    |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| EL300                       |                 |     ✅      |    ✅     |     ✅    |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| EL320,AORA320               |                 |     ✅      |    ✅     |     ✅    |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| EL400                       |                 |     ✅      |    ✅     |     ✅    |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| EP760                       |       ✅        |     ✅      |           |           |      ✅      |         |        |                |               |
 
 ## 📦 Integration installation
 
