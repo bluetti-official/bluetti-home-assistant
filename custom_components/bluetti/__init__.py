@@ -95,12 +95,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
-    async def _after_start(event):
-        # print(event)
-        for device in bluetti_devices.devices:
-            asyncio.run_coroutine_threadsafe(device.async_update(), hass.loop)
+    for device in bluetti_devices.devices:
+        asyncio.run_coroutine_threadsafe(device.async_update(), hass.loop)
 
-    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _after_start)
+    # async def _after_start(event):
+    #     # print(event)
+    #     for device in bluetti_devices.devices:
+    #         asyncio.run_coroutine_threadsafe(device.async_update(), hass.loop)
+
+    # hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _after_start)
     __LOGGER__.info('bluetti init ok')
 
     return True
