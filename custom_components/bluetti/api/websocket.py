@@ -172,5 +172,5 @@ class StompListener:
         print("The Error is:- " , error)
 
     def on_close(self, ws, close_status_code, close_msg):
-        print(f"WebSocket 断开连接。状态码: {close_status_code}, 消息: {close_msg}")
+        __LOGGER__.debug(f"WebSocket 断开连接。状态码: {close_status_code}, 消息: {close_msg}")
         self.client.reconnect()

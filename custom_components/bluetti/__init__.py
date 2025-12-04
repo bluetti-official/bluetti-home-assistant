@@ -111,7 +111,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
 def web_socket_message_handler(message: str):
     
-    print(message)
+    __LOGGER__.debug(message)
 
 # TODO Update entry annotation
 async def async_unload_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:

@@ -44,7 +44,7 @@ class BluettiData:
         return None
 
     def web_socket_message_handler(self, message: str):
-        print(f"收到ws消息 {message}")
+        __LOGGER__.debug(f"收到ws消息 {message}")
 
         res = json.loads(message)
         # load api
