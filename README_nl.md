@@ -27,9 +27,12 @@ powerstations gebruiken binnen Home Assistant.
 
 | Powerstationmodel | Omvormerstatus | Batterij-SOC | AC-schakelaar | DC-schakelaar | Hoofdschakelaar | AC ECO | Werkmodusschakelaar | Rampenwaarschuwing |
 | :---------------- | :------------: | :----------: | :-----------: | :-----------: | :-------------: | -----: | :-----------------: | :----------------: |
+| APEX300           |       ✅       |      ✅      |      ✅       |               |       ✅        |     ✅ |         ✅          |                    |
+| Elite100V2        |       ✅       |      ✅      |      ✅       |      ✅       |                 |     ✅ |         ✅          |                    |
+| Elite30V2         |       ✅       |      ✅      |      ✅       |      ✅       |                 |     ✅ |         ✅          |                    |
 | EP13K             |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
-| EP6K              |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
 | EP2000            |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
+| EP6K              |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
 | FP                |       ✅       |      ✅      |      ✅       |               |       ✅        |     ✅ |         ✅          |         ✅         |
 
 ## 📦 Installatie van de BLUETTI-integratie

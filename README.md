@@ -27,9 +27,12 @@ stations directly from Home Assistant.
 
 | Power Station Model | Inverter Status | Battery SoC | AC Switch | DC Switch | Main Switch | AC ECO | Mode Selector | Disaster Alert |
 | :------------------ | :-------------: | :---------: | :-------: | :-------: | :---------: | -----: | :-----------: | :------------: |
+| APEX300             |       ✅        |     ✅      |    ✅     |           |     ✅      |     ✅ |      ✅       |                |
+| Elite100V2          |       ✅        |     ✅      |    ✅     |    ✅     |             |     ✅ |      ✅       |                |
+| Elite30V2           |       ✅        |     ✅      |    ✅     |    ✅     |             |     ✅ |      ✅       |                |
 | EP13K               |       ✅        |     ✅      |           |           |     ✅      |        |      ✅       |       ✅       |
-| EP6K                |       ✅        |     ✅      |           |           |     ✅      |        |      ✅       |       ✅       |
 | EP2000              |       ✅        |     ✅      |           |           |     ✅      |        |      ✅       |       ✅       |
+| EP6K                |       ✅        |     ✅      |           |           |     ✅      |        |      ✅       |       ✅       |
 | FP                  |       ✅        |     ✅      |    ✅     |           |     ✅      |     ✅ |      ✅       |       ✅       |
 
 ## 📦 Installing the BLUETTI Integration

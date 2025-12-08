@@ -28,9 +28,12 @@ intelligente BLUETTI-Powerstations direkt in Home Assistant zu verwalten.
 
 | Powerstation-Modell | Wechselrichterstatus | Batterie-SoC | AC-Schalter | DC-Schalter | Hauptschalter | AC ECO | Modusschalter | Katastrophenwarnung |
 | :------------------ | :------------------: | :----------: | :---------: | :---------: | :-----------: | -----: | :-----------: | :-----------------: |
+| APEX300             |          ✅          |      ✅      |     ✅      |             |      ✅       |     ✅ |      ✅       |                     |
+| Elite100V2          |          ✅          |      ✅      |     ✅      |     ✅      |               |     ✅ |      ✅       |                     |
+| Elite30V2           |          ✅          |      ✅      |     ✅      |     ✅      |               |     ✅ |      ✅       |                     |
 | EP13K               |          ✅          |      ✅      |             |             |      ✅       |        |      ✅       |         ✅          |
-| EP6K                |          ✅          |      ✅      |             |             |      ✅       |        |      ✅       |         ✅          |
 | EP2000              |          ✅          |      ✅      |             |             |      ✅       |        |      ✅       |         ✅          |
+| EP6K                |          ✅          |      ✅      |             |             |      ✅       |        |      ✅       |         ✅          |
 | FP                  |          ✅          |      ✅      |     ✅      |             |      ✅       |     ✅ |      ✅       |         ✅          |
 
 ## 📦 Installation der BLUETTI-Integration
