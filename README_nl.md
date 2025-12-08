@@ -28,11 +28,14 @@ De GitHub-repository van de integratie is:
 > Meer powerstationmodellen zullen in de toekomst worden toegevoegd.
 
 | Powerstationmodel | Omvormerstatus | Batterij-SOC | AC-schakelaar | DC-schakelaar | Hoofdschakelaar | AC ECO | Werkmodusschakelaar | Rampenwaarschuwing |
-| :---------------- | :------------: | :----------: | :-----------: | :-----------: | :-------------: | -----: | :-----------------: | :----------------: |
-| EP13K             |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
-| EP6K              |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
-| EP2000            |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
-| FP                |       ✅       |      ✅      |      ✅       |               |       ✅        |     ✅ |         ✅          |         ✅         |
+| :------------------ | :-------------: | :---------: | :-------: | :-------: | :----------: | :----: | :--------------: | :--------------: |
+| APEX300             |       ✅        |     ✅      |    ✅     |          |      ✅     |   ✅   |       ✅        |                |
+| Elite30V2           |       ✅        |     ✅      |    ✅     |     ✅   |             |   ✅   |        ✅       |                |
+| Elite100V2          |       ✅        |     ✅      |    ✅     |     ✅   |             |   ✅   |       ✅        |                |
+| EP13K               |       ✅        |     ✅      |           |           |      ✅     |        |        ✅       |        ✅      |
+| EP6K                |       ✅        |     ✅      |           |           |      ✅     |        |        ✅       |        ✅      |
+| EP2000              |       ✅        |     ✅      |           |           |      ✅     |        |        ✅       |        ✅      |
+| FP                  |       ✅        |     ✅      |    ✅     |           |      ✅     |   ✅  |       ✅        |        ✅      |
 
 ## 📦 Installatie van de integratie
 
