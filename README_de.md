@@ -79,7 +79,9 @@ docker exec -it container-name /bin/bash
 3. **Klon die GitHub-Repository der BLUETTI-Integration:**
 
    ```bash
-   git clone https://github.com/bluetti-official/bluetti-home-assistant.git /config/custom_components/bluetti-home-assistant/
+   git clone https://github.com/bluetti-official/bluetti-home-assistant.git
+   mv /config/bluetti-home-assistant/custom_components/bluetti /config/custom_components/bluetti
+   rm -r /config/bluetti-home-assistant
    ```
 
 4. **Starte Home Assistant neu**, um die neue Integration zu laden:

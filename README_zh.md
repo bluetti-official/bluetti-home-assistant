@@ -41,6 +41,8 @@ BLUETTI储能集成github仓库地址：[https://github.com/bluetti-official/blu
 
     ```bash
     git clone https://github.com/bluetti-official/bluetti-home-assistant.git
+    mv /config/bluetti-home-assistant/custom_components/bluetti /config/custom_components/bluetti
+    rm -r /config/bluetti-home-assistant
     ```
 
 3. 或者下载集成的zip压缩包，并解压到：
