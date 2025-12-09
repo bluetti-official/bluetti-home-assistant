@@ -18,8 +18,9 @@ Das GitHub-Repository der Integration ist:
 - ✅ DC Schalter
 - ✅ Gerät ausschalten
 - ✅ AC ECO Modus
+- ✅ DC ECO Modus
 - ✅ Wechseln des Arbeitsmodus: Backup, Eigenverbrauch, Zeitsteuerung
-- ✅ Unwetterwarnung
+- ✅ Schlafmodus
 
 ## 🎮 Liste der unterstützen Geräte
 
@@ -27,12 +28,20 @@ Das GitHub-Repository der Integration ist:
 >
 > Mit der Zeit werden mehr Geräte dazukommen.
 
-| Gerät  | Wechselrichter-Status | Batteriestand | AC Schalter | DC Schalter | Gerät ausschalten | AC ECO Modus | Arbeitsmodus wechseln | Unwetterwarnung |
-| :----- | :-------------------: | :-----------: | :---------: | :---------: | :---------------: | :----------: | :-------------------: | :-------------: |
-| EP13K  |          ✅           |      ✅       |             |             |        ✅         |              |          ✅           |       ✅        |
-| EP6K   |          ✅           |      ✅       |             |             |        ✅         |              |          ✅           |       ✅        |
-| EP2000 |          ✅           |      ✅       |             |             |        ✅         |              |          ✅           |       ✅        |
-| FP     |          ✅           |      ✅       |     ✅      |             |        ✅         |      ✅      |          ✅           |       ✅        |
+|       Gerät                 | Wechselrichter-Status | Batteriestand | AC Schalter | DC Schalter | Gerät ausschalten | AC ECO Modus | DC ECO Modus | Arbeitsmodus wechseln | Schlafmodus |
+| :-------------------------: | :-------------------: | :-----------: | :---------: | :---------: | :---------------: | :----------: | :----------: | :-------------------: | :---------: | 
+| EP13K                       |          ✅          |     ✅      |               |             |        ✅        |               |              |          ✅          |             |
+| EP6K                        |          ✅          |     ✅      |               |             |        ✅        |               |              |          ✅          |             |
+| EP2000                      |          ✅          |     ✅      |               |             |        ✅        |               |              |          ✅          |             |
+| FP                          |          ✅          |     ✅      |      ✅       |     ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| AP300                       |                      |     ✅      |      ✅       |             |                   |      ✅      |              |          ✅          |      ✅     |
+| PR200V2,Elite 200 V2,AORA200|                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| PR100V2,EL100V2,AORA100V2   |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| PR30V2,EL30V2               |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| EL300                       |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| EL320,AORA320               |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| EL400                       |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| EP760                       |          ✅          |     ✅      |               |              |        ✅        |               |              |                       |            |
 
 ## 📦 Integration Installation
 
