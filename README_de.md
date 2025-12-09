@@ -69,7 +69,7 @@ docker exec -it container-name /bin/bash
 1. **Wechsle in das Konfigurationsverzeichnis von Home Assistant:**
 
    ```bash
-   cd config/
+   cd config 2>/dev/null || echo "Du befindest dich bereits im Verzeichnis 'config'. Fahre mit Schritt 2 fort."
    ```
 
 2. **Erstelle den Ordner `custom_components`**, falls dieser noch nicht

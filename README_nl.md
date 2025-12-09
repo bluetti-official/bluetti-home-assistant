@@ -68,7 +68,7 @@ docker exec -it container-naam /bin/bash
 1. **Ga naar de configuratiemap van Home Assistant:** /<ha workspaces>/
 
    ```bash
-   cd config/
+   cd config 2>/dev/null || echo "Je bevindt je al in de map 'config'. Ga verder met stap 2."
    ```
 
 2. **Maak de map `custom_components` aan** (als deze nog niet bestaat):

@@ -34,27 +34,39 @@ BLUETTI储能集成github仓库地址：[https://github.com/bluetti-official/blu
 
 ### 方法A：手动安装
 
-1. 进入Home Assistant配置目录：
+1. **进入你的 Home Assistant 配置目录：**
 
-    ```bash
-    cd /<ha workspaces>/config/custom_components
-    ```
+   ```bash
+   cd config 2>/dev/null || echo "你已经在 'config' 目录中。继续执行步骤 2。"
+   ```
 
-2. 克隆BLUETTI储能集成github仓库：
+2. **创建 `custom_components` 文件夹**（如果尚不存在）：
 
-    ```bash
-    git clone https://github.com/bluetti-official/bluetti-home-assistant.git
-    mv /config/bluetti-home-assistant/custom_components/bluetti /config/custom_components/bluetti
-    rm -r /config/bluetti-home-assistant
-    ```
+   ```bash
+   mkdir -pv custom_components
+   ```
 
-3. 或者下载集成的zip压缩包，并解压到：
+3. **克隆 BLUETTI 集成的 GitHub 仓库：**
 
-    ```bash
-    unzip xxx.zip -d /<ha workspaces>/core/config/custom_components/bluetti
-    ```
+   ```bash
+   git clone https://github.com/bluetti-official/bluetti-home-assistant.git
+   mv /config/bluetti-home-assistant/custom_components/bluetti /config/custom_components/bluetti
+   rm -r /config/bluetti-home-assistant
+   ```
 
-4. 重启Home Assistant系统。
+4. **重启 Home Assistant** 以加载新的集成：
+
+   * 对于 **Home Assistant 操作系统**：
+
+     ```bash
+     ha core restart
+     ```
+
+   * 对于 **Docker 安装**：
+
+     ```bash
+     docker restart container-name
+     ```
 
 <hr/>
 
