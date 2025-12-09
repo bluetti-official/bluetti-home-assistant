@@ -131,24 +131,30 @@ sie manuell als **benutzerdefiniertes Repository** hinzufügen.
 
 1. Gehe zu **_Einstellungen → Geräte & Dienste_**, um die Liste der
    Integrationen zu öffnen.
+
    <img src="./doc/images/1-setting_devices_and_services.png" width="880">
 
 2. Klicke auf **_Integration hinzufügen_**, suche nach **bluetti** und wähle die
    **BLUETTI-Integration** aus, um die OAuth-Autorisierung zu starten.
+
    <img src="./doc/images/2-search_and_add_integration.png" width="880">
 
 3. Erteile **Home Assistant** die Berechtigung, auf dein BLUETTI-Konto
    zuzugreifen und eine Verbindung zum BLUETTI-Cloud-Dienst herzustellen.
+
    <img src="./doc/images/3-oauth_agree_to_connect_with_bluetti.png">
 
 4. Gib deine BLUETTI-Kontodaten ein, um dich anzumelden und zu autorisieren.
+
    <img src="./doc/images/4-oauth_enter_bluetti_account.png">
 
 5. Bestätige, dass **Home Assistant** dein BLUETTI-Konto verknüpfen darf.
+
    <img src="./doc/images/5-oauth_link_account_to_ha.png">
 
 6. Wähle anschließend die BLUETTI-Geräte aus, die du in Home Assistant verwenden
    und verwalten möchtest.
+
    <img src="./doc/images/6-choose_bluetti_devices.png" width="880">
    <img src="./doc/images/7-bluetti_device_in_ha.png" width="880">
 
