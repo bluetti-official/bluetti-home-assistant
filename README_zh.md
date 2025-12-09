@@ -77,8 +77,7 @@ docker exec -it container-name /bin/bash
 
    ```bash
    git clone https://github.com/bluetti-official/bluetti-home-assistant.git
-   mv /config/bluetti-home-assistant/custom_components/bluetti /config/custom_components/bluetti
-   rm -r /config/bluetti-home-assistant
+   cp -a /config/bluetti-home-assistant/custom_components/bluetti /config/custom_components/bluetti
    ```
 
 4. **重启 Home Assistant** 加载新集成：
@@ -165,8 +164,9 @@ docker exec -it container-name /bin/bash
 1. **更新 BLUETTI 集成**（如有需要）：
 
    ```bash
-   cd /config/custom_components/bluetti-home-assistant
+   cd /config/bluetti-home-assistant
    git pull
+   cp -a --force custom_components/bluetti /config/custom_components/bluetti
    ```
 
 2. **重启 Home Assistant** 加载更新：

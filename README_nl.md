@@ -81,8 +81,7 @@ docker exec -it container-naam /bin/bash
 
    ```bash
    git clone https://github.com/bluetti-official/bluetti-home-assistant.git
-   mv /config/bluetti-home-assistant/custom_components/bluetti /config/custom_components/bluetti
-   rm -r /config/bluetti-home-assistant
+   cp -a /config/bluetti-home-assistant/custom_components/bluetti /config/custom_components/bluetti
    ```
 
 4. **Herstart Home Assistant** om de nieuwe integratie te laden:
@@ -183,8 +182,9 @@ kost tijd.
 1. **Werk de BLUETTI-integratie bij** (indien nodig):
 
    ```bash
-   cd /config/custom_components/bluetti-home-assistant
+   cd /config/bluetti-home-assistant
    git pull
+   cp -a --force custom_components/bluetti /config/custom_components/bluetti
    ```
 
 2. **Herstart Home Assistant** om de bijgewerkte integratie te laden:
