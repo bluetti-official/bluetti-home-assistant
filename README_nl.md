@@ -18,8 +18,9 @@ De GitHub-repository van de integratie is:
 - ✅ DC-schakelaar
 - ✅ Hoofdschakelaar
 - ✅ AC ECO-modus
+- ✅ DC ECO-modus
 - ✅ Werkmodusschakelaar: noodstroom, zelfverbruik, piek- en daluren
-- ✅ Rampenwaarschuwing
+- ✅ Slaap Modus
 
 ## 🎮 Ondersteunde powerstationmodellen
 
@@ -27,12 +28,20 @@ De GitHub-repository van de integratie is:
 >
 > Meer powerstationmodellen zullen in de toekomst worden toegevoegd.
 
-| Powerstationmodel | Omvormerstatus | Batterij-SOC | AC-schakelaar | DC-schakelaar | Hoofdschakelaar | AC ECO | Werkmodusschakelaar | Rampenwaarschuwing |
-| :---------------- | :------------: | :----------: | :-----------: | :-----------: | :-------------: | -----: | :-----------------: | :----------------: |
-| EP13K             |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
-| EP6K              |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
-| EP2000            |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
-| FP                |       ✅       |      ✅      |      ✅       |               |       ✅        |     ✅ |         ✅          |         ✅         |
+|      Powerstationmodel      | Omvormerstatus | Batterij-SOC | AC-schakelaar | DC-schakelaar | Hoofdschakelaar | AC ECO | DC ECO | Werkmodusschakelaar | Slaap Modus |
+| :-------------------------: | :-------------: | :---------: | :-----------: | :-----------: | :-------------: | :----: | :----: | :-------------: | :--------------: | 
+| EP13K                       |       ✅        |     ✅      |              |               |       ✅        |        |        |       ✅      |                |
+| EP6K                        |       ✅        |     ✅      |              |               |       ✅        |        |        |       ✅      |                |
+| EP2000                      |       ✅        |     ✅      |              |               |       ✅        |        |        |       ✅      |                |
+| FP                          |       ✅        |     ✅      |     ✅      |       ✅      |                 |   ✅   |   ✅   |      ✅       |       ✅      |
+| AP300                       |                 |     ✅      |      ✅      |               |                 |   ✅   |         |      ✅      |       ✅      |
+| PR200V2,Elite 200 V2,AORA200|                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |      ✅      |       ✅      |
+| PR100V2,EL100V2,AORA100V2   |                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |      ✅      |       ✅      |
+| PR30V2,EL30V2               |                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |      ✅      |       ✅      |
+| EL300                       |                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |      ✅      |       ✅      |
+| EL320,AORA320               |                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |      ✅      |       ✅      |
+| EL400                       |                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |      ✅      |       ✅      |
+| EP760                       |       ✅        |     ✅      |              |               |        ✅       |         |        |              |                |
 
 ## 📦 Installatie van de integratie
 
