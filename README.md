@@ -9,14 +9,16 @@ stations directly from Home Assistant.
 
 ## ✨ Features
 
-- ✅ Inverter status
-- ✅ Battery charge (SoC)
-- ✅ AC switch
-- ✅ DC switch
-- ✅ Main switch
-- ✅ AC ECO mode
-- ✅ Operating mode selector: backup, self-consumption, peak/off-peak
-- ✅ Disaster alert
+- ✅ Power Switch
+- ✅ Inverter Status
+- ✅ Battery state of charge (SOC)
+- ✅ AC Switch
+- ✅ DC Switch
+- ✅ Main unit power switch
+- ✅ AC ECO
+- ✅ DC ECO
+- ✅ Work mode switch: Backup, Self-consumption, Peak and Off-Peak
+- ✅ Sleep Mode
 
 ## 🎮 Supported Power Station Models
 
@@ -48,9 +50,20 @@ Assistant server** via **SSH**.
 ssh username@host-ip
 ```
 
-If you are running Home Assistant as a Docker container on **Windows**,
-**macOS**, or **Linux**, first log in to the host machine (where Docker is
-running):
+| Power Station Model         | Inverter Status | Battery SOC | AC Switch | DC Switch | power switch | AC ECO | DC ECO | Work mode switch | Sleep Mode       | 
+| :-------------------------: | :-------------: | :---------: | :-------: |:--------:| :----------: |:------:| :----: | :--------------: | :--------------: | 
+| AP300                       |                 |     ✅      |    ✅     |          |              |   ✅   |        |        ✅        |       ✅      |
+| EL300                       |                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| EL320,AORA320               |                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| EL400                       |                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| EP13K                       |       ✅        |     ✅      |           |          |      ✅      |        |        |        ✅        |                |
+| EP2000                      |       ✅        |     ✅      |           |          |      ✅      |        |        |        ✅        |                |
+| EP6K                        |       ✅        |     ✅      |           |          |      ✅      |        |        |        ✅        |                |
+| EP760                       |       ✅        |     ✅      |           |          |      ✅      |        |        |                   |               |
+| FP                          |       ✅        |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| PR100V2,EL100V2,AORA100V2   |                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| PR200V2,Elite 200 V2,AORA200|                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
+| PR30V2,EL30V2               |                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
 
 ```bash
 ssh username@host-ip

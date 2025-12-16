@@ -2,6 +2,7 @@
 # from __future__ import annotations
 
 import logging
+import asyncio
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -9,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_entry_oauth2_flow, device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers import storage
-from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
+from homeassistant.const import EVENT_HOMEASSISTANT_START
 
 from .models import BluettiData
 from .oauth import AsyncConfigEntryAuth
@@ -80,6 +81,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
     for device in bluetti_devices.devices:
         device._api_client = product_client
+        device.name = device.sn
+        device._hass = hass
+        device._entry = entry
+        device._entry_id = entry.entry_id
 
         # device._ws_manager = stomp_client
 
@@ -90,12 +95,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
-    async def _after_start(event):
-        # print(event)
-        for device in bluetti_devices.devices:
-            await device.async_update()
+    for device in bluetti_devices.devices:
+        asyncio.run_coroutine_threadsafe(device.async_update(), hass.loop)
 
-    hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _after_start)
+    # async def _after_start(event):
+    #     # print(event)
+    #     for device in bluetti_devices.devices:
+    #         asyncio.run_coroutine_threadsafe(device.async_update(), hass.loop)
+
+    # hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _after_start)
     __LOGGER__.info('bluetti init ok')
 
     return True
@@ -103,7 +111,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
 def web_socket_message_handler(message: str):
     
-    print(message)
+    __LOGGER__.debug(message)
 
 # TODO Update entry annotation
 async def async_unload_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:

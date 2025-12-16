@@ -51,7 +51,7 @@ class BluettiSwitch(SwitchEntity):
             "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID
             "name": device.name,
             "manufacturer": device.manufacturer,
-            "model": "Bluetti",
+            "model": device.model,
         }
         self._meta = {"name": state.fn_name, "icon": self._attr_icon}
         # self._attr_icon = "mdi:generator-portable"

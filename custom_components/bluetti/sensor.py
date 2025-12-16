@@ -10,17 +10,36 @@ from .models import BluettiData, BluettiDevice, BluettiState
 from .icon_config import get_icon_for_fn_code
 
 # 映射 sensor 类
+# SENSOR_MAP = {
+#     "SOC": {
+#         "device_class": SensorDeviceClass.BATTERY,
+#         "unit": PERCENTAGE,
+#         "name": "Battery Level",
+#     },
+#     "InvWorkState": {
+#         "device_class": SensorDeviceClass.ENUM,
+#         "unit": None,
+#         "name": "Inverter Status",
+#     },
+# }
+
 SENSOR_MAP = {
-    "SOC": {
-        "device_class": SensorDeviceClass.BATTERY,
-        "unit": PERCENTAGE,
-        "name": "Battery Level",
+    "SensorDeviceClass.BATTERY":{
+        "device_class":SensorDeviceClass.BATTERY,
+        "unit": PERCENTAGE
     },
-    "InvWorkState": {
-        "device_class": SensorDeviceClass.ENUM,
-        "unit": None,
-        "name": "Inverter Status",
+    "SensorDeviceClass.ENUM":{
+        "device_class":SensorDeviceClass.ENUM,
+        "unit": ""
     },
+    "SensorDeviceClass.DURATION":{
+        "device_class":SensorDeviceClass.DURATION,
+        "unit": "min"
+    },
+    "SensorDeviceClass.POWER":{
+        "device_class":SensorDeviceClass.POWER,
+        "unit": "W"
+    }
 }
 
 # 映射 binary_sensor 类
@@ -46,10 +65,17 @@ async def async_setup_entry(
     entities = []
 
     for device in bluetti_devices.devices:
+        # for state in device.states:
+        #     if state.fn_type == "SENSOR" and state.fn_code in SENSOR_MAP:
+        #         entities.append(BluettiSensor(device, state, SENSOR_MAP[state.fn_code]))
+        #     elif state.fn_type == "SENSOR" and state.fn_code in BINARY_SENSOR_MAP:
+        #         entities.append(BluettiBinarySensor(device, state, BINARY_SENSOR_MAP[state.fn_code]))
         for state in device.states:
-            if state.fn_type == "SENSOR" and state.fn_code in SENSOR_MAP:
-                entities.append(BluettiSensor(device, state, SENSOR_MAP[state.fn_code]))
-            elif state.fn_type == "SENSOR" and state.fn_code in BINARY_SENSOR_MAP:
+            if state.fn_type == 'SENSOR' and state.sensor_info:
+                sensorClass = SENSOR_MAP[state.sensor_info['sensorType']]
+                meta = {'name':state.fn_name,'unit': state.sensor_info['unit'] or sensorClass['unit'],'device_class':sensorClass['device_class']}
+                entities.append(BluettiSensor(device, state,meta))
+            if state.fn_type == "SENSOR" and state.fn_code in BINARY_SENSOR_MAP:
                 entities.append(BluettiBinarySensor(device, state, BINARY_SENSOR_MAP[state.fn_code]))
 
     if entities:
@@ -134,7 +160,7 @@ class BluettiBinarySensor(BinarySensorEntity):
             "manufacturer": device.manufacturer,
             "model": device.model,
         }
-        print(f"注册设备: {device.name}, identifiers= {(DOMAIN, device.device_id)}")
+        # print(f"注册设备: {device.name}, identifiers= {(DOMAIN, device.device_id)}")
 
     @property
     def is_on(self) -> bool:

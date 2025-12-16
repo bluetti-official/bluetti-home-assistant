@@ -10,14 +10,14 @@ intelligente BLUETTI-Powerstations direkt in Home Assistant zu verwalten.
 ## ✨ Funktionen
 
 - ✅ Status des Wechselrichters
-- ✅ Batterieladung (SoC)
-- ✅ AC-Schalter
-- ✅ DC-Schalter
-- ✅ Hauptschalter
-- ✅ AC-ECO-Modus
-- ✅ Betriebsmodus-Schalter: Notstrom, Eigenverbrauch, Spitzen- und
-  Schwachlastzeiten
-- ✅ Katastrophenwarnung
+- ✅ Batteriestand (SOC)
+- ✅ AC Schalter
+- ✅ DC Schalter
+- ✅ Gerät ausschalten
+- ✅ AC ECO Modus
+- ✅ DC ECO Modus
+- ✅ Wechseln des Arbeitsmodus: Backup, Eigenverbrauch, Zeitsteuerung
+- ✅ Schlafmodus
 
 ## 🎮 Unterstützte Powerstation-Modelle
 
@@ -50,9 +50,20 @@ dich über **SSH** mit deinem **Home Assistant-Server** verbinden.
 ssh benutzername@ip-adresse-des-hosts
 ```
 
-Verwendest du Home Assistant als Docker-Container unter **Windows**, **macOS**
-oder **Linux**? Dann melde dich zuerst auf dem Host an (dem Computer, auf dem
-Docker läuft):
+|       Gerät                 | Wechselrichter-Status | Batteriestand | AC Schalter | DC Schalter | Gerät ausschalten | AC ECO Modus | DC ECO Modus | Arbeitsmodus wechseln | Schlafmodus |
+| :-------------------------: | :-------------------: | :-----------: | :---------: | :---------: | :---------------: | :----------: | :----------: | :-------------------: | :---------: | 
+| AP300                       |                      |     ✅      |      ✅       |             |                   |      ✅      |              |           ✅          |     ✅     |
+| EL300                       |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| EL320,AORA320               |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| EL400                       |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| EP13K                       |          ✅          |     ✅      |               |             |         ✅        |              |               |          ✅          |            |
+| EP2000                      |          ✅          |     ✅      |               |             |         ✅        |              |               |          ✅          |            |
+| EP6K                        |          ✅          |     ✅      |               |             |         ✅        |              |               |          ✅          |            |
+| EP760                       |          ✅          |     ✅      |               |             |         ✅        |              |               |                      |            |
+| FP                          |          ✅          |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| PR100V2,EL100V2,AORA100V2   |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| PR200V2,Elite 200 V2,AORA200|                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+| PR30V2,EL30V2               |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
 
 ```bash
 ssh benutzername@ip-adresse-des-hosts

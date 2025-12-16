@@ -15,8 +15,9 @@ powerstations gebruiken binnen Home Assistant.
 - ✅ DC-schakelaar
 - ✅ Hoofdschakelaar
 - ✅ AC ECO-modus
+- ✅ DC ECO-modus
 - ✅ Werkmodusschakelaar: noodstroom, zelfverbruik, piek- en daluren
-- ✅ Rampenwaarschuwing
+- ✅ Slaap Modus
 
 ## 🎮 Ondersteunde powerstationmodellen
 
@@ -25,15 +26,20 @@ powerstations gebruiken binnen Home Assistant.
 > In toekomstige versies zal de BLUETTI-integratie worden uitgebreid met
 > ondersteuning voor nieuwe en bestaande powerstationmodellen.
 
-| Powerstationmodel | Omvormerstatus | Batterij-SOC | AC-schakelaar | DC-schakelaar | Hoofdschakelaar | AC ECO | Werkmodusschakelaar | Rampenwaarschuwing |
-| :---------------- | :------------: | :----------: | :-----------: | :-----------: | :-------------: | -----: | :-----------------: | :----------------: |
-| APEX300           |       ✅       |      ✅      |      ✅       |               |       ✅        |     ✅ |         ✅          |                    |
-| Elite100V2        |       ✅       |      ✅      |      ✅       |      ✅       |                 |     ✅ |         ✅          |                    |
-| Elite30V2         |       ✅       |      ✅      |      ✅       |      ✅       |                 |     ✅ |         ✅          |                    |
-| EP13K             |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
-| EP2000            |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
-| EP6K              |       ✅       |      ✅      |               |               |       ✅        |        |         ✅          |         ✅         |
-| FP                |       ✅       |      ✅      |      ✅       |               |       ✅        |     ✅ |         ✅          |         ✅         |
+|      Powerstationmodel      | Omvormerstatus | Batterij-SOC | AC-schakelaar | DC-schakelaar | Hoofdschakelaar | AC ECO | DC ECO | Werkmodusschakelaar | Slaap Modus |
+| :-------------------------: | :-------------: | :---------: | :-----------: | :-----------: | :-------------: | :----: | :----: | :-----------------: | :---------: | 
+| AP300                       |                 |     ✅      |      ✅      |               |                 |   ✅   |        |          ✅         |      ✅    |
+| EL300                       |                 |     ✅      |      ✅      |       ✅      |                 |   ✅   |   ✅   |          ✅        |      ✅     |
+| EL320,AORA320               |                 |     ✅      |      ✅      |       ✅      |                 |   ✅   |   ✅   |          ✅        |      ✅     |
+| EL400                       |                 |     ✅      |      ✅      |       ✅      |                 |   ✅   |   ✅   |          ✅        |      ✅     |
+| EP13K                       |       ✅        |     ✅      |              |               |       ✅        |        |        |          ✅        |              |
+| EP2000                      |       ✅        |     ✅      |              |               |       ✅        |        |        |          ✅        |              |
+| EP6K                        |       ✅        |     ✅      |              |               |       ✅        |        |        |          ✅        |              |
+| EP760                       |       ✅        |     ✅      |              |               |       ✅        |        |        |                    |              |
+| FP                          |       ✅        |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |         ✅        |       ✅     |
+| PR100V2,EL100V2,AORA100V2   |                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |         ✅        |       ✅     |
+| PR200V2,Elite 200 V2,AORA200|                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |         ✅        |       ✅     |
+| PR30V2,EL30V2               |                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |         ✅        |       ✅     |
 
 ## 📦 Installatie van de BLUETTI-integratie
 
