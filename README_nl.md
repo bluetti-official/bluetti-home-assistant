@@ -1,7 +1,7 @@
 # BLUETTI-integratie voor Home Assistant
 
-[🇬🇧 English](./README.md) | [🇳🇱 Dutch](./README_nl.md) |
-[🇩🇪 German](./README_de.md) | [🇨🇳 简体中文](./README_zh.md)
+[🇨🇳 简体中文](./README_zh.md) | [🇩🇪 German](./README_de.md) | [🇬🇧 English](./README.md) | 
+[🇳🇱 Dutch](./README_nl.md) | [🇺🇦 Ukrainian](./README_uk.md) | 
 
 De **BLUETTI powerstation-integratie** is een geïntegreerde component van Home
 Assistant, officieel ondersteund door BLUETTI. Hiermee kun je BLUETTI slimme

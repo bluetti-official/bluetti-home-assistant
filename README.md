@@ -1,7 +1,7 @@
 # BLUETTI Integration for Home Assistant
 
-[🇬🇧 English](./README.md) | [🇳🇱 Dutch](./README_nl.md) |
-[🇩🇪 German](./README_de.md) | [🇨🇳 简体中文](./README_zh.md) | [🇺🇦 Ukrainian](./README_uk.md)
+[🇨🇳 简体中文](./README_zh.md) | [🇩🇪 German](./README_de.md) | [🇬🇧 English](./README.md) | 
+[🇳🇱 Dutch](./README_nl.md) | [🇺🇦 Ukrainian](./README_uk.md)
 
 BLUETTI Power Station Integration is an integrated component of Home Assistant
 supported by BLUETTI official. It allows you to use BLUETTI smart Power Station
