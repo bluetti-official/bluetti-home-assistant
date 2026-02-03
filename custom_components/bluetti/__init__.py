@@ -13,7 +13,7 @@ from homeassistant.helpers import storage
 from homeassistant.const import EVENT_HOMEASSISTANT_START
 
 from .models import BluettiData
-from .oauth import AsyncConfigEntryAuth
+from .oauth import AsyncConfigEntryAuth,AuthTokenRefresh
 from .api.bluetti import APPLICATION_PROFILE
 from .api.product_client import ProductClient
 from .api.websocket import StompClient
@@ -63,8 +63,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
         httpSession, oAuth2Session
     )
 
-    # await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
-    await oAuth2Session.async_ensure_token_valid()
+    authTokenRefresh = AuthTokenRefresh(hass,entry,oAuth2Session)
+    authTokenRefresh.start_token_check()
+        
+    # await oAuth2Session.async_ensure_token_valid()
     access_token = oAuth2Session.token["access_token"]
     product_client = ProductClient(httpSession, access_token)
     # products = await product_client.get_user_products()
@@ -76,7 +78,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     bluetti_devices = BluettiData(hass, selected_products)
 
     # Register WebSocket
-    stomp_client = StompClient(APPLICATION_PROFILE.config["server"]["wss"], access_token, bluetti_devices.web_socket_message_handler)
+    stomp_client = StompClient(APPLICATION_PROFILE.config["server"]["wss"], access_token, bluetti_devices.web_socket_message_handler,hass)
     stomp_client.connect()
 
     for device in bluetti_devices.devices:

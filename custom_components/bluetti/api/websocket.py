@@ -8,24 +8,29 @@ import stomper
 import websocket
 import threading
 
+from homeassistant.core import HomeAssistant
 from ..application_exception import ApplicationRuntimeException
+
+from ..const import EVENT_TOKEN_EXPIRED
 
 __LOGGER__ = logging.getLogger(__name__)
 
 
 class StompClient(object):
-    def __init__(self, url: str, access_token: str, handler: Callable[[str], None] = None):
+    def __init__(self, url: str, access_token: str, handler: Callable[[str], None] = None,hass: HomeAssistant=None):
         self.__url = url + "/websocket"
         self.__headers = {
             "Host": self.__get_host(url),
             "Authorization": access_token
         }
         self.listener = StompListener(self,handler)
+        self.hass = hass
         self.websocket = None
         self.running = False
 
         self.heartbeat_thread = None
         self.heartbeat_interval = 10
+        # __LOGGER__.info(f"ws use token:{access_token}")
 
     @staticmethod
     def __get_host(connection_url: str):
@@ -148,7 +153,12 @@ class StompListener:
         if frame.cmd == "ERROR":
             error = frame.headers['message'].replace("\\c", ":")
             error = json.loads(error)
-            raise ApplicationRuntimeException(msgCode=error['msgCode'], errMessage=error['message'])
+            if error['msgCode'] == 805:
+                self.client.disconnect()
+                self.client.hass.bus.fire(EVENT_TOKEN_EXPIRED)
+                __LOGGER__.info("token have expired stop ws connect")
+            else:
+                raise ApplicationRuntimeException(msgCode=error['msgCode'], errMessage=error['message'])
         elif frame.cmd == "CONNECTED":
             heartbeat = frame.headers.get('heart-beat', '0,0')
             server_send, server_receive = map(int, heartbeat.split(','))
