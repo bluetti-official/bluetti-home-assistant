@@ -238,6 +238,7 @@ class AuthTokenRefresh:
             notification_id = NOTIFY_ID_TOKEN_EXPIRED,
         )
 
+    # check token is in 7 day if in 7day refesh token
     async def async_check_token_expiry(self):
         __LOGGER__.info("check token is expired")
         expire_timestamp = cast(float, self.oAuth2Session.token["expires_at"])
@@ -247,11 +248,22 @@ class AuthTokenRefresh:
             self.send_expired_notification(self.hass)
             return
         
+        remain_timestamp = 3600
         if remain_timestamp < 3600*24*7 :
-            __LOGGER__.info('start refresh token')
-            new_token = await self.oAuth2Session.implementation.async_refresh_token(self.oAuth2Session.token)
-            self.hass.config_entries.async_update_entry(
-                self.entry, data={**self.entry.data, "token": new_token}
-            )
-            __LOGGER__.info('refresh token ok,then reload')
-            await self.hass.config_entries.async_reload(self.entry.entry_id)
+            try:
+                __LOGGER__.info('start refresh token')
+                last_refesh = self.entry.data.get("last_token_refresh", 0.0)
+                # 1 hour only one time ,when server is 500 do not always refesh token
+                if current_timestamp - last_refesh < 3600 : 
+                    __LOGGER__.info('last refesh token in 1 hour,this do not refesh return')
+                    return
+                last_refesh = current_timestamp
+
+                new_token = await self.oAuth2Session.implementation.async_refresh_token(self.oAuth2Session.token)
+                self.hass.config_entries.async_update_entry(
+                    self.entry, data={**self.entry.data, "token": new_token,"last_token_refresh":last_refesh}
+                )
+                __LOGGER__.info('refresh token ok,then reload')
+                await self.hass.config_entries.async_reload(self.entry.entry_id)
+            except Exception as e:
+                __LOGGER__.error(f"refresh token failed: {e}")
