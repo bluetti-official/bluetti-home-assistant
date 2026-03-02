@@ -14,8 +14,8 @@ class ProductClient(Bluetti):
     __LOGGER__ = None
     """The api client logger."""
 
-    def __init__(self, httpSession: aiohttp.ClientSession, accessToken):
-        super().__init__(httpSession, accessToken)
+    def __init__(self, httpSession: aiohttp.ClientSession, accessToken,hass):
+        super().__init__(httpSession, accessToken,hass)
 
     @property
     def logger(self) -> logging.Logger:
