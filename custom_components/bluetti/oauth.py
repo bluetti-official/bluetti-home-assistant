@@ -248,7 +248,6 @@ class AuthTokenRefresh:
             self.send_expired_notification(self.hass)
             return
         
-        remain_timestamp = 3600
         if remain_timestamp < 3600*24*7 :
             try:
                 __LOGGER__.info('start refresh token')
