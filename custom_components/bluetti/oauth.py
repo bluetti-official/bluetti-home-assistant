@@ -245,7 +245,7 @@ class AuthTokenRefresh:
         current_timestamp = time.time()
         remain_timestamp = expire_timestamp - current_timestamp
         if remain_timestamp < 0:
-            self.send_expired_notification(self.hass)
+            self.send_expired_notification()
             return
         
         if remain_timestamp < 3600*24*7 :
