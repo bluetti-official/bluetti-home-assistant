@@ -21,6 +21,10 @@ Das GitHub-Repository der Integration ist:
 - ✅ DC ECO Modus
 - ✅ Wechseln des Arbeitsmodus: Backup, Eigenverbrauch, Zeitsteuerung
 - ✅ Schlafmodus
+- ✅ PV Eingangsleistung
+- ✅ Net zeingangsleistung
+- ✅ AC Ausgangsleistung
+- ✅ DC Ausgangsleistung
 
 ## 🎮 Liste der unterstützen Geräte
 
@@ -28,20 +32,26 @@ Das GitHub-Repository der Integration ist:
 >
 > Mit der Zeit werden mehr Geräte dazukommen.
 
-|       Gerät                 | Wechselrichter-Status | Batteriestand | AC Schalter | DC Schalter | Gerät ausschalten | AC ECO Modus | DC ECO Modus | Arbeitsmodus wechseln | Schlafmodus |
-| :-------------------------: | :-------------------: | :-----------: | :---------: | :---------: | :---------------: | :----------: | :----------: | :-------------------: | :---------: | 
-| AP300                       |                      |     ✅      |      ✅       |             |                   |      ✅      |              |           ✅          |     ✅     |
-| EL300                       |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
-| EL320,AORA320               |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
-| EL400                       |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
-| EP13K                       |          ✅          |     ✅      |               |             |         ✅        |              |               |          ✅          |            |
-| EP2000                      |          ✅          |     ✅      |               |             |         ✅        |              |               |          ✅          |            |
-| EP6K                        |          ✅          |     ✅      |               |             |         ✅        |              |               |          ✅          |            |
-| EP760                       |          ✅          |     ✅      |               |             |         ✅        |              |               |                      |            |
-| FP                          |          ✅          |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
-| PR100V2,EL100V2,AORA100V2   |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
-| PR200V2,Elite 200 V2,AORA200|                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
-| PR30V2,EL30V2               |                      |     ✅      |      ✅       |      ✅     |                   |      ✅      |      ✅      |          ✅          |     ✅     |
+|            Gerät             |               Firmenname                | Wechselrichter-Status | Batteriestand | AC Schalter | DC Schalter | Gerät ausschalten | AC ECO Modus | DC ECO Modus | Arbeitsmodus wechseln |   Schlafmodus   | PV-Eingangsleistung | Netzeingangsleistung | AC Ausgangsleistung | DC Ausgangsleistung |
+|:----------------------------:|:---------------------------------------:|:---------------------:|:-------------:|:-----------:|:-----------:|:-----------------:|:------------:|:------------:|:---------------------:|:---------------:|:-------------------:|:--------------------:|:-------------------:|:-------------------:| 
+|            AP300             |                Apex 300                 |                       |       ✅       |      ✅      |             |                   |      ✅       |              |           ✅           |        ✅        |          ✅          |          ✅           |          ✅          |          ✅          |
+|            EL300             |           Elite 300,AORA 300            |                       |       ✅       |      ✅      |      ✅      |                   |      ✅       |      ✅       |           ✅           |        ✅        |          ✅          |          ✅           |          ✅          |          ✅          |
+|        EL320,AORA320         |           Elite 320,AORA 320            |                       |       ✅       |      ✅      |      ✅      |                   |      ✅       |      ✅       |           ✅           |        ✅        |          ✅          |          ✅           |          ✅          |          ✅          |
+|            EL400             |                Elite 400                |                       |       ✅       |      ✅      |      ✅      |                   |      ✅       |      ✅       |           ✅           |        ✅        |          ✅          |          ✅           |          ✅          |          ✅          |
+|            EP13K             |                  EP13k                  |           ✅           |       ✅       |             |             |         ✅         |              |              |           ✅           |                 |                     |                      |                     |                     |
+|            EP2000            |                  EP200                  |           ✅           |       ✅       |             |             |         ✅         |              |              |           ✅           |                 |                     |                      |                     |                     |
+|             EP6K             |                  EP6k                   |           ✅           |       ✅       |             |             |         ✅         |              |              |           ✅           |                 |                     |                      |                     |                     |
+|            EP760             |                  EP760                  |           ✅           |       ✅       |             |             |         ✅         |              |              |                       |                 |                     |                      |                     |                     |
+|           EP500Pro           |                EP500Pro                 |                       |       ✅       |      ✅      |      ✅      |                   |              |              |           ✅           |                 |          ✅          |          ✅           |          ✅          |          ✅          |
+|              FP              |             Fridge Product              |           ✅           |       ✅       |      ✅      |      ✅      |                   |      ✅       |      ✅       |           ✅           |        ✅        |                     |                      |                     |                     |
+|  PR100V2,EL100V2,AORA100V2   | Premium 100 V2,Elite 100 V2,AORA 100 V2 |                       |       ✅       |      ✅      |      ✅      |                   |      ✅       |      ✅       |           ✅           |        ✅        |          ✅          |          ✅           |          ✅          |          ✅          |
+| PR200V2,Elite 200 V2,AORA200 | Premium 200 V2,Elite 200 V2,AORA 200 V2 |                       |       ✅       |      ✅      |      ✅      |                   |      ✅       |      ✅       |           ✅           |        ✅        |          ✅          |          ✅           |          ✅          |          ✅          |
+|        PR30V2,EL30V2         |  Premium 30 V2,Elite 30 V2,AORA 30 V2   |                       |       ✅       |      ✅      |      ✅      |                   |      ✅       |      ✅       |           ✅           |        ✅        |          ✅          |          ✅           |          ✅          |          ✅          |
+|             RV5              |                   RV5                   |           ✅           |       ✅       |      ✅      |      ✅      |                   |              |              |           ✅           |        ✅        |          ✅          |          ✅           |          ✅          |          ✅          |
+|      Balco260,Balco500       |            Balco260,Balco500            |           ✅           |       ✅       |      ✅      |             |                   |              |              |           ✅           |                 |          ✅          |          ✅           |          ✅          |                     |
+|         AC300,AC500          |               AC300,AC500               |                       |       ✅       |      ✅      |      ✅      |                   |              |              |           ✅           |                 |          ✅          |          ✅           |          ✅          |          ✅          |
+|        AC200PL,AC200L        |             AC200PL,AC200L              |                       |       ✅       |      ✅      |      ✅      |                   |      ✅       |      ✅       |           ✅           |                 |          ✅          |          ✅           |          ✅          |          ✅          |
+
 
 ## 📦 Integration Installation
 
