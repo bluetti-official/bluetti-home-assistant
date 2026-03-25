@@ -155,6 +155,10 @@ Please check the **network**, **ports** and **firewall** to ensure that
    cd /<ha workspaces>/config/custom_components/bluetti
    git pull
    ```
+   
+## Notice
+
+### Balco260 Self-consumption mode need connect the electricity meter
 
 ## 📮 Support & Feedback
 

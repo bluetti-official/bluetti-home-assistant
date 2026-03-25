@@ -158,6 +158,10 @@ zijn dat `Home Assistant` toegang heeft tot de BLUETTI-powerstations.
    git pull
    ```
 
+## Kennisgeving
+
+### Voor de Balco260 zelfverbruikmodus is een elektriciteitsmeter nodig.
+
 ## 📮 Ondersteuning & feedback
 
 💬 Heb je problemen of suggesties? Maak een issue aan op GitHub:

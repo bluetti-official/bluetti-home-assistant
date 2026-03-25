@@ -139,6 +139,10 @@ BLUETTI储能集成github仓库地址：[https://github.com/bluetti-official/blu
     git pull
     ```
 
+## 注意
+
+### Balco260 自发自用模式需要接入电表
+
 ## 📮 支持 & 反馈
 
 - GitHub Issues:

@@ -157,6 +157,10 @@ kann.
    cd /<ha workspaces>/config/custom_components/bluetti
    git pull
    ```
+## Beachten
+
+### Balco260-Eigenverbrauchsmodus: Anschluss des Stromzählers erforderlich
+
 
 ## 📮 Unterstützung & Feedback
 
