@@ -22,6 +22,10 @@ The Integration's github repository is:
 - ✅ DC ECO
 - ✅ Work mode switch: Backup, Self-consumption, Peak and Off-Peak
 - ✅ Sleep Mode
+- ✅ PV Input Power
+- ✅ Grid Input Power
+- ✅ AC Ouput Power
+- ✅ DC Ouput Power
 
 ## 🎮 Power Station Support List
 
@@ -29,20 +33,26 @@ The Integration's github repository is:
 >
 > More power station models will be added in the future.
 
-| Power Station Model         | Inverter Status | Battery SOC | AC Switch | DC Switch | power switch | AC ECO | DC ECO | Work mode switch | Sleep Mode       | 
-| :-------------------------: | :-------------: | :---------: | :-------: |:--------:| :----------: |:------:| :----: | :--------------: | :--------------: | 
-| AP300                       |                 |     ✅      |    ✅     |          |              |   ✅   |        |        ✅        |       ✅      |
-| EL300                       |                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
-| EL320,AORA320               |                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
-| EL400                       |                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
-| EP13K                       |       ✅        |     ✅      |           |          |      ✅      |        |        |        ✅        |                |
-| EP2000                      |       ✅        |     ✅      |           |          |      ✅      |        |        |        ✅        |                |
-| EP6K                        |       ✅        |     ✅      |           |          |      ✅      |        |        |        ✅        |                |
-| EP760                       |       ✅        |     ✅      |           |          |      ✅      |        |        |                   |               |
-| FP                          |       ✅        |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
-| PR100V2,EL100V2,AORA100V2   |                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
-| PR200V2,Elite 200 V2,AORA200|                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
-| PR30V2,EL30V2               |                 |     ✅      |    ✅     |     ✅   |              |   ✅   |   ✅   |        ✅        |       ✅      |
+|     Power Station Model      |             Buesiness Name              | Inverter Status | Battery SOC | AC Switch | DC Switch | power switch | AC ECO | DC ECO | Work mode switch | Sleep Mode | PV Input Power | Grid Input Power | AC Output Power | DC Output Power | 
+|:----------------------------:|:---------------------------------------:|:---------------:|:-----------:|:---------:|:---------:|:------------:|:------:|:------:|:----------------:|:----------:|:--------------:|:----------------:|:---------------:|:---------------:|
+|            AP300             |                Apex 300                 |                 |      ✅      |     ✅     |           |             |   ✅    |        |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
+|            EL300             |           Elite 300,AORA 300            |                 |      ✅      |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
+|        EL320,AORA320         |           Elite 320,AORA 320            |                 |      ✅      |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
+|            EL400             |                Elite 400                |                 |      ✅      |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
+|            EP13K             |                  EP13k                  |        ✅        |      ✅      |           |           |      ✅      |        |        |        ✅         |            |                |                  |                 |                 |
+|            EP2000            |                  EP200                  |        ✅        |      ✅      |           |           |      ✅      |        |        |        ✅         |            |                |                  |                 |                 |
+|             EP6K             |                  EP6k                   |        ✅        |      ✅      |           |           |      ✅      |        |        |        ✅         |            |                |                  |                 |                 |
+|            EP760             |                  EP760                  |        ✅        |      ✅      |           |           |      ✅      |        |        |                  |            |                |                  |                 |                 |
+|           EP500Pro           |                EP500Pro                 |                 |      ✅      |     ✅     |      ✅     |             |        |        |        ✅         |            |       ✅        |        ✅         |        ✅        |        ✅        |
+|              FP              |             Fridge Product              |        ✅        |      ✅      |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |                |                  |                 |                 |
+|  PR100V2,EL100V2,AORA100V2   | Premium 100 V2,Elite 100 V2,AORA 100 V2 |                 |      ✅      |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
+| PR200V2,Elite 200 V2,AORA200 | Premium 200 V2,Elite 200 V2,AORA 200 V2 |                 |      ✅      |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
+|        PR30V2,EL30V2         |  Premium 30 V2,Elite 30 V2,AORA 30 V2   |                 |      ✅      |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
+|             RV5              |                   RV5                   |        ✅        |      ✅      |     ✅     |     ✅     |             |        |        |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
+|      Balco260,Balco500       |            Balco260,Balco500            |        ✅        |      ✅      |     ✅     |           |             |        |        |        ✅         |            |       ✅        |        ✅         |        ✅        |                 |
+|         AC300,AC500          |               AC300,AC500               |                 |      ✅      |     ✅     |      ✅     |             |        |        |        ✅         |            |       ✅        |        ✅         |        ✅        |        ✅        |
+|        AC200PL,AC200L        |             AC200PL,AC200L              |                 |      ✅      |     ✅     |      ✅     |             |   ✅    |   ✅    |        ✅         |            |       ✅        |        ✅         |        ✅        |        ✅        |
+
 
 ## 📦 Integration installation
 
@@ -145,6 +155,10 @@ Please check the **network**, **ports** and **firewall** to ensure that
    cd /<ha workspaces>/config/custom_components/bluetti
    git pull
    ```
+   
+## Notice
+
+### Balco260 Self-consumption mode need connect the electricity meter
 
 ## 📮 Support & Feedback
 

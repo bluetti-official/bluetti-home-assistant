@@ -7,9 +7,10 @@ from json import dumps, loads
 from typing import Any, TypeVar, Generic
 
 from pydantic import TypeAdapter
+from homeassistant.core import HomeAssistant
 
 from .unify_response import UnifyResponse
-from ..const import Method
+from ..const import Method,EVENT_TOKEN_EXPIRED
 from ..application_exception import ApplicationRuntimeException
 from ..profile.application_profile import ApplicationProfile
 
@@ -24,6 +25,7 @@ class Bluetti(Generic[T]):
     _accessToken: str | None = None
     _headers: dict[str, str]
     _httpSession: aiohttp.ClientSession
+    _hass: HomeAssistant
 
     @property
     @abstractmethod
@@ -33,10 +35,12 @@ class Bluetti(Generic[T]):
     def __init__(
             self,
             httpSession: aiohttp.ClientSession,
-            accessToken: str | None = None
+            accessToken: str | None = None,
+            hass: HomeAssistant | None = None
     ):
         self._httpSession = httpSession
         self._accessToken = accessToken
+        self._hass = hass
 
     async def _request(
             self,
@@ -91,6 +95,9 @@ class Bluetti(Generic[T]):
                 unify_response = TypeAdapter(UnifyResponse[responseType]).validate_python(data)
                 # self.logger.debug("<====== Server response body: %s", dumps(data, indent=4, ensure_ascii=False))
                 # print(repr(unify_response))
+                if data['code'] == 805:
+                    self._hass.bus.fire(EVENT_TOKEN_EXPIRED)
+                    self.logger.info("token have expired")
                 return unify_response
             else:
                 data = await response.text()

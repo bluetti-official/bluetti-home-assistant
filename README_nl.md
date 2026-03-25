@@ -21,6 +21,10 @@ De GitHub-repository van de integratie is:
 - ✅ DC ECO-modus
 - ✅ Werkmodusschakelaar: noodstroom, zelfverbruik, piek- en daluren
 - ✅ Slaap Modus
+- ✅ PV-ingangsvermogen
+- ✅ Net-ingangsvermogen
+- ✅ AC-uitgangsvermogen
+- ✅ DC-uitgangsvermogen
 
 ## 🎮 Ondersteunde powerstationmodellen
 
@@ -28,20 +32,25 @@ De GitHub-repository van de integratie is:
 >
 > Meer powerstationmodellen zullen in de toekomst worden toegevoegd.
 
-|      Powerstationmodel      | Omvormerstatus | Batterij-SOC | AC-schakelaar | DC-schakelaar | Hoofdschakelaar | AC ECO | DC ECO | Werkmodusschakelaar | Slaap Modus |
-| :-------------------------: | :-------------: | :---------: | :-----------: | :-----------: | :-------------: | :----: | :----: | :-----------------: | :---------: | 
-| AP300                       |                 |     ✅      |      ✅      |               |                 |   ✅   |        |          ✅         |      ✅    |
-| EL300                       |                 |     ✅      |      ✅      |       ✅      |                 |   ✅   |   ✅   |          ✅        |      ✅     |
-| EL320,AORA320               |                 |     ✅      |      ✅      |       ✅      |                 |   ✅   |   ✅   |          ✅        |      ✅     |
-| EL400                       |                 |     ✅      |      ✅      |       ✅      |                 |   ✅   |   ✅   |          ✅        |      ✅     |
-| EP13K                       |       ✅        |     ✅      |              |               |       ✅        |        |        |          ✅        |              |
-| EP2000                      |       ✅        |     ✅      |              |               |       ✅        |        |        |          ✅        |              |
-| EP6K                        |       ✅        |     ✅      |              |               |       ✅        |        |        |          ✅        |              |
-| EP760                       |       ✅        |     ✅      |              |               |       ✅        |        |        |                    |              |
-| FP                          |       ✅        |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |         ✅        |       ✅     |
-| PR100V2,EL100V2,AORA100V2   |                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |         ✅        |       ✅     |
-| PR200V2,Elite 200 V2,AORA200|                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |         ✅        |       ✅     |
-| PR30V2,EL30V2               |                 |     ✅      |      ✅      |       ✅     |                  |   ✅   |   ✅   |         ✅        |       ✅     |
+|      Powerstationmodel       |               productnaam               | Omvormerstatus  | Batterij-SOC | AC-schakelaar | DC-schakelaar | Hoofdschakelaar | AC ECO | DC ECO | Werkmodusschakelaar | Slaap Modus | PV-ingangsvermogen | Net-ingangsvermogen | AC-ingangsvermogen | DC-ingangsvermogen |
+|:----------------------------:|:---------------------------------------:|:---------------:|:------------:|:-------------:|:-------------:|:---------------:|:------:|:------:|:-------------------:|:-----------:|:------------------:|:-------------------:|:------------------:|:------------------:| 
+|            AP300             |                Apex 300                 |                 |      ✅       |       ✅       |               |                 |   ✅    |        |          ✅          |      ✅      |         ✅          |          ✅          |         ✅          |         ✅          |
+|            EL300             |           Elite 300,AORA 300            |                 |      ✅       |       ✅       |       ✅       |                 |   ✅    |   ✅    |          ✅          |      ✅      |         ✅          |          ✅          |         ✅          |         ✅          |
+|        EL320,AORA320         |           Elite 320,AORA 320            |                 |      ✅       |       ✅       |       ✅       |                 |   ✅    |   ✅    |          ✅          |      ✅      |         ✅          |          ✅          |         ✅          |         ✅          |
+|            EL400             |                Elite 400                |                 |      ✅       |       ✅       |       ✅       |                 |   ✅    |   ✅    |          ✅          |      ✅      |         ✅          |          ✅          |         ✅          |         ✅          |
+|            EP13K             |                  EP13k                  |        ✅        |      ✅       |               |               |        ✅        |        |        |          ✅          |             |                    |                     |                    |                    |
+|            EP2000            |                  EP200                  |        ✅        |      ✅       |               |               |        ✅        |        |        |          ✅          |             |                    |                     |                    |                    |
+|             EP6K             |                  EP6k                   |        ✅        |      ✅       |               |               |        ✅        |        |        |          ✅          |             |                    |                     |                    |                    |
+|            EP760             |                  EP760                  |        ✅        |      ✅       |               |               |        ✅        |        |        |                     |             |                    |                     |                    |                    |
+|           EP500Pro           |                EP500Pro                 |                 |      ✅       |       ✅       |       ✅       |                 |        |        |          ✅          |             |         ✅          |          ✅          |         ✅          |         ✅          |
+|              FP              |             Fridge Product              |        ✅        |      ✅       |       ✅       |       ✅       |                 |   ✅    |   ✅    |          ✅          |      ✅      |                    |                     |                    |                    |
+|  PR100V2,EL100V2,AORA100V2   | Premium 100 V2,Elite 100 V2,AORA 100 V2 |                 |      ✅       |       ✅       |       ✅       |                 |   ✅    |   ✅    |          ✅          |      ✅      |         ✅          |          ✅          |         ✅          |         ✅          |
+| PR200V2,Elite 200 V2,AORA200 | Premium 200 V2,Elite 200 V2,AORA 200 V2 |                 |      ✅       |       ✅       |       ✅       |                 |   ✅    |   ✅    |          ✅          |      ✅      |         ✅          |          ✅          |         ✅          |         ✅          |
+|        PR30V2,EL30V2         |  Premium 30 V2,Elite 30 V2,AORA 30 V2   |                 |      ✅       |       ✅       |       ✅       |                 |   ✅    |   ✅    |          ✅          |      ✅      |         ✅          |          ✅          |         ✅          |         ✅          |
+|             RV5              |                   RV5                   |        ✅        |      ✅       |       ✅       |       ✅       |                 |        |        |          ✅          |      ✅      |         ✅          |          ✅          |         ✅          |         ✅          |
+|      Balco260,Balco500       |            Balco260,Balco500            |        ✅        |      ✅       |       ✅       |               |                 |        |        |          ✅          |             |         ✅          |          ✅          |         ✅          |                    |
+|         AC300,AC500          |               AC300,AC500               |                 |      ✅       |       ✅       |       ✅       |                 |        |        |          ✅          |             |         ✅          |          ✅          |         ✅          |         ✅          |
+|        AC200PL,AC200L        |             AC200PL,AC200L              |                 |      ✅       |       ✅       |       ✅       |                 |   ✅    |   ✅    |          ✅          |             |         ✅          |          ✅          |         ✅          |         ✅          |
 
 ## 📦 Installatie van de integratie
 
@@ -148,6 +157,10 @@ zijn dat `Home Assistant` toegang heeft tot de BLUETTI-powerstations.
    cd /<ha workspaces>/config/custom_components/bluetti
    git pull
    ```
+
+## Kennisgeving
+
+### Voor de Balco260 zelfverbruikmodus is een elektriciteitsmeter nodig.
 
 ## 📮 Ondersteuning & feedback
 
