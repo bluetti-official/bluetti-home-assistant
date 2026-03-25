@@ -1,3 +1,19 @@
+# 1.0.2 2026-03-31
+New power station models have been supported:
+
+- EP500Pro
+- AORA300
+- AORA30V2
+- RV5
+- Balco 260,Balco 500
+- AC300,AC500
+- AC200PL,AC200L
+
+Functions changes are as follows:
+- Add "PV Input Power", "Grid Input Power", "AC Ouput Power" and "DC Ouput Power", only some specific models are supported.
+- Fix token expired can`t auto refesh issue.
+
+
 # 1.0.1 2025-12-15
 New power station models have been supported:
 
