@@ -31,10 +31,12 @@ SENSOR_MAP = {
     },
     "SensorDeviceClass.ENUM":{
         "device_class":SensorDeviceClass.ENUM,
+        "state_class": "",
         "unit": ""
     },
     "SensorDeviceClass.DURATION":{
         "device_class":SensorDeviceClass.DURATION,
+        "state_class": "",
         "unit": "min"
     },
     "SensorDeviceClass.POWER":{
@@ -75,8 +77,13 @@ async def async_setup_entry(
         for state in device.states:
             if state.fn_type == 'SENSOR' and state.sensor_info:
                 sensorClass = SENSOR_MAP[state.sensor_info['sensorType']]
-                meta = {'name':state.fn_name,'unit': state.sensor_info['unit'] or sensorClass['unit'],'device_class':sensorClass['device_class']}
-                entities.append(BluettiSensor(device, state,meta))
+                meta = {
+                    "name": state.fn_name,
+                    "unit": state.sensor_info["unit"] or sensorClass["unit"],
+                    "device_class": sensorClass["device_class"],
+                    "state_class": sensorClass["state_class"]
+                }
+                entities.append(BluettiSensor(device, state, meta))
             if state.fn_type == "SENSOR" and state.fn_code in BINARY_SENSOR_MAP:
                 entities.append(BluettiBinarySensor(device, state, BINARY_SENSOR_MAP[state.fn_code]))
 
@@ -100,6 +107,7 @@ class BluettiSensor(SensorEntity):
         self._attr_unique_id = f"{device.device_id}_{state.fn_code}"
         self._attr_name = f"{device.name} {meta['name']}"
         self._attr_device_class = meta.get("device_class")
+        self._attr_state_class = meta.get("state_class")
         self._attr_native_unit_of_measurement = meta.get("unit")
         self._attr_icon = get_icon_for_fn_code(state.fn_code)
         self._attr_device_info = {
