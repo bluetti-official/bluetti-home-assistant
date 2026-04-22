@@ -1,5 +1,5 @@
 from homeassistant.const import PERCENTAGE
-from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorDeviceClass
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -26,6 +26,7 @@ from .icon_config import get_icon_for_fn_code
 SENSOR_MAP = {
     "SensorDeviceClass.BATTERY":{
         "device_class":SensorDeviceClass.BATTERY,
+        "state_class":SensorStateClass.MEASUREMENT,
         "unit": PERCENTAGE
     },
     "SensorDeviceClass.ENUM":{
@@ -38,6 +39,7 @@ SENSOR_MAP = {
     },
     "SensorDeviceClass.POWER":{
         "device_class":SensorDeviceClass.POWER,
+        "state_class":SensorStateClass.MEASUREMENT,
         "unit": "W"
     }
 }
