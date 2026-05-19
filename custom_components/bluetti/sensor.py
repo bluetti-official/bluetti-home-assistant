@@ -1,5 +1,7 @@
+from typing import TypedDict
+
 from homeassistant.const import PERCENTAGE
-from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorDeviceClass
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -23,21 +25,33 @@ from .icon_config import get_icon_for_fn_code
 #     },
 # }
 
-SENSOR_MAP = {
+class BaseSensorMetaInfo(TypedDict):
+    device_class: SensorDeviceClass
+    state_class: SensorStateClass | None
+    unit: str | None
+    
+class NamedSensorMetaInfo(BaseSensorMetaInfo):
+    name: str
+    
+SENSOR_MAP: dict[str, BaseSensorMetaInfo] = {
     "SensorDeviceClass.BATTERY":{
         "device_class":SensorDeviceClass.BATTERY,
+        "state_class":SensorStateClass.MEASUREMENT,
         "unit": PERCENTAGE
     },
     "SensorDeviceClass.ENUM":{
         "device_class":SensorDeviceClass.ENUM,
-        "unit": ""
+        "state_class": None,
+        "unit": None
     },
     "SensorDeviceClass.DURATION":{
         "device_class":SensorDeviceClass.DURATION,
+        "state_class": None,
         "unit": "min"
     },
     "SensorDeviceClass.POWER":{
         "device_class":SensorDeviceClass.POWER,
+        "state_class":SensorStateClass.MEASUREMENT,
         "unit": "W"
     }
 }
@@ -73,8 +87,13 @@ async def async_setup_entry(
         for state in device.states:
             if state.fn_type == 'SENSOR' and state.sensor_info:
                 sensorClass = SENSOR_MAP[state.sensor_info['sensorType']]
-                meta = {'name':state.fn_name,'unit': state.sensor_info['unit'] or sensorClass['unit'],'device_class':sensorClass['device_class']}
-                entities.append(BluettiSensor(device, state,meta))
+                meta: NamedSensorMetaInfo = {
+                    "name": state.fn_name,
+                    "unit": state.sensor_info["unit"] or sensorClass["unit"],
+                    "device_class": sensorClass["device_class"],
+                    "state_class": sensorClass["state_class"]
+                }
+                entities.append(BluettiSensor(device, state, meta))
             if state.fn_type == "SENSOR" and state.fn_code in BINARY_SENSOR_MAP:
                 entities.append(BluettiBinarySensor(device, state, BINARY_SENSOR_MAP[state.fn_code]))
 
@@ -90,15 +109,16 @@ class BluettiSensor(SensorEntity):
 
     # should_poll = True
 
-    def __init__(self, device: BluettiDevice, state: BluettiState, meta: dict):
+    def __init__(self, device: BluettiDevice, state: BluettiState, meta: NamedSensorMetaInfo):
         self._device = device
         self._state_obj = state
         self._meta = meta
 
         self._attr_unique_id = f"{device.device_id}_{state.fn_code}"
         self._attr_name = f"{device.name} {meta['name']}"
-        self._attr_device_class = meta.get("device_class")
-        self._attr_native_unit_of_measurement = meta.get("unit")
+        self._attr_device_class = meta["device_class"]
+        self._attr_state_class = meta["state_class"]
+        self._attr_native_unit_of_measurement = meta["unit"]
         self._attr_icon = get_icon_for_fn_code(state.fn_code)
         self._attr_device_info = {
             "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID
