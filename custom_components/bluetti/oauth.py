@@ -184,9 +184,9 @@ class AuthTokenRefresh:
         unsub = hass.bus.async_listen(EVENT_TOKEN_EXPIRED, self.on_token_expired_event)
         entry.async_on_unload(unsub)
 
-    async def on_token_expired_event(self,event):
-        __LOGGER__.info("on_token_expired_event")
-        self.send_expired_notification()
+    async def on_token_expired_event(self, event):
+        __LOGGER__.info("on_token_expired_event, try to refresh token")
+        await self.async_check_token_expiry(force_or_now=True)
 
     def start_token_check(self):
         # first clear old notify
@@ -239,30 +239,50 @@ class AuthTokenRefresh:
         )
 
     # check token is in 7 day if in 7day refesh token
-    async def async_check_token_expiry(self):
-        __LOGGER__.info("check token is expired")
-        expire_timestamp = cast(float, self.oAuth2Session.token["expires_at"])
-        current_timestamp = time.time()
-        remain_timestamp = expire_timestamp - current_timestamp
-        if remain_timestamp < 0:
+    async def async_check_token_expiry(self, force_or_now=False):
+        # `force_or_now` is a bool when called explicitly, or a datetime when
+        # invoked by async_track_time_interval; only the bool means "force".
+        force = force_or_now if isinstance(force_or_now, bool) else False
+        __LOGGER__.info(f"check token is expired (force={force})")
+        token = self.oAuth2Session.token
+        if not token:
             self.send_expired_notification()
             return
-        
-        if remain_timestamp < 3600*24*7 :
+
+        expire_timestamp = 0.0
+        if "expires_at" in token:
+            expire_timestamp = cast(float, token["expires_at"])
+        elif "expires_in" in token and "created_at" in token:
+            expire_timestamp = cast(float, token["created_at"]) + cast(float, token["expires_in"])
+
+        current_timestamp = time.time()
+        remain_timestamp = expire_timestamp - current_timestamp
+
+        # Only give up (and notify) when we are NOT forcing a refresh. A forced
+        # refresh still tries to redeem the refresh_token even past expiry.
+        if not force and remain_timestamp < 0:
+            self.send_expired_notification()
+            return
+
+        if force or remain_timestamp < 3600*24*7:
             try:
                 __LOGGER__.info('start refresh token')
                 last_refesh = self.entry.data.get("last_token_refresh", 0.0)
                 # 1 hour only one time ,when server is 500 do not always refesh token
-                if current_timestamp - last_refesh < 3600 : 
+                if not force and current_timestamp - last_refesh < 3600:
                     __LOGGER__.info('last refesh token in 1 hour,this do not refesh return')
                     return
                 last_refesh = current_timestamp
 
                 new_token = await self.oAuth2Session.implementation.async_refresh_token(self.oAuth2Session.token)
                 self.hass.config_entries.async_update_entry(
-                    self.entry, data={**self.entry.data, "token": new_token,"last_token_refresh":last_refesh}
+                    self.entry, data={**self.entry.data, "token": new_token, "last_token_refresh": last_refesh}
                 )
                 __LOGGER__.info('refresh token ok,then reload')
                 await self.hass.config_entries.async_reload(self.entry.entry_id)
             except Exception as e:
                 __LOGGER__.error(f"refresh token failed: {e}")
+                # Only surface the "OAuth Expired" notice when the refresh truly
+                # failed on an expired/force path, not for transient errors.
+                if force or remain_timestamp < 0:
+                    self.send_expired_notification()
