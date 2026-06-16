@@ -181,6 +181,9 @@ class AuthTokenRefresh:
         self.hass = hass
         self.entry = entry
         self.oAuth2Session = oauth_session
+        # Single-flight guard so a periodic check and an EVENT_TOKEN_EXPIRED
+        # arriving together can't run overlapping refresh+reload cycles.
+        self._refresh_lock = asyncio.Lock()
         unsub = hass.bus.async_listen(EVENT_TOKEN_EXPIRED, self.on_token_expired_event)
         entry.async_on_unload(unsub)
 
@@ -249,6 +252,7 @@ class AuthTokenRefresh:
             self.send_expired_notification()
             return
 
+        has_expiry = "expires_at" in token or ("expires_in" in token and "created_at" in token)
         expire_timestamp = 0.0
         if "expires_at" in token:
             expire_timestamp = cast(float, token["expires_at"])
@@ -257,32 +261,45 @@ class AuthTokenRefresh:
 
         current_timestamp = time.time()
         remain_timestamp = expire_timestamp - current_timestamp
+        # A token with no usable expiry fields must not be treated as expired:
+        # try to refresh it rather than raising a false "expired" notice.
+        truly_expired = has_expiry and remain_timestamp < 0
 
-        # Only give up (and notify) when we are NOT forcing a refresh. A forced
-        # refresh still tries to redeem the refresh_token even past expiry.
-        if not force and remain_timestamp < 0:
+        # Only give up (and notify) when the access token is genuinely past
+        # expiry and we are not forcing a refresh.
+        if not force and truly_expired:
             self.send_expired_notification()
             return
 
-        if force or remain_timestamp < 3600*24*7:
+        # Refresh when forced, when expiry is unknown, or inside the 7-day window.
+        if not (force or not has_expiry or remain_timestamp < 3600*24*7):
+            return
+
+        async with self._refresh_lock:
+            # Re-read after acquiring the lock: a concurrent caller may have just
+            # refreshed. Keep a minimum interval even when forced so a burst of
+            # duplicate events can't trigger repeated refresh+reload cycles.
+            last_refesh = self.entry.data.get("last_token_refresh", 0.0)
+            now = time.time()
+            min_interval = 60 if force else 3600
+            if now - last_refesh < min_interval:
+                __LOGGER__.info(
+                    "token refreshed %.0fs ago (min interval %ss), skipping refresh",
+                    now - last_refesh, min_interval,
+                )
+                return
             try:
                 __LOGGER__.info('start refresh token')
-                last_refesh = self.entry.data.get("last_token_refresh", 0.0)
-                # 1 hour only one time ,when server is 500 do not always refesh token
-                if not force and current_timestamp - last_refesh < 3600:
-                    __LOGGER__.info('last refesh token in 1 hour,this do not refesh return')
-                    return
-                last_refesh = current_timestamp
-
                 new_token = await self.oAuth2Session.implementation.async_refresh_token(self.oAuth2Session.token)
                 self.hass.config_entries.async_update_entry(
-                    self.entry, data={**self.entry.data, "token": new_token, "last_token_refresh": last_refesh}
+                    self.entry, data={**self.entry.data, "token": new_token, "last_token_refresh": now}
                 )
                 __LOGGER__.info('refresh token ok,then reload')
                 await self.hass.config_entries.async_reload(self.entry.entry_id)
-            except Exception as e:
-                __LOGGER__.error(f"refresh token failed: {e}")
+            except Exception:
+                __LOGGER__.exception("refresh token failed")
                 # Only surface the "OAuth Expired" notice when the refresh truly
-                # failed on an expired/force path, not for transient errors.
-                if force or remain_timestamp < 0:
+                # failed on an expired/forced path, not for transient errors or a
+                # merely-missing expiry field.
+                if force or truly_expired:
                     self.send_expired_notification()
