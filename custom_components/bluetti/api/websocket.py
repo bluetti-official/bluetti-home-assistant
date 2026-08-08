@@ -1,10 +1,16 @@
 import logging
 import json
 import time
+import warnings
 from threading import Thread
 from typing import Callable
 
-import stomper
+# stomper's stompbuffer module has an invalid regex escape sequence that
+# raises a SyntaxWarning on import (fixed in no released version as of
+# 0.4.3); silence it here so it isn't misattributed to this integration.
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", SyntaxWarning)
+    import stomper
 import websocket
 import threading
 
