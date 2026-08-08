@@ -1,3 +1,4 @@
+import logging
 from typing import TypedDict
 
 from homeassistant.const import PERCENTAGE
@@ -10,6 +11,8 @@ from . import BluettiConfigEntry
 from .const import DOMAIN
 from .models import BluettiData, BluettiDevice, BluettiState
 from .icon_config import get_icon_for_fn_code
+
+__LOGGER__ = logging.getLogger(__name__)
 
 # 映射 sensor 类
 # SENSOR_MAP = {
@@ -86,7 +89,13 @@ async def async_setup_entry(
         #         entities.append(BluettiBinarySensor(device, state, BINARY_SENSOR_MAP[state.fn_code]))
         for state in device.states:
             if state.fn_type == 'SENSOR' and state.sensor_info:
-                sensorClass = SENSOR_MAP[state.sensor_info['sensorType']]
+                sensorClass = SENSOR_MAP.get(state.sensor_info.get('sensorType'))
+                if sensorClass is None:
+                    __LOGGER__.warning(
+                        "Unknown sensor type '%s' for fn_code=%s, skipping",
+                        state.sensor_info.get('sensorType'), state.fn_code,
+                    )
+                    continue
                 meta: NamedSensorMetaInfo = {
                     "name": state.fn_name,
                     "unit": state.sensor_info["unit"] or sensorClass["unit"],
