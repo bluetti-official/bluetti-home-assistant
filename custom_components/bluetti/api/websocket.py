@@ -114,7 +114,7 @@ class StompClient(object):
                 __LOGGER__.debug("Sent STOMP heartbeat")
                 
             except Exception as e:
-                __LOGGER__.error(f"Failed to send heartbeat: {e}")
+                __LOGGER__.error("Failed to send heartbeat: %s", e)
                 break
                 
             time.sleep(self.heartbeat_interval)
@@ -140,7 +140,7 @@ class StompListener:
                 callback(*args)
 
             except Exception as e:
-                __LOGGER__.error(f"error from callback {callback}: {e}")
+                __LOGGER__.error("error from callback %s: %s", callback, e)
                 # if self.on_error:
                 #    self.on_error(self, e)
 
@@ -170,7 +170,10 @@ class StompListener:
         elif frame.cmd == "CONNECTED":
             heartbeat = frame.headers.get('heart-beat', '0,0')
             server_send, server_receive = map(int, heartbeat.split(','))
-            __LOGGER__.info(f"Server heartbeat configuration: send={server_send}, receive={server_receive}")
+            __LOGGER__.info(
+                "Server heartbeat configuration: send=%s, receive=%s",
+                server_send, server_receive,
+            )
 
             user_name = frame.headers.get('user-name')
             if not user_name:
@@ -194,5 +197,8 @@ class StompListener:
         __LOGGER__.error("The BLUETTI WebSocket raised an error: %s", error)
 
     def on_close(self, ws, close_status_code, close_msg):
-        __LOGGER__.debug(f"WebSocket 断开连接。状态码: {close_status_code}, 消息: {close_msg}")
+        __LOGGER__.debug(
+            "WebSocket connection closed. Status code: %s, message: %s",
+            close_status_code, close_msg,
+        )
         self.client.reconnect()

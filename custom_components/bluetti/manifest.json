@@ -10,10 +10,8 @@
     "application_credentials"
   ],
   "documentation": "https://www.home-assistant.io/integrations/bluetti",
-  "homekit": {},
+  "integration_type": "hub",
   "iot_class": "cloud_push",
   "quality_scale": "bronze",
-  "requirements": ["pydantic>=2.0", "stomper>=0.4", "websocket-client>=1.6"],
-  "ssdp": [],
-  "zeroconf": []
+  "requirements": ["pydantic>=2.0", "stomper>=0.4", "websocket-client>=1.6"]
 }
