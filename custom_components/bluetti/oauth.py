@@ -269,4 +269,4 @@ class AuthTokenRefresh:
                 __LOGGER__.info('refresh token ok,then reload')
                 await self.hass.config_entries.async_reload(self.entry.entry_id)
             except Exception as e:
-                __LOGGER__.error(f"refresh token failed: {e}")
+                __LOGGER__.error("refresh token failed: %s", e)

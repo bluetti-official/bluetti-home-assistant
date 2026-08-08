@@ -10,21 +10,18 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_entry_oauth2_flow, device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers import storage
-from homeassistant.const import EVENT_HOMEASSISTANT_START
 
+from .coordinator import BluettiDeviceCoordinator
 from .models import BluettiData
 from .oauth import AsyncConfigEntryAuth,AuthTokenRefresh
 from .api.bluetti import APPLICATION_PROFILE
 from .api.product_client import ProductClient
 from .api.websocket import StompClient
-from .profile.application_profile import ApplicationProfile
 from .const import DOMAIN
 from .model.product import UserProduct
 
 __LOGGER__ = logging.getLogger(__name__)
 
-# TODO List the platforms that you want to support.
-# For your initial PR, limit it to 1 platform. Platform.LIGHT,
 _PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SWITCH, Platform.SELECT]
 
 # Create ConfigEntry type alias with ConfigEntryAuth or AsyncConfigEntryAuth object
@@ -84,41 +81,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     stomp_client = StompClient(APPLICATION_PROFILE.config["server"]["wss"], access_token, bluetti_devices.web_socket_message_handler,hass)
     stomp_client.connect()
 
+    coordinators: dict[str, BluettiDeviceCoordinator] = {}
     for device in bluetti_devices.devices:
         device._api_client = product_client
         device.name = device.sn
         device._hass = hass
         device._entry = entry
         device._entry_id = entry.entry_id
+        coordinators[device.device_id] = BluettiDeviceCoordinator(hass, entry, device)
 
-        # device._ws_manager = stomp_client
+    for coordinator in coordinators.values():
+        await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
         "bluettiDevices": bluetti_devices,
         "stompClient": stomp_client,
+        "coordinators": coordinators,
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
-    for device in bluetti_devices.devices:
-        await device.async_update()
-
-    # async def _after_start(event):
-    #     # print(event)
-    #     for device in bluetti_devices.devices:
-    #         await device.async_update()
-
-    # hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _after_start)
     __LOGGER__.info('bluetti init ok')
 
     return True
 
 
-def web_socket_message_handler(message: str):
-    
-    __LOGGER__.debug(message)
-
-# TODO Update entry annotation
 async def async_unload_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
     """Unload a config entry."""
     unloaded = await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)
