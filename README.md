@@ -134,6 +134,26 @@ can be installed.
    <img src="./doc/images/6-choose_bluetti_devices.png" width="880">
    <img src="./doc/images/7-bluetti_device_in_ha.png" width="880">
 
+## 🗑️ Removing the Integration
+
+1. Go to **Settings -> Devices & services**, open the `BLUETTI` integration
+   card, click the three-dot menu on the integration entry and select
+   **Delete**. This removes the config entry, its devices and entities from
+   `Home Assistant`.
+
+2. Remove the integration files:
+
+   - **Installed via HACS**: go to **HACS -> Integrations**, open `BLUETTI`,
+     and select **Remove**.
+   - **Installed manually**: delete the `custom_components/bluetti` folder
+     from your `Home Assistant` configuration directory.
+
+3. Restart `Home Assistant` to complete the removal.
+
+4. (Optional) If you no longer want `Home Assistant` to have access to your
+   BLUETTI account, revoke it from your BLUETTI account's connected-apps
+   settings.
+
 ## ❓ Frequently Asked Questions (FAQ)
 
 ### Not found `BLUETTI Integration` after installation?

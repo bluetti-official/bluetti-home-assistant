@@ -249,18 +249,14 @@ class BluettiDevice:
 
             # 4. Remove the device (and its coordinator) from the runtime data
             try:
-                domain_data = hass.data.get(DOMAIN, {})
-                entry_data = domain_data.get(entry_id)
-                if entry_data and "bluettiDevices" in entry_data:
-                    bluetti_data = entry_data["bluettiDevices"]
-                    if hasattr(bluetti_data, 'devices'):
-                        bluetti_data.devices = [
-                            d for d in bluetti_data.devices
-                            if d.device_id != self.device_id
-                        ]
-                        __LOGGER__.debug("Removed device from runtime data: %s", self.device_id)
-                if entry_data and "coordinators" in entry_data:
-                    entry_data["coordinators"].pop(self.device_id, None)
+                runtime_data = getattr(entry, "runtime_data", None)
+                if runtime_data:
+                    runtime_data.bluetti_devices.devices = [
+                        d for d in runtime_data.bluetti_devices.devices
+                        if d.device_id != self.device_id
+                    ]
+                    runtime_data.coordinators.pop(self.device_id, None)
+                    __LOGGER__.debug("Removed device from runtime data: %s", self.device_id)
             except Exception as e:
                 __LOGGER__.warning("Error removing device from runtime data: %s", e)
 
