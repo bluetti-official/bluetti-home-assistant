@@ -48,6 +48,22 @@ def test_device_get_state_returns_none_for_missing_code():
     assert device.get_state("does-not-exist") is None
 
 
+def test_state_falls_back_to_fn_code_when_fn_name_is_blank():
+    """Some fn_codes come back from the API without a localized fnName.
+
+    With has_entity_name = True, an empty entity name makes Home
+    Assistant's frontend display the raw entity_id (which contains the
+    device serial number) instead of a real label, so BluettiDevice must
+    fall back to a non-empty name when building its states.
+    """
+    device = BluettiDevice(
+        device_id="SN1", on_line="1", name="Test", sn="SN1", model="AC200L",
+        state_list=[{"fnCode": "SetCtrlWorkMode", "fnValue": "2", "fnType": "SELECT"}],
+    )
+    state = device.get_state("SetCtrlWorkMode")
+    assert state.fn_name == "SetCtrlWorkMode"
+
+
 def test_device_battery_level_reads_soc_state():
     device = BluettiDevice(
         device_id="SN1", on_line="1", name="Test", sn="SN1", model="AC200L",
