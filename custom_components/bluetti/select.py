@@ -5,8 +5,13 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import BluettiConfigEntry
+from .const import DOMAIN
 from .entity import BluettiEntity
 from .models import BluettiData, BluettiDevice, BluettiState
+
+# Select actions call the BLUETTI cloud API; serialize them to avoid
+# hammering it with concurrent control requests.
+PARALLEL_UPDATES = 1
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -56,7 +61,9 @@ class BluettiSelect(BluettiEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         if self._readonly:
             raise ServiceValidationError(
-                f"{self._state_obj.fn_code} is read-only and cannot be changed"
+                translation_domain=DOMAIN,
+                translation_key="select_option_read_only",
+                translation_placeholders={"fn_code": self._state_obj.fn_code},
             )
 
         for v in self._state_obj.support_mode_values:
@@ -64,5 +71,7 @@ class BluettiSelect(BluettiEntity, SelectEntity):
                 await self._device.set_state_value(self._state_obj.fn_code, v["code"])
                 return
         raise ServiceValidationError(
-            f"Invalid option {option} for {self._state_obj.fn_code}"
+            translation_domain=DOMAIN,
+            translation_key="select_option_invalid",
+            translation_placeholders={"option": option, "fn_code": self._state_obj.fn_code},
         )

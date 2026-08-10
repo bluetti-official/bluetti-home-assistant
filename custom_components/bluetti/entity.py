@@ -7,7 +7,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import BluettiDeviceCoordinator
-from .icon_config import get_icon_for_fn_code
 from .models import BluettiDevice, BluettiState
 
 
@@ -27,7 +26,9 @@ class BluettiEntity(CoordinatorEntity[BluettiDeviceCoordinator]):
         self._state_obj = state
 
         self._attr_unique_id = f"{device.device_id}_{state.fn_code}"
-        self._attr_icon = get_icon_for_fn_code(state.fn_code)
+        # fn_code doubles as the icon translation key (see icons.json); it's
+        # a stable, bounded identifier already used for unique_id above.
+        self._attr_translation_key = state.fn_code
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, device.device_id)},
             name=device.name,

@@ -25,5 +25,38 @@
     "create_entry": {
       "default": "[%key:common::config_flow::create_entry::authenticated%]"
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Add BLUETTI devices",
+        "description": "Select any additional devices bound to your BLUETTI account that you want to add to Home Assistant.",
+        "data": {
+          "devices": "Devices"
+        }
+      }
+    },
+    "abort": {
+      "no_devices_available": "[%key:common::config_flow::abort::no_devices_available%]",
+      "all_devices_exists": "[%key:common::config_flow::abort::all_devices_exists%]",
+      "cannot_connect": "[%key:common::config_flow::abort::cannot_connect%]"
+    }
+  },
+  "exceptions": {
+    "command_failed": {
+      "message": "Error sending command to {device_id}: {error}"
+    },
+    "select_option_read_only": {
+      "message": "{fn_code} is read-only and cannot be changed"
+    },
+    "select_option_invalid": {
+      "message": "Invalid option {option} for {fn_code}"
+    }
+  },
+  "issues": {
+    "oauth_expired": {
+      "title": "BLUETTI authentication expired",
+      "description": "Your BLUETTI account authorization has expired. Go to the integration's settings and select **Reconfigure** to sign in again."
+    }
   }
 }

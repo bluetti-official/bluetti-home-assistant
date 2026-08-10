@@ -12,6 +12,6 @@
   "documentation": "https://www.home-assistant.io/integrations/bluetti",
   "integration_type": "hub",
   "iot_class": "cloud_push",
-  "quality_scale": "bronze",
+  "quality_scale": "gold",
   "requirements": ["pydantic>=2.0", "stomper>=0.4", "websocket-client>=1.6"]
 }

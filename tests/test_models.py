@@ -22,6 +22,25 @@ def test_state_set_value_switch():
     assert state.get_name_for_value() == "On"
 
 
+def test_state_get_name_for_value_falls_back_to_raw_value():
+    modes = [{"code": "0", "name": "Standard"}]
+    state = BluettiState(
+        fn_code="SetCtrlWorkMode", fn_name="Mode", fn_value="unmapped-value", fn_type="SELECT",
+        support_mode_values=modes,
+    )
+    assert state.get_name_for_value() == "unmapped-value"
+
+
+def test_state_repr():
+    state = BluettiState(fn_code="SOC", fn_name="Battery", fn_value="80", fn_type="SENSOR")
+    assert repr(state) == "<BluettiState SOC=80>"
+
+
+def test_device_repr():
+    device = BluettiDevice(device_id="SN1", on_line="1", name="Test", sn="SN1", model="AC200L")
+    assert repr(device) == "<BluettiDevice id=SN1 name=Test>"
+
+
 def test_state_select_valid_value():
     modes = [{"code": "0", "name": "Standard"}, {"code": "1", "name": "Silent"}]
     state = BluettiState(

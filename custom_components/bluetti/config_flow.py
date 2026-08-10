@@ -1,13 +1,16 @@
 """Copyright (C) 2025 BLUETTI Corporation."""
 
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import callback
 from homeassistant.components.application_credentials import ClientCredential, async_import_client_credential
 from .const import DOMAIN
 from .oauth import OAuth2FlowHandler
+from .options_flow import BluettiOptionsFlowHandler
 from .api.bluetti import APPLICATION_PROFILE
 
 class BluettiConfigFlow(OAuth2FlowHandler, domain=DOMAIN):
     """BLUETTI Custom Integration config flow."""
-    
+
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
         # 在配置流开始时导入默认的客户端凭据
@@ -18,3 +21,9 @@ class BluettiConfigFlow(OAuth2FlowHandler, domain=DOMAIN):
             ClientCredential("HomeAssistant", "SG9tZUFzc2lzdGFudA=="),
         )
         return await super().async_step_user(user_input)
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> BluettiOptionsFlowHandler:
+        """Return the options flow used to add more devices later."""
+        return BluettiOptionsFlowHandler()

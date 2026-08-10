@@ -1,7 +1,7 @@
 import logging
 from typing import TypedDict
 
-from homeassistant.const import PERCENTAGE
+from homeassistant.const import PERCENTAGE, EntityCategory
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
 from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorDeviceClass
 from homeassistant.core import HomeAssistant
@@ -12,6 +12,10 @@ from .entity import BluettiEntity
 from .models import BluettiData, BluettiDevice, BluettiState
 
 __LOGGER__ = logging.getLogger(__name__)
+
+# Entities only read from the coordinator and never poll or call the API
+# themselves, so there is no need to limit concurrent updates.
+PARALLEL_UPDATES = 0
 
 
 class BaseSensorMetaInfo(TypedDict):
@@ -117,6 +121,9 @@ class BluettiBinarySensor(BluettiEntity, BinarySensorEntity):
 
         self._attr_name = meta["name"]
         self._attr_device_class = meta.get("device_class")
+        # Connectivity status is diagnostic information, not a primary
+        # measurement.
+        self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
     @property
     def is_on(self) -> bool:
