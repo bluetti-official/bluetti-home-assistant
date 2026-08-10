@@ -10,7 +10,7 @@ from homeassistant.components import persistent_notification
 from .const import DOMAIN
 
 if TYPE_CHECKING:
-    from .coordinator import BluettiDeviceCoordinator
+    from .coordinator import BluettiDeviceCoordinator  # pragma: no cover
 
 __LOGGER__ = logging.getLogger(__name__)
 
@@ -147,7 +147,9 @@ class BluettiDevice:
             )
         except Exception as err:
             raise HomeAssistantError(
-                f"Error sending command to {self.device_id}: {err}"
+                translation_domain=DOMAIN,
+                translation_key="command_failed",
+                translation_placeholders={"device_id": self.device_id, "error": str(err)},
             ) from err
 
         if result.msgCode == 0:

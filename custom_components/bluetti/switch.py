@@ -6,6 +6,10 @@ from . import BluettiConfigEntry
 from .entity import BluettiEntity
 from .models import BluettiData, BluettiDevice, BluettiState
 
+# Switch actions call the BLUETTI cloud API; serialize them to avoid
+# hammering it with concurrent control requests.
+PARALLEL_UPDATES = 1
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: BluettiConfigEntry,

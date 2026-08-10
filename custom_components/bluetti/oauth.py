@@ -8,7 +8,7 @@ from homeassistant.components import persistent_notification
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import config_entry_oauth2_flow
+from homeassistant.helpers import config_entry_oauth2_flow, issue_registry as ir
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from aiohttp import ClientSession
@@ -19,6 +19,8 @@ from .api.product_client import ProductClient
 from .const import ACCOUNT_UNIQUE_ID, DOMAIN, INTEGRATION_NAME, EVENT_TOKEN_EXPIRED, NOTIFY_ID_TOKEN_EXPIRED
 
 __LOGGER__ = logging.getLogger(__name__)
+
+ISSUE_ID_OAUTH_EXPIRED = "oauth_expired"
 
 
 class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domain=DOMAIN):
@@ -204,6 +206,7 @@ class AuthTokenRefresh:
     def start_token_check(self):
         # first clear old notify
         persistent_notification.async_dismiss(self.hass,notification_id=NOTIFY_ID_TOKEN_EXPIRED)
+        ir.async_delete_issue(self.hass, DOMAIN, ISSUE_ID_OAUTH_EXPIRED)
         if self.is_token_valid() == False:
             __LOGGER__.info("token have expired send notify")
             self.send_expired_notification()
@@ -250,6 +253,14 @@ class AuthTokenRefresh:
             notification_message,
             title = 'OAuth Expired',
             notification_id = NOTIFY_ID_TOKEN_EXPIRED,
+        )
+        ir.async_create_issue(
+            self.hass,
+            DOMAIN,
+            ISSUE_ID_OAUTH_EXPIRED,
+            is_fixable=False,
+            severity=ir.IssueSeverity.ERROR,
+            translation_key="oauth_expired",
         )
 
     # check token is in 7 day if in 7day refesh token

@@ -103,9 +103,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
+    # Reload the entry when the options flow adds more devices.
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
+
     __LOGGER__.info('bluetti init ok')
 
     return True
+
+
+async def _async_update_listener(hass: HomeAssistant, entry: BluettiConfigEntry) -> None:
+    """Reload the entry when its options change."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:

@@ -1,2 +1,4 @@
 pytest-homeassistant-custom-component
 pytest-asyncio
+pytest-cov
+pyyaml

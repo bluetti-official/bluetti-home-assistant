@@ -1,6 +1,8 @@
 """Tests for the BLUETTI entity platforms (sensor/binary_sensor, switch, select)."""
 
+import pytest
 from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.exceptions import ServiceValidationError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.bluetti.const import DOMAIN
@@ -72,6 +74,17 @@ async def test_sensor_unavailable_when_device_offline(hass):
     assert entity.available is False
 
 
+async def test_sensor_unavailable_when_coordinator_update_failed(hass):
+    coordinator = _make_coordinator(hass)
+    coordinator.last_update_success = False
+    state = coordinator.device.get_state("SOC")
+    meta = {"name": state.fn_name, "unit": "%", "device_class": None, "state_class": None}
+
+    entity = BluettiSensor(coordinator.device, state, meta)
+
+    assert entity.available is False
+
+
 async def test_binary_sensor_reflects_state_value(hass):
     coordinator = _make_coordinator(hass)
     state = coordinator.device.states[0]
@@ -132,3 +145,21 @@ async def test_select_readonly_state_keeps_options_populated(hass):
     # outside of the advertised options list.
     assert entity.options == ["Idle"]
     assert entity.current_option == "Idle"
+
+
+async def test_select_readonly_option_cannot_be_changed(hass):
+    coordinator = _make_coordinator(hass)
+    state = coordinator.device.get_state("InvWorkState")
+    entity = BluettiSelect(coordinator.device, state)
+
+    with pytest.raises(ServiceValidationError):
+        await entity.async_select_option("Idle")
+
+
+async def test_select_invalid_option_raises(hass):
+    coordinator = _make_coordinator(hass)
+    state = coordinator.device.get_state("SetCtrlWorkMode")
+    entity = BluettiSelect(coordinator.device, state)
+
+    with pytest.raises(ServiceValidationError):
+        await entity.async_select_option("does-not-exist")

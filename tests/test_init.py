@@ -1,10 +1,16 @@
 """Tests for config entry unload/removal behavior in __init__.py."""
 
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.bluetti import BluettiRuntimeData, async_remove_entry, async_unload_entry
+from custom_components.bluetti import (
+    BluettiRuntimeData,
+    _async_update_listener,
+    async_remove_entry,
+    async_unload_entry,
+)
 from custom_components.bluetti.const import DOMAIN
 
 
@@ -70,3 +76,51 @@ async def test_remove_entry_without_runtime_data_does_not_raise(hass):
     entry.add_to_hass(hass)
 
     await async_remove_entry(hass, entry)
+
+
+async def test_remove_entry_survives_disconnect_error(hass):
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+
+    stomp_client = MagicMock()
+    stomp_client.disconnect.side_effect = RuntimeError("boom")
+    entry.runtime_data = _runtime_data(stomp_client)
+
+    # Must not raise even though disconnect() failed.
+    await async_remove_entry(hass, entry)
+
+
+async def test_remove_entry_cleans_up_device_and_entity_registries(hass):
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    entry.runtime_data = _runtime_data(MagicMock())
+
+    device_registry = dr.async_get(hass)
+    device_entry = device_registry.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, "SN1")},
+        name="Test Device",
+        manufacturer="Bluetti",
+        model="AC200L",
+    )
+    entity_registry = er.async_get(hass)
+    # Deliberately not linked to device_entry: device removal cascades to
+    # its own entities, so this checks the explicit entity cleanup loop.
+    entity_registry.async_get_or_create(
+        "sensor", DOMAIN, "SN1_standalone", config_entry=entry,
+    )
+
+    await async_remove_entry(hass, entry)
+
+    assert device_registry.async_get_device(identifiers={(DOMAIN, "SN1")}) is None
+    assert entity_registry.async_get_entity_id("sensor", DOMAIN, "SN1_standalone") is None
+
+
+async def test_update_listener_reloads_entry(hass):
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+
+    with patch.object(hass.config_entries, "async_reload", AsyncMock()) as mock_reload:
+        await _async_update_listener(hass, entry)
+
+    mock_reload.assert_awaited_once_with(entry.entry_id)
