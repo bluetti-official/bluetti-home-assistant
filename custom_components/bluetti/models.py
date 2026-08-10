@@ -106,7 +106,11 @@ class BluettiDevice:
         self.states = [
             BluettiState(
                 fn_code=s.get("fnCode"),
-                fn_name=s.get("fnName") or "",
+                # Some fn_codes are not localized by the API and come back
+                # with an empty fnName; fall back to fn_code so entities
+                # never end up with a blank has_entity_name name (which
+                # Home Assistant displays using the raw entity_id instead).
+                fn_name=s.get("fnName") or s.get("fnCode") or "",
                 fn_value=s.get("fnValue"),
                 fn_type=s.get("fnType"),
                 support_mode_values=s.get("supportModeValues"),
