@@ -85,7 +85,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                     data={
                         "auth_implementation": self._oauth_data["auth_implementation"],
                         "token": self._oauth_data["token"],
-                        "products": self._products
+                        "products": [p.model_dump() for p in self._products]
                     },
                     options=user_input,
                 )
