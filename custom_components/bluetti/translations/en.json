@@ -12,7 +12,10 @@
             "oauth_unauthorized": "OAuth authorization error while obtaining access token.",
             "user_rejected_authorize": "Account linking rejected: {error}",
 			"all_devices_exists": "All the devices and physical items under this account have already been included in the BLUETTI integrated package.",
-            "no_devices_available": "The current account has no available devices."
+            "no_devices_available": "The current account has no available devices.",
+            "cannot_connect": "Failed to connect to the BLUETTI server. Please try again.",
+            "success": "Successfully added your BLUETTI devices.",
+            "reconfigure_failed": "The config entry to reconfigure could not be found."
         },
         "create_entry": {
             "default": "Successfully authenticated"

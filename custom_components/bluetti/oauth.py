@@ -16,7 +16,7 @@ from aiohttp import ClientSession
 import voluptuous as vol
 
 from .api.product_client import ProductClient
-from .const import DOMAIN, INTEGRATION_NAME,EVENT_TOKEN_EXPIRED,NOTIFY_ID_TOKEN_EXPIRED
+from .const import ACCOUNT_UNIQUE_ID, DOMAIN, INTEGRATION_NAME, EVENT_TOKEN_EXPIRED, NOTIFY_ID_TOKEN_EXPIRED
 
 __LOGGER__ = logging.getLogger(__name__)
 
@@ -40,16 +40,28 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
     async def async_step_select_devices(self, user_input=None):
         """Let user select devices after OAuth2 login."""
         if user_input is not None:
-            # print(user_input)
-            await self._product_client.bind_devices({"bindSnList": user_input['devices']})
-            
-            # 检查是否存在同名的集成条目
-            existing_entry = None
-            for entry in self.hass.config_entries.async_entries(DOMAIN):
-                if entry.title == f"{INTEGRATION_NAME} Power Integration":
-                    existing_entry = entry
-                    break
-            
+            try:
+                await self._product_client.bind_devices({"bindSnList": user_input['devices']})
+            except Exception as err:
+                __LOGGER__.error("Failed to bind BLUETTI devices: %s", err)
+                return self.async_abort(reason="cannot_connect")
+
+            # Prevent configuring the same BLUETTI account twice: look up any
+            # existing entry by its unique_id instead of matching on title.
+            await self.async_set_unique_id(ACCOUNT_UNIQUE_ID)
+            existing_entry = self.hass.config_entries.async_entry_for_domain_unique_id(
+                DOMAIN, ACCOUNT_UNIQUE_ID
+            )
+            if existing_entry is None:
+                # Entries created before this integration used a stable
+                # unique_id have none set; fall back to the old title match
+                # once and backfill the unique_id so future lookups work.
+                for entry in self.hass.config_entries.async_entries(DOMAIN):
+                    if entry.unique_id is None and entry.title == f"{INTEGRATION_NAME} Power Integration":
+                        self.hass.config_entries.async_update_entry(entry, unique_id=ACCOUNT_UNIQUE_ID)
+                        existing_entry = entry
+                        break
+
             if existing_entry:
                 # 合并到现有集成条目
                 existing_devices = existing_entry.options.get("devices", [])
@@ -93,10 +105,11 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
         httpSession = async_get_clientsession(self.hass)
         access_token = self._oauth_data['token']['access_token']
         product_client = ProductClient(httpSession, access_token,self.hass)
-        products = await product_client.get_user_products()
-        # print(products)
-        # print(products.data[0].__class__)
-        # print(products.data)
+        try:
+            products = await product_client.get_user_products()
+        except Exception as err:
+            __LOGGER__.error("Failed to fetch BLUETTI products: %s", err)
+            return self.async_abort(reason="cannot_connect")
 
         self._product_client = product_client
         self._products = products.data

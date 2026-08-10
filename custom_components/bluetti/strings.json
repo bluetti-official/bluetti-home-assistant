@@ -17,7 +17,10 @@
       "no_url_available": "[%key:common::config_flow::abort::oauth2_no_url_available%]",
       "user_rejected_authorize": "[%key:common::config_flow::abort::oauth2_user_rejected_authorize%]",
       "all_devices_exists": "[%key:common::config_flow::abort::all_devices_exists%]",
-      "no_devices_available": "[%key:common::config_flow::abort::no_devices_available%]"
+      "no_devices_available": "[%key:common::config_flow::abort::no_devices_available%]",
+      "cannot_connect": "[%key:common::config_flow::abort::cannot_connect%]",
+      "success": "Successfully added your BLUETTI devices.",
+      "reconfigure_failed": "[%key:common::config_flow::abort::reconfigure_no_matching_entry%]"
     },
     "create_entry": {
       "default": "[%key:common::config_flow::create_entry::authenticated%]"
