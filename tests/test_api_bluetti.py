@@ -4,10 +4,15 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from custom_components.bluetti.api.bluetti import APPLICATION_PROFILE
+from custom_components.bluetti.api.bluetti import (
+    APPLICATION_PROFILE,
+    EU_APPLICATION_PROFILE,
+    US_APPLICATION_PROFILE,
+    get_region_profile,
+)
 from custom_components.bluetti.api.product_client import ProductClient
 from custom_components.bluetti.application_exception import ApplicationRuntimeException
-from custom_components.bluetti.const import EVENT_TOKEN_EXPIRED
+from custom_components.bluetti.const import AUTH_DOMAIN_EU, AUTH_DOMAIN_US, DOMAIN, EVENT_TOKEN_EXPIRED
 
 
 class _FakeResponse:
@@ -155,3 +160,28 @@ async def test_explicit_gateway_url_overrides_default_profile():
 
     _method, url, _kwargs = session.calls[0]
     assert url.startswith("https://gwus.bluettipower.com")
+
+
+def test_get_region_profile_default_is_global():
+    assert get_region_profile(DOMAIN) is APPLICATION_PROFILE
+    assert get_region_profile(None) is APPLICATION_PROFILE
+    assert get_region_profile("something-unknown") is APPLICATION_PROFILE
+
+
+def test_get_region_profile_us():
+    assert get_region_profile(AUTH_DOMAIN_US) is US_APPLICATION_PROFILE
+
+
+def test_get_region_profile_eu():
+    assert get_region_profile(AUTH_DOMAIN_EU) is EU_APPLICATION_PROFILE
+
+
+async def test_eu_profile_has_distinct_gateway_but_shared_sso(hass):
+    """The EU fix for issue #72 only swaps the data gateway; the SSO login
+    endpoint must stay the same as the default/global profile."""
+    await EU_APPLICATION_PROFILE.load_config(hass)
+    await APPLICATION_PROFILE.load_config(hass)
+
+    assert EU_APPLICATION_PROFILE.config["server"]["gateway"] != APPLICATION_PROFILE.config["server"]["gateway"]
+    assert EU_APPLICATION_PROFILE.config["server"]["sso"] == APPLICATION_PROFILE.config["server"]["sso"]
+    assert EU_APPLICATION_PROFILE.config["server"]["gateway"] == "https://gwde.bluettipower.com"

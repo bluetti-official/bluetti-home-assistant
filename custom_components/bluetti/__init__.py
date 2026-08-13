@@ -15,10 +15,10 @@ from homeassistant.helpers import storage
 from .coordinator import BluettiDeviceCoordinator
 from .models import BluettiData
 from .oauth import AsyncConfigEntryAuth,AuthTokenRefresh
-from .api.bluetti import APPLICATION_PROFILE, US_APPLICATION_PROFILE
+from .api.bluetti import get_region_profile
 from .api.product_client import ProductClient
 from .api.websocket import StompClient
-from .const import AUTH_DOMAIN_US, DOMAIN
+from .const import DOMAIN
 from .model.product import UserProduct
 
 __LOGGER__ = logging.getLogger(__name__)
@@ -42,14 +42,10 @@ type BluettiConfigEntry = ConfigEntry[BluettiRuntimeData]
 async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
     try:
         # Use the region matching whichever OAuth implementation this entry
-        # authenticated against, so an account set up against the US nodes
-        # (see issue #121) also talks to the US gateway/websocket, not the
-        # global ones.
-        region_profile = (
-            US_APPLICATION_PROFILE
-            if entry.data.get("auth_implementation") == AUTH_DOMAIN_US
-            else APPLICATION_PROFILE
-        )
+        # authenticated against, so an account set up against the US (#121)
+        # or EU (#72) nodes also talks to the matching gateway/websocket,
+        # not the global ones.
+        region_profile = get_region_profile(entry.data.get("auth_implementation"))
         await region_profile.load_config(hass)
 
         enabled_devices = entry.options.get("devices", [])

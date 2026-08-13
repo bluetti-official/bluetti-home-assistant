@@ -10,6 +10,7 @@ __pycache__/
 # shipped with the integration are explicitly re-included below)
 application-*.yaml
 !custom_components/bluetti/profile/application-us.yaml
+!custom_components/bluetti/profile/application-eu.yaml
 
 # Distribution / packaging
 .Python
