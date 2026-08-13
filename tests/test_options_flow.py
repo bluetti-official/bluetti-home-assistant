@@ -7,8 +7,8 @@ from unittest.mock import AsyncMock, patch
 from homeassistant.helpers.json import JSONEncoder
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.bluetti.api.bluetti import APPLICATION_PROFILE, US_APPLICATION_PROFILE
-from custom_components.bluetti.const import AUTH_DOMAIN_US, DOMAIN
+from custom_components.bluetti.api.bluetti import APPLICATION_PROFILE, EU_APPLICATION_PROFILE, US_APPLICATION_PROFILE
+from custom_components.bluetti.const import AUTH_DOMAIN_EU, AUTH_DOMAIN_US, DOMAIN
 from custom_components.bluetti.model.product import UserProduct
 from custom_components.bluetti.options_flow import BluettiOptionsFlowHandler
 
@@ -145,6 +145,22 @@ async def test_uses_us_region_profile_gateway(hass):
     us_gateway = US_APPLICATION_PROFILE.config["server"]["gateway"]
     assert us_gateway != APPLICATION_PROFILE.config["server"]["gateway"]
     assert mock_client_cls.call_args.kwargs["gateway_url"] == us_gateway
+
+
+async def test_uses_eu_region_profile_gateway(hass):
+    entry = _entry(hass, auth_implementation=AUTH_DOMAIN_EU)
+    flow = _flow(hass, entry)
+
+    with patch("custom_components.bluetti.options_flow.async_get_clientsession"), \
+         patch("custom_components.bluetti.options_flow.ProductClient") as mock_client_cls:
+        mock_client_cls.return_value.get_user_products = AsyncMock(
+            return_value=SimpleNamespace(data=[])
+        )
+        await flow.async_step_init(user_input=None)
+
+    eu_gateway = EU_APPLICATION_PROFILE.config["server"]["gateway"]
+    assert eu_gateway != APPLICATION_PROFILE.config["server"]["gateway"]
+    assert mock_client_cls.call_args.kwargs["gateway_url"] == eu_gateway
 
 
 async def test_config_flow_exposes_options_flow(hass):

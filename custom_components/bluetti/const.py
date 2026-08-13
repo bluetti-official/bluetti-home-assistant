@@ -23,6 +23,12 @@ ACCOUNT_UNIQUE_ID: str = "account"
 # editing files inside the integration, which would be wiped out on update.
 AUTH_DOMAIN_US: str = f"{DOMAIN}_us"
 
+# Separately, some EU (notably German) accounts can't log in at all - or hit
+# the same repeated "OAuth expired" symptom - against the default gateway,
+# even though the SSO login endpoint itself works fine for them (see issue
+# #72). Only the data/API gateway needs to change for this case.
+AUTH_DOMAIN_EU: str = f"{DOMAIN}_eu"
+
 class StringEnum(str, Enum):
     """String Enum define."""
 

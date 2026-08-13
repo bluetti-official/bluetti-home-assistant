@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from homeassistant.config_entries import ConfigEntryState
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.bluetti.api.bluetti import APPLICATION_PROFILE, US_APPLICATION_PROFILE
-from custom_components.bluetti.const import AUTH_DOMAIN_US, DOMAIN
+from custom_components.bluetti.api.bluetti import APPLICATION_PROFILE, EU_APPLICATION_PROFILE, US_APPLICATION_PROFILE
+from custom_components.bluetti.const import AUTH_DOMAIN_EU, AUTH_DOMAIN_US, DOMAIN
 
 
 def _entry(hass, *, products=None, devices=None, auth_implementation=DOMAIN) -> MockConfigEntry:
@@ -106,6 +106,34 @@ async def test_async_setup_entry_uses_us_region_profile(hass, enable_custom_inte
 
     product_kwargs = mock_product_cls.call_args.kwargs
     assert product_kwargs["gateway_url"] == us_gateway
+
+
+async def test_async_setup_entry_uses_eu_region_profile(hass, enable_custom_integrations):
+    """An entry authenticated against the EU implementation must use the
+    EU gateway (see issue #72); the EU profile shares the global wss."""
+    entry = _entry(hass, auth_implementation=AUTH_DOMAIN_EU)
+
+    with patch("custom_components.bluetti.async_get_clientsession", MagicMock()), \
+         patch(
+             "custom_components.bluetti.config_entry_oauth2_flow.async_get_config_entry_implementation",
+             AsyncMock(return_value=MagicMock()),
+         ), \
+         patch("custom_components.bluetti.config_entry_oauth2_flow.OAuth2Session") as mock_session_cls, \
+         patch("custom_components.bluetti.StompClient") as mock_stomp_cls, \
+         patch("custom_components.bluetti.ProductClient") as mock_product_cls:
+        mock_session_cls.return_value.token = {"access_token": "tok", "expires_at": time.time() + 10000}
+
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.LOADED
+
+    eu_gateway = EU_APPLICATION_PROFILE.config["server"]["gateway"]
+    assert eu_gateway != APPLICATION_PROFILE.config["server"]["gateway"]
+    assert eu_gateway == "https://gwde.bluettipower.com"
+
+    product_kwargs = mock_product_cls.call_args.kwargs
+    assert product_kwargs["gateway_url"] == eu_gateway
 
 
 async def test_async_setup_entry_retries_on_failure(hass, enable_custom_integrations):

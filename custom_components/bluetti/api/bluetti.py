@@ -10,7 +10,7 @@ from pydantic import TypeAdapter
 from homeassistant.core import HomeAssistant
 
 from .unify_response import UnifyResponse
-from ..const import Method,EVENT_TOKEN_EXPIRED
+from ..const import AUTH_DOMAIN_EU, AUTH_DOMAIN_US, Method, EVENT_TOKEN_EXPIRED
 from ..application_exception import ApplicationRuntimeException
 from ..profile.application_profile import ApplicationProfile
 
@@ -22,6 +22,20 @@ APPLICATION_PROFILE = ApplicationProfile()
 # The US region profile, used when the account was authenticated against
 # the US OAuth implementation (see const.AUTH_DOMAIN_US and issue #121).
 US_APPLICATION_PROFILE = ApplicationProfile(active="us")
+
+# The EU region profile: same SSO login endpoint as the default/global
+# profile, but a different data/API gateway (see const.AUTH_DOMAIN_EU and
+# issue #72).
+EU_APPLICATION_PROFILE = ApplicationProfile(active="eu")
+
+
+def get_region_profile(auth_implementation: str | None) -> ApplicationProfile:
+    """Return the server profile matching the OAuth implementation an entry used."""
+    if auth_implementation == AUTH_DOMAIN_US:
+        return US_APPLICATION_PROFILE
+    if auth_implementation == AUTH_DOMAIN_EU:
+        return EU_APPLICATION_PROFILE
+    return APPLICATION_PROFILE
 
 
 class Bluetti(Generic[T]):

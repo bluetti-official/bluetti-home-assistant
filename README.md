@@ -135,8 +135,10 @@ can be installed.
    <img src="./doc/images/2-search_and_add_integration.png" width="880">
 
    You'll be asked to pick an authentication method: **Global (default)**
-   works for most users; pick **US** only if you're affected by the
-   "OAuth Expired" issue described in the FAQ below.
+   works for most users. Pick **US** or **EU** only if you're affected by
+   the login/"OAuth Expired" issues described in the FAQ below - most
+   European (and specifically German) accounts should stay on **Global**
+   unless they actually hit one of those symptoms.
 
 3. You must agree that `Home Assistant` can access your BLUETTI account and
    establish a connection with the BLUETTI cloud service.
@@ -270,6 +272,24 @@ authentication method" screen instead of the default:
 
 If that screen only shows one option, update to a version of this
 integration that includes the region picker.
+
+### Can't log in at all, or "OAuth Expired" keeps coming back after switching to US - I'm in Europe/Germany?
+
+Some EU accounts (reported in
+[issue #72](https://github.com/bluetti-official/bluetti-home-assistant/issues/72))
+can log in fine, but the *data* connection afterward keeps failing,
+because the account's login endpoint is unaffected but its assigned data
+gateway differs from the global default. This is a separate cause from
+the US-routing issue above — trying **US** won't fix it, since the US
+implementation changes the login endpoint too, which isn't the actual
+problem here.
+
+To fix it, follow the same steps as above, but select **EU** instead of
+**US** on the "Pick authentication method" screen.
+
+If neither **US** nor **EU** fixes it for your account, please open an
+issue with your BLUETTI account's country/region so the correct gateway
+can be identified.
 
 ## ⚠️ Known Limitations
 
