@@ -140,3 +140,18 @@ async def test_bind_devices_posts_payload():
     _method, url, kwargs = session.calls[0]
     assert url.endswith("/api/bluiotdata/ha/v1/bindDevices")
     assert kwargs["json"] == {"bindSnList": ["SN1"]}
+
+
+async def test_explicit_gateway_url_overrides_default_profile():
+    """A region-specific gateway_url (e.g. US) must be used instead of the
+    globally configured one - this is what makes issue #121's region
+    selector actually take effect for API calls."""
+    response = _FakeResponse(json_data={"msgId": "1", "msgCode": 0, "data": []})
+    session = _FakeSession(response)
+    hass = MagicMock()
+    client = ProductClient(session, "test-token", hass, gateway_url="https://gwus.bluettipower.com")
+
+    await client.get_user_products()
+
+    _method, url, _kwargs = session.calls[0]
+    assert url.startswith("https://gwus.bluettipower.com")

@@ -1,0 +1,5 @@
+bluetti:
+  server:
+    sso: 'https://ssous.bluettipower.com'
+    gateway: 'https://gwus.bluettipower.com'
+    wss: 'wss://gw.bluettipower.com/api/edgeiotgw/ws-coordination/'

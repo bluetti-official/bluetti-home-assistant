@@ -15,10 +15,10 @@ from homeassistant.helpers import storage
 from .coordinator import BluettiDeviceCoordinator
 from .models import BluettiData
 from .oauth import AsyncConfigEntryAuth,AuthTokenRefresh
-from .api.bluetti import APPLICATION_PROFILE
+from .api.bluetti import APPLICATION_PROFILE, US_APPLICATION_PROFILE
 from .api.product_client import ProductClient
 from .api.websocket import StompClient
-from .const import DOMAIN
+from .const import AUTH_DOMAIN_US, DOMAIN
 from .model.product import UserProduct
 
 __LOGGER__ = logging.getLogger(__name__)
@@ -41,7 +41,16 @@ type BluettiConfigEntry = ConfigEntry[BluettiRuntimeData]
 
 async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
     try:
-        await APPLICATION_PROFILE.load_config(hass)
+        # Use the region matching whichever OAuth implementation this entry
+        # authenticated against, so an account set up against the US nodes
+        # (see issue #121) also talks to the US gateway/websocket, not the
+        # global ones.
+        region_profile = (
+            US_APPLICATION_PROFILE
+            if entry.data.get("auth_implementation") == AUTH_DOMAIN_US
+            else APPLICATION_PROFILE
+        )
+        await region_profile.load_config(hass)
 
         enabled_devices = entry.options.get("devices", [])
         all_products_data: list[dict] = entry.data.get("products", [])
@@ -67,7 +76,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
         # await oAuth2Session.async_ensure_token_valid()
         access_token = oAuth2Session.token["access_token"]
-        product_client = ProductClient(httpSession, access_token,hass)
+        product_client = ProductClient(
+            httpSession, access_token, hass,
+            gateway_url=region_profile.config["server"]["gateway"],
+        )
         # products = await product_client.get_user_products()
         # print(products.data[0].__class__)
         # print(products.data)
@@ -79,7 +91,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     bluetti_devices = BluettiData(hass, selected_products)
 
     # Register WebSocket
-    stomp_client = StompClient(APPLICATION_PROFILE.config["server"]["wss"], access_token, bluetti_devices.web_socket_message_handler,hass)
+    stomp_client = StompClient(region_profile.config["server"]["wss"], access_token, bluetti_devices.web_socket_message_handler,hass)
     stomp_client.connect()
 
     coordinators: dict[str, BluettiDeviceCoordinator] = {}

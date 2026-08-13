@@ -162,6 +162,27 @@ def test_send_expired_notification_creates_notification(hass):
     assert issue.is_fixable is False
 
 
+def test_send_expired_notification_is_rate_limited(hass):
+    """A repeatedly-failing token check must not spam a notification every time."""
+    refresher, _entry = _refresher(hass, {})
+
+    with patch("custom_components.bluetti.oauth.persistent_notification.async_create") as mock_create:
+        refresher.send_expired_notification()
+        refresher.send_expired_notification()
+
+    mock_create.assert_called_once()
+
+
+def test_send_expired_notification_fires_again_after_interval_elapses(hass):
+    refresher, _entry = _refresher(hass, {})
+    refresher._last_notified_at = time.time() - 3600  # more than 30 minutes ago
+
+    with patch("custom_components.bluetti.oauth.persistent_notification.async_create") as mock_create:
+        refresher.send_expired_notification()
+
+    mock_create.assert_called_once()
+
+
 async def test_start_token_check_clears_issue_when_token_becomes_valid(hass):
     refresher, _entry = _refresher(hass, {"expires_at": time.time() + 1000})
     refresher.async_check_token_expiry = AsyncMock()

@@ -16,8 +16,12 @@ from ..profile.application_profile import ApplicationProfile
 
 T = TypeVar('T')
 
-# The application profile
+# The application profile (global/default region).
 APPLICATION_PROFILE = ApplicationProfile()
+
+# The US region profile, used when the account was authenticated against
+# the US OAuth implementation (see const.AUTH_DOMAIN_US and issue #121).
+US_APPLICATION_PROFILE = ApplicationProfile(active="us")
 
 
 class Bluetti(Generic[T]):
@@ -36,11 +40,15 @@ class Bluetti(Generic[T]):
             self,
             httpSession: aiohttp.ClientSession,
             accessToken: str | None = None,
-            hass: HomeAssistant | None = None
+            hass: HomeAssistant | None = None,
+            gateway_url: str | None = None,
     ):
         self._httpSession = httpSession
         self._accessToken = accessToken
         self._hass = hass
+        # Falls back to the global/default profile's gateway when not given
+        # a region-specific one explicitly (e.g. in existing call sites).
+        self._gateway_url = gateway_url
 
     async def _request(
             self,
@@ -73,9 +81,10 @@ class Bluetti(Generic[T]):
             self.logger.debug("======> Client request body: %s", dumps(body))
             headers["Content-Type"] = "application/json"
 
+        gateway_url = self._gateway_url or APPLICATION_PROFILE.config["server"]["gateway"]
         async with self._httpSession.request(
                 method,
-                f"{APPLICATION_PROFILE.config["server"]["gateway"]}{path}",
+                f"{gateway_url}{path}",
                 headers=headers,
                 json=body,
                 params=params,
