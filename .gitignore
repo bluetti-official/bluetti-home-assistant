@@ -6,8 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
-# Environment configuration file
+# Environment configuration file (local overrides only; region profiles
+# shipped with the integration are explicitly re-included below)
 application-*.yaml
+!custom_components/bluetti/profile/application-us.yaml
 
 # Distribution / packaging
 .Python

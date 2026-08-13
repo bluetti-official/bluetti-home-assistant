@@ -14,8 +14,9 @@ from homeassistant.config_entries import ConfigEntry, OptionsFlow, ConfigFlowRes
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .api.bluetti import APPLICATION_PROFILE, US_APPLICATION_PROFILE
 from .api.product_client import ProductClient
-from .const import DOMAIN
+from .const import AUTH_DOMAIN_US, DOMAIN
 
 __LOGGER__ = logging.getLogger(__name__)
 
@@ -50,8 +51,17 @@ class BluettiOptionsFlowHandler(OptionsFlow):
             return self.async_create_entry(data={"devices": merged_devices})
 
         access_token = entry.data["token"]["access_token"]
+        region_profile = (
+            US_APPLICATION_PROFILE
+            if entry.data.get("auth_implementation") == AUTH_DOMAIN_US
+            else APPLICATION_PROFILE
+        )
+        await region_profile.load_config(self.hass)
         http_session = async_get_clientsession(self.hass)
-        product_client = ProductClient(http_session, access_token, self.hass)
+        product_client = ProductClient(
+            http_session, access_token, self.hass,
+            gateway_url=region_profile.config["server"]["gateway"],
+        )
         try:
             products = await product_client.get_user_products()
         except Exception as err:

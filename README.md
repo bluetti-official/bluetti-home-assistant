@@ -134,6 +134,10 @@ can be installed.
 
    <img src="./doc/images/2-search_and_add_integration.png" width="880">
 
+   You'll be asked to pick an authentication method: **Global (default)**
+   works for most users; pick **US** only if you're affected by the
+   "OAuth Expired" issue described in the FAQ below.
+
 3. You must agree that `Home Assistant` can access your BLUETTI account and
    establish a connection with the BLUETTI cloud service.
 
@@ -245,7 +249,28 @@ Please check the **network**, **ports** and **firewall** to ensure that
    cd /<ha workspaces>/config/custom_components/bluetti
    git pull
    ```
-   
+
+### Getting "OAuth Expired" messages every few minutes, even though the integration still works?
+
+This is usually caused by your traffic being geo-resolved to the wrong
+BLUETTI cloud region (commonly affects users in Europe, whose requests can
+land on US-designated nodes that don't recognize a token issued by the
+correct regional node). See
+[issue #121](https://github.com/bluetti-official/bluetti-home-assistant/issues/121).
+
+To fix it, re-add the integration and pick **US** on the "Pick
+authentication method" screen instead of the default:
+
+1. Remove the `BLUETTI` integration (see the "Removing the Integration"
+   section above — you only need step 1, not the file removal).
+2. Add the integration again (**Settings -> Devices & services -> Add
+   Integration -> BLUETTI**).
+3. On the "Pick authentication method" screen, select **US** instead of
+   **Global (default)**, then log in and re-select your devices.
+
+If that screen only shows one option, update to a version of this
+integration that includes the region picker.
+
 ## ⚠️ Known Limitations
 
 - **Cloud-dependent**: this integration relies on the BLUETTI cloud service

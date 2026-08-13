@@ -21,6 +21,10 @@ from .const import ACCOUNT_UNIQUE_ID, DOMAIN, INTEGRATION_NAME, EVENT_TOKEN_EXPI
 __LOGGER__ = logging.getLogger(__name__)
 
 ISSUE_ID_OAUTH_EXPIRED = "oauth_expired"
+# Some accounts see the server repeatedly report a valid token as expired
+# (e.g. geo-IP routing to the wrong region, see issue #121). Rate-limit the
+# notification/repair issue so that doesn't spam the user every few minutes.
+NOTIFY_MIN_INTERVAL_SECONDS = 30 * 60
 
 
 class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, domain=DOMAIN):
@@ -196,6 +200,7 @@ class AuthTokenRefresh:
         self.hass = hass
         self.entry = entry
         self.oAuth2Session = oauth_session
+        self._last_notified_at: float | None = None
         unsub = hass.bus.async_listen(EVENT_TOKEN_EXPIRED, self.on_token_expired_event)
         entry.async_on_unload(unsub)
 
@@ -243,6 +248,15 @@ class AuthTokenRefresh:
 
     # show token expire notify
     def send_expired_notification(self):
+        now = time.time()
+        if (
+            self._last_notified_at is not None
+            and (now - self._last_notified_at) < NOTIFY_MIN_INTERVAL_SECONDS
+        ):
+            __LOGGER__.debug("Skipping OAuth expired notification (rate-limited)")
+            return
+        self._last_notified_at = now
+
         reauth_url = f"/config/integrations/integration/{DOMAIN}"
         notification_message = (
             f"Your OAuth Have Expired！\n"
