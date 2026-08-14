@@ -22,7 +22,10 @@
         },
         "step": {
             "pick_implementation": {
-                "title": "Pick authentication method"
+                "title": "Pick authentication method",
+                "data": {
+                    "implementation": "Region"
+                }
             }
         }
     },
