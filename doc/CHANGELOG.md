@@ -1,3 +1,22 @@
+# 1.1.0 2026-08-14
+New:
+- Pick your BLUETTI cloud region (Global / US / EU) when adding the integration, to fix login failures and repeated "OAuth Expired" notifications caused by your network being geo-routed to the wrong regional server.
+- Add more devices to an existing setup later without logging in again, via Settings -> Devices & services -> BLUETTI -> Configure.
+- Diagnostics download for troubleshooting, from the integration's device page.
+
+Fixes:
+- Fix the integration disappearing after a Home Assistant restart when adding a device for the first time.
+- Fix a control showing the device's serial number instead of its real name.
+- Fix a recurring "OAuth Expired" notification caused by a token-refresh timer leak that could accumulate duplicate timers on every reload.
+- Fix an unrecognized sensor type crashing the whole integration setup instead of just skipping that sensor.
+- Fix a blocking call, a websocket thread that could die silently without reconnecting, and several other reliability issues found during a full code review.
+
+Internal:
+- Adopted Home Assistant's DataUpdateCoordinator pattern for polling and push updates.
+- Reached Home Assistant's "Gold" integration quality scale.
+- Added a full automated test suite (100% line coverage).
+
+
 # 1.0.2 2026-03-31
 New power station models have been supported:
 
