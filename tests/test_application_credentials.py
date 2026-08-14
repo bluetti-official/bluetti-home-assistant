@@ -1,47 +1,12 @@
 """Tests for application_credentials.py."""
 
-from homeassistant.components.application_credentials import ClientCredential
-
-from custom_components.bluetti.api.bluetti import APPLICATION_PROFILE, EU_APPLICATION_PROFILE, US_APPLICATION_PROFILE
-from custom_components.bluetti.application_credentials import async_get_auth_implementation
-from custom_components.bluetti.const import AUTH_DOMAIN_EU, AUTH_DOMAIN_US, DOMAIN
+from custom_components.bluetti.api.bluetti import APPLICATION_PROFILE
+from custom_components.bluetti.application_credentials import async_get_authorization_server
 
 
-async def test_global_auth_domain_uses_default_profile(hass):
-    credential = ClientCredential("id", "secret", name="Global (default)")
-
-    implementation = await async_get_auth_implementation(hass, DOMAIN, credential)
+async def test_async_get_authorization_server(hass):
+    server = await async_get_authorization_server(hass)
 
     sso = APPLICATION_PROFILE.config["server"]["sso"]
-    assert implementation.authorize_url == f"{sso}/oauth2/grant"
-    assert implementation.token_url == f"{sso}/oauth2/token"
-    assert implementation.domain == DOMAIN
-
-
-async def test_us_auth_domain_uses_us_profile(hass):
-    credential = ClientCredential("id", "secret", name="US")
-
-    implementation = await async_get_auth_implementation(hass, AUTH_DOMAIN_US, credential)
-
-    sso = US_APPLICATION_PROFILE.config["server"]["sso"]
-    assert implementation.authorize_url == f"{sso}/oauth2/grant"
-    assert implementation.token_url == f"{sso}/oauth2/token"
-    assert implementation.domain == AUTH_DOMAIN_US
-    # The US and global SSO endpoints must actually differ, otherwise this
-    # feature does nothing for accounts affected by issue #121.
-    assert sso != APPLICATION_PROFILE.config["server"]["sso"]
-
-
-async def test_eu_auth_domain_uses_eu_profile(hass):
-    credential = ClientCredential("id", "secret", name="EU")
-
-    implementation = await async_get_auth_implementation(hass, AUTH_DOMAIN_EU, credential)
-
-    # The EU fix for issue #72 only swaps the gateway, not the SSO login
-    # endpoint - so the EU implementation's authorize/token URLs are
-    # expected to match the global/default ones.
-    sso = EU_APPLICATION_PROFILE.config["server"]["sso"]
-    assert implementation.authorize_url == f"{sso}/oauth2/grant"
-    assert implementation.token_url == f"{sso}/oauth2/token"
-    assert implementation.domain == AUTH_DOMAIN_EU
-    assert sso == APPLICATION_PROFILE.config["server"]["sso"]
+    assert server.authorize_url == f"{sso}/oauth2/grant"
+    assert server.token_url == f"{sso}/oauth2/token"
