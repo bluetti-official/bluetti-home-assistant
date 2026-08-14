@@ -1,0 +1,92 @@
+name: "Release"
+
+# Runs whenever a GitHub Release is published (whether from a brand-new tag
+# or an existing one) and makes sure custom_components/bluetti/manifest.json
+# actually reports that release's version - both in the downloadable ZIP
+# asset (what most HACS installs use) and, best-effort, back in the
+# repository itself.
+
+on:
+  release:
+    types:
+      - "published"
+
+permissions: {}
+
+jobs:
+  release-zip-asset:
+    name: "Build release ZIP with the correct manifest version"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
+    steps:
+      - name: "Checkout the released commit"
+        uses: "actions/checkout@v4"
+        with:
+          ref: "${{ github.event.release.tag_name }}"
+
+      - name: "Set manifest.json version to the release tag"
+        shell: "bash"
+        run: |
+          set -euo pipefail
+          version="${{ github.event.release.tag_name }}"
+          version="${version#v}"
+          jq --arg version "${version}" '.version = $version' \
+            custom_components/bluetti/manifest.json > /tmp/manifest.json
+          mv /tmp/manifest.json custom_components/bluetti/manifest.json
+          echo "manifest.json version is now: $(jq -r .version custom_components/bluetti/manifest.json)"
+
+      - name: "ZIP the integration directory"
+        shell: "bash"
+        run: |
+          cd "${{ github.workspace }}/custom_components/bluetti"
+          zip -r "${{ github.workspace }}/bluetti.zip" ./
+
+      - name: "Upload the ZIP as a release asset"
+        uses: "softprops/action-gh-release@v2"
+        with:
+          tag_name: "${{ github.event.release.tag_name }}"
+          files: "${{ github.workspace }}/bluetti.zip"
+
+  sync-manifest-to-repo:
+    name: "Sync manifest.json version back into the repository"
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
+    steps:
+      - name: "Checkout the release's target branch"
+        uses: "actions/checkout@v4"
+        with:
+          ref: "${{ github.event.release.target_commitish }}"
+
+      - name: "Set manifest.json version to the release tag"
+        shell: "bash"
+        run: |
+          set -euo pipefail
+          version="${{ github.event.release.tag_name }}"
+          version="${version#v}"
+          jq --arg version "${version}" '.version = $version' \
+            custom_components/bluetti/manifest.json > /tmp/manifest.json
+          mv /tmp/manifest.json custom_components/bluetti/manifest.json
+
+      - name: "Commit and push, if anything changed"
+        shell: "bash"
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- custom_components/bluetti/manifest.json; then
+            echo "manifest.json already matches this release; nothing to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add custom_components/bluetti/manifest.json
+          git commit -m "chore: bump manifest version to ${{ github.event.release.tag_name }}"
+
+          # Best-effort: branch protection on the target branch (required
+          # reviews, etc.) can legitimately reject this push. That must not
+          # fail the release - the ZIP asset from the other job already has
+          # the correct version regardless.
+          if ! git push origin "HEAD:${{ github.event.release.target_commitish }}"; then
+            echo "::warning::Could not push the manifest.json version bump to ${{ github.event.release.target_commitish }} (branch protection?). Update it manually, or exempt github-actions[bot] from required reviews on that branch."
+          fi
