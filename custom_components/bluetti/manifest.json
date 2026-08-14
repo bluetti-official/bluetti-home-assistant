@@ -6,9 +6,6 @@
     "@bluetti-official"
   ],
   "config_flow": true,
-  "dependencies": [
-    "application_credentials"
-  ],
   "documentation": "https://www.home-assistant.io/integrations/bluetti",
   "integration_type": "hub",
   "iot_class": "cloud_push",
