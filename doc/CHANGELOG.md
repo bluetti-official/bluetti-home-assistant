@@ -3,6 +3,7 @@ New:
 - Pick your BLUETTI cloud region (Global / US / EU) when adding the integration, to fix login failures and repeated "OAuth Expired" notifications caused by your network being geo-routed to the wrong regional server.
 - Add more devices to an existing setup later without logging in again, via Settings -> Devices & services -> BLUETTI -> Configure.
 - Diagnostics download for troubleshooting, from the integration's device page.
+- Every power (W) sensor - PV input, battery charge/discharge, grid input, AC/DC output, etc., on any supported model - now also gets a companion cumulated energy (kWh) sensor automatically, computed the same way as a manually added "Integral - Riemann sum" helper. No more setting up helpers by hand to use these values in the Energy dashboard.
 
 Fixes:
 - Fix the integration disappearing after a Home Assistant restart when adding a device for the first time.
