@@ -4,6 +4,8 @@ New:
 - Add more devices to an existing setup later without logging in again, via Settings -> Devices & services -> BLUETTI -> Configure.
 - Diagnostics download for troubleshooting, from the integration's device page.
 - Every power (W) sensor - PV input, battery charge/discharge, grid input, AC/DC output, etc., on any supported model - now also gets a companion cumulated energy (kWh) sensor automatically, computed the same way as a manually added "Integral - Riemann sum" helper. No more setting up helpers by hand to use these values in the Energy dashboard.
+- On models that don't report battery charge/discharge power directly (e.g. Balco260), an estimated battery charge power and discharge power sensor (and their kWh companions) are now added automatically, computed from the PV/grid/AC load balance. Clearly labeled "(Estimated)" since it's a power-balance approximation, not a real measurement.
+- Diagnostics now also include each sensor's recognized type, to make it possible to tell "this data isn't sent by the cloud for my device" apart from "this data is sent but silently skipped" without digging through logs.
 
 Fixes:
 - Fix the integration disappearing after a Home Assistant restart when adding a device for the first time.
