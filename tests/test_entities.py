@@ -11,7 +11,12 @@ from custom_components.bluetti.const import DOMAIN
 from custom_components.bluetti.coordinator import BluettiDeviceCoordinator
 from custom_components.bluetti.models import BluettiDevice, BluettiState
 from custom_components.bluetti.select import BluettiSelect
-from custom_components.bluetti.sensor import BluettiBinarySensor, BluettiEnergySensor, BluettiSensor
+from custom_components.bluetti.sensor import (
+    BluettiBinarySensor,
+    BluettiEnergySensor,
+    BluettiEstimatedBatteryPowerSensor,
+    BluettiSensor,
+)
 from custom_components.bluetti.switch import BluettiSwitch
 
 
@@ -104,7 +109,7 @@ async def test_energy_sensor_has_distinct_unique_id_and_energy_attributes(hass):
          "state_class": SensorStateClass.MEASUREMENT},
     )
 
-    energy_sensor = BluettiEnergySensor(coordinator.device, power_state)
+    energy_sensor = BluettiEnergySensor(coordinator.device, power_state, lambda: power_state.fn_value)
 
     # Both entities share the same underlying state (same fn_code), so the
     # energy companion must not collide with the power sensor's unique_id.
@@ -119,7 +124,7 @@ async def test_energy_sensor_has_distinct_unique_id_and_energy_attributes(hass):
 async def test_energy_sensor_integrates_power_trapezoidally_over_time(hass, freezer):
     coordinator = _make_coordinator(hass)
     power_state = _add_power_state(coordinator)
-    entity = BluettiEnergySensor(coordinator.device, power_state)
+    entity = BluettiEnergySensor(coordinator.device, power_state, lambda: power_state.fn_value)
     entity.hass = hass
     entity.entity_id = "sensor.test_pv_energy"
 
@@ -148,7 +153,7 @@ async def test_energy_sensor_integrates_power_trapezoidally_over_time(hass, free
 async def test_energy_sensor_restores_previous_total_on_startup(hass):
     coordinator = _make_coordinator(hass)
     power_state = _add_power_state(coordinator)
-    entity = BluettiEnergySensor(coordinator.device, power_state)
+    entity = BluettiEnergySensor(coordinator.device, power_state, lambda: power_state.fn_value)
     entity.hass = hass
     entity.entity_id = "sensor.test_pv_energy"
 
@@ -167,7 +172,7 @@ async def test_energy_sensor_restores_previous_total_on_startup(hass):
 async def test_energy_sensor_treats_non_numeric_power_value_as_unknown(hass, freezer):
     coordinator = _make_coordinator(hass)
     power_state = _add_power_state(coordinator)
-    entity = BluettiEnergySensor(coordinator.device, power_state)
+    entity = BluettiEnergySensor(coordinator.device, power_state, lambda: power_state.fn_value)
     entity.hass = hass
     entity.entity_id = "sensor.test_pv_energy"
 
@@ -180,13 +185,18 @@ async def test_energy_sensor_treats_non_numeric_power_value_as_unknown(hass, fre
     # must not crash the update either.
     assert entity.native_value == 0.0
 
+    freezer.tick(timedelta(hours=1))
+    power_state.fn_value = "not-a-number"  # e.g. a malformed getter result
+    entity._handle_coordinator_update()
+    assert entity.native_value == 0.0
+
     await coordinator.async_shutdown()
 
 
 async def test_energy_sensor_skips_integration_across_unavailable_gap(hass, freezer):
     coordinator = _make_coordinator(hass)
     power_state = _add_power_state(coordinator)
-    entity = BluettiEnergySensor(coordinator.device, power_state)
+    entity = BluettiEnergySensor(coordinator.device, power_state, lambda: power_state.fn_value)
     entity.hass = hass
     entity.entity_id = "sensor.test_pv_energy"
 
@@ -213,6 +223,81 @@ async def test_energy_sensor_skips_integration_across_unavailable_gap(hass, free
     assert entity.native_value == 0.2
 
     await coordinator.async_shutdown()
+
+
+def _add_balance_states(coordinator, pv="0", grid="0", ac_load="0"):
+    device = coordinator.device
+    pv_state = BluettiState(fn_code="PVAllTotalPower", fn_name="PV Input Power", fn_value=pv, fn_type="SENSOR")
+    grid_state = BluettiState(fn_code="GridAllTotalPower", fn_name="Grid Input Power", fn_value=grid, fn_type="SENSOR")
+    ac_load_state = BluettiState(
+        fn_code="ACLoadAllTotalPower", fn_name="AC Load Power", fn_value=ac_load, fn_type="SENSOR"
+    )
+    device.states.extend([pv_state, grid_state, ac_load_state])
+    return pv_state, grid_state, ac_load_state
+
+
+def _make_estimated_battery_sensors(device, pv_state, grid_state, ac_load_state):
+    charge_sensor = BluettiEstimatedBatteryPowerSensor(
+        device, pv_state, grid_state, ac_load_state,
+        fn_code="EstimatedBatteryChargePower", name="Battery Charge Power (Estimated)", charging=True,
+    )
+    discharge_sensor = BluettiEstimatedBatteryPowerSensor(
+        device, pv_state, grid_state, ac_load_state,
+        fn_code="EstimatedBatteryDischargePower", name="Battery Discharge Power (Estimated)", charging=False,
+    )
+    return charge_sensor, discharge_sensor
+
+
+async def test_estimated_battery_power_sensor_reports_charging_when_surplus(hass):
+    # BLUETTI's cloud API doesn't report battery charge/discharge power for
+    # every model (e.g. Balco260) - only PV/grid/AC load totals - so this is
+    # estimated from the power balance instead.
+    coordinator = _make_coordinator(hass)
+    pv_state, grid_state, ac_load_state = _add_balance_states(coordinator, pv="500", grid="0", ac_load="200")
+    charge_sensor, discharge_sensor = _make_estimated_battery_sensors(
+        coordinator.device, pv_state, grid_state, ac_load_state
+    )
+
+    # 500 W PV - 200 W AC load = 300 W surplus -> charging, not discharging.
+    assert charge_sensor.native_value == 300.0
+    assert discharge_sensor.native_value == 0.0
+    assert charge_sensor.unique_id == "SN1_EstimatedBatteryChargePower"
+    assert charge_sensor.device_class == SensorDeviceClass.POWER
+    assert charge_sensor.native_unit_of_measurement == "W"
+
+
+async def test_estimated_battery_power_sensor_reports_discharging_when_deficit(hass):
+    coordinator = _make_coordinator(hass)
+    pv_state, grid_state, ac_load_state = _add_balance_states(coordinator, pv="0", grid="0", ac_load="400")
+    charge_sensor, discharge_sensor = _make_estimated_battery_sensors(
+        coordinator.device, pv_state, grid_state, ac_load_state
+    )
+
+    # No PV, no grid, 400 W AC load -> the deficit can only come from the battery.
+    assert discharge_sensor.native_value == 400.0
+    assert charge_sensor.native_value == 0.0
+
+
+async def test_estimated_battery_power_sensor_zero_at_rest(hass):
+    coordinator = _make_coordinator(hass)
+    # Matches the real Balco260 diagnostic dump this was modeled on:
+    # PV=0, Grid=395, ACLoad=395, SOC=100% - grid fully covers the load.
+    pv_state, grid_state, ac_load_state = _add_balance_states(coordinator, pv="0", grid="395", ac_load="395")
+    charge_sensor, discharge_sensor = _make_estimated_battery_sensors(
+        coordinator.device, pv_state, grid_state, ac_load_state
+    )
+
+    assert charge_sensor.native_value == 0.0
+    assert discharge_sensor.native_value == 0.0
+
+
+async def test_estimated_battery_power_sensor_handles_non_numeric_input(hass):
+    coordinator = _make_coordinator(hass)
+    pv_state, grid_state, ac_load_state = _add_balance_states(coordinator)
+    grid_state.fn_value = None  # e.g. a transient malformed API response
+    charge_sensor, _ = _make_estimated_battery_sensors(coordinator.device, pv_state, grid_state, ac_load_state)
+
+    assert charge_sensor.native_value is None
 
 
 async def test_binary_sensor_reflects_state_value(hass):

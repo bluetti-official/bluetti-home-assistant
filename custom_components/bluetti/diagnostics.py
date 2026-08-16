@@ -28,6 +28,11 @@ async def async_get_config_entry_diagnostics(
                     "fn_code": state.fn_code,
                     "fn_type": state.fn_type,
                     "fn_value": state.fn_value,
+                    # Shows whether a SENSOR-type state was actually turned
+                    # into an entity, or silently skipped because its
+                    # sensorType isn't recognized (see sensor.SENSOR_MAP) -
+                    # otherwise that's only visible in the logs.
+                    "sensor_info": state.sensor_info or None,
                 }
                 for state in device.states
             ],

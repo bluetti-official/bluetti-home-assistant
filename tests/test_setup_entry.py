@@ -11,6 +11,7 @@ from custom_components.bluetti.select import BluettiSelect, async_setup_entry as
 from custom_components.bluetti.sensor import (
     BluettiBinarySensor,
     BluettiEnergySensor,
+    BluettiEstimatedBatteryPowerSensor,
     BluettiSensor,
     async_setup_entry as sensor_setup_entry,
 )
@@ -92,6 +93,65 @@ async def test_sensor_setup_entry_creates_energy_sensor_for_power_sensors(hass):
     assert len(energy_sensors) == 1
     assert energy_sensors[0].unique_id == "SN1_PVAllTotalPower_energy"
     assert energy_sensors[0].native_unit_of_measurement == "kWh"
+
+
+async def test_sensor_setup_entry_creates_estimated_battery_power_sensors(hass):
+    device = BluettiDevice(
+        device_id="SN1", on_line="1", name="Test", sn="SN1", model="Balco260",
+        state_list=[
+            {
+                "fnCode": "PVAllTotalPower", "fnName": "PV Input Power", "fnValue": "500", "fnType": "SENSOR",
+                "sensorInfo": {"sensorType": "SensorDeviceClass.POWER", "unit": None},
+            },
+            {
+                "fnCode": "GridAllTotalPower", "fnName": "Grid Input Power", "fnValue": "0", "fnType": "SENSOR",
+                "sensorInfo": {"sensorType": "SensorDeviceClass.POWER", "unit": None},
+            },
+            {
+                "fnCode": "ACLoadAllTotalPower", "fnName": "AC Load Power", "fnValue": "200", "fnType": "SENSOR",
+                "sensorInfo": {"sensorType": "SensorDeviceClass.POWER", "unit": None},
+            },
+        ],
+    )
+    entry = _entry_with_devices(hass, [device])
+    added = []
+
+    await sensor_setup_entry(hass, entry, added.extend)
+
+    estimated = [e for e in added if isinstance(e, BluettiEstimatedBatteryPowerSensor)]
+    assert len(estimated) == 2
+    charge = next(e for e in estimated if e.unique_id == "SN1_EstimatedBatteryChargePower")
+    discharge = next(e for e in estimated if e.unique_id == "SN1_EstimatedBatteryDischargePower")
+    # 500 W PV - 200 W AC load = 300 W surplus available to charge.
+    assert charge.native_value == 300.0
+    assert discharge.native_value == 0.0
+
+    energy_companion_ids = {
+        "SN1_EstimatedBatteryChargePower_energy",
+        "SN1_EstimatedBatteryDischargePower_energy",
+    }
+    energy_companions = [
+        e for e in added if isinstance(e, BluettiEnergySensor) and e.unique_id in energy_companion_ids
+    ]
+    assert len(energy_companions) == 2
+
+
+async def test_sensor_setup_entry_skips_estimated_battery_sensors_when_data_missing(hass):
+    device = BluettiDevice(
+        device_id="SN1", on_line="1", name="Test", sn="SN1", model="AC200L",
+        state_list=[
+            {
+                "fnCode": "SOC", "fnName": "Battery", "fnValue": "50", "fnType": "SENSOR",
+                "sensorInfo": {"sensorType": "SensorDeviceClass.BATTERY", "unit": None},
+            },
+        ],
+    )
+    entry = _entry_with_devices(hass, [device])
+    added = []
+
+    await sensor_setup_entry(hass, entry, added.extend)
+
+    assert not any(isinstance(e, BluettiEstimatedBatteryPowerSensor) for e in added)
 
 
 async def test_sensor_setup_entry_with_no_matching_states_adds_nothing(hass):

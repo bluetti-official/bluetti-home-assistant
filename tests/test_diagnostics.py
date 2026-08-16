@@ -24,7 +24,14 @@ async def test_diagnostics_redacts_sensitive_data_and_lists_devices(hass):
 
     device = BluettiDevice(
         device_id="SN1", on_line="1", name="Test", sn="SN1", model="AC200L",
-        state_list=[{"fnCode": "SOC", "fnName": "Battery", "fnValue": "80", "fnType": "SENSOR"}],
+        state_list=[
+            {
+                "fnCode": "SOC", "fnName": "Battery", "fnValue": "80", "fnType": "SENSOR",
+                "sensorInfo": {"sensorType": "SensorDeviceClass.BATTERY", "unit": None},
+            },
+            # No sensorInfo at all - some SENSOR-type states never carry one.
+            {"fnCode": "Weird", "fnName": "Weird", "fnValue": "1", "fnType": "SENSOR"},
+        ],
     )
     coordinator = MagicMock(last_update_success=True, update_interval="0:00:30")
     entry.runtime_data = BluettiRuntimeData(
@@ -44,7 +51,13 @@ async def test_diagnostics_redacts_sensitive_data_and_lists_devices(hass):
         "device_id": "SN1",
         "model": "AC200L",
         "online": True,
-        "states": [{"fn_code": "SOC", "fn_type": "SENSOR", "fn_value": "80"}],
+        "states": [
+            {
+                "fn_code": "SOC", "fn_type": "SENSOR", "fn_value": "80",
+                "sensor_info": {"sensorType": "SensorDeviceClass.BATTERY", "unit": None},
+            },
+            {"fn_code": "Weird", "fn_type": "SENSOR", "fn_value": "1", "sensor_info": None},
+        ],
     }]
 
     assert diagnostics["coordinators"]["SN1"]["last_update_success"] is True
