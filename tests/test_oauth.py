@@ -78,7 +78,21 @@ async def test_token_refresh_init_subscribes_and_unsubs_on_unload(hass):
     await hass.async_block_till_done()
 
 
-async def test_on_token_expired_event_sends_notification(hass):
+async def test_on_token_expired_event_forces_a_refresh_attempt(hass):
+    # The cloud reporting the token expired doesn't mean the refresh_token
+    # is dead too (issues #75, #81, #97) - this must try a forced refresh
+    # rather than immediately giving up with a notification.
+    refresher, _entry = _refresher(hass, {})
+    refresher.async_check_token_expiry = AsyncMock()
+
+    await refresher.on_token_expired_event(None)
+
+    refresher.async_check_token_expiry.assert_awaited_once_with(force_or_now=True)
+
+
+async def test_on_token_expired_event_notifies_only_if_refresh_cannot_help(hass):
+    # With no token at all, there is nothing to refresh - this must still
+    # fall back to notifying instead of silently doing nothing.
     refresher, _entry = _refresher(hass, {})
     refresher.send_expired_notification = MagicMock()
 
@@ -198,13 +212,106 @@ async def test_start_token_check_clears_issue_when_token_becomes_valid(hass):
     assert ir.async_get(hass).async_get_issue(DOMAIN, ISSUE_ID_OAUTH_EXPIRED) is None
 
 
-async def test_async_check_token_expiry_no_expires_at_logs_and_returns(hass):
+async def test_async_check_token_expiry_empty_token_notifies(hass):
+    # No token at all means there is nothing to refresh - fall back to
+    # notifying instead of silently doing nothing.
     refresher, _entry = _refresher(hass, {})
     refresher.send_expired_notification = MagicMock()
 
     await refresher.async_check_token_expiry()
 
+    refresher.send_expired_notification.assert_called_once()
+
+
+async def test_async_check_token_expiry_unrecognized_format_attempts_refresh(hass):
+    # A non-empty token with neither `expires_at` nor `expires_in`+
+    # `created_at` has unknown expiry - try to refresh it rather than
+    # assuming it's expired (a false "expired" notice would be wrong as
+    # often as it's right).
+    entry = MockConfigEntry(domain=DOMAIN, data={"last_token_refresh": 0.0})
+    entry.add_to_hass(hass)
+    session = MagicMock()
+    session.token = {"access_token": "x", "refresh_token": "y"}
+    session.implementation.async_refresh_token = AsyncMock(return_value={"access_token": "new"})
+    refresher = AuthTokenRefresh(hass, entry, session)
+    refresher.send_expired_notification = MagicMock()
+
+    with patch.object(hass.config_entries, "async_reload", AsyncMock()):
+        await refresher.async_check_token_expiry()
+
+    session.implementation.async_refresh_token.assert_awaited_once()
     refresher.send_expired_notification.assert_not_called()
+
+
+async def test_async_check_token_expiry_expires_in_created_at_format_is_refreshed(hass):
+    # Regression test: async_check_token_expiry used to only understand
+    # `expires_at` and would silently skip refreshing an already-expired
+    # token using the `expires_in`/`created_at` shape instead.
+    entry = MockConfigEntry(domain=DOMAIN, data={"last_token_refresh": 0.0})
+    entry.add_to_hass(hass)
+    session = MagicMock()
+    session.token = {"created_at": time.time() - 5000, "expires_in": 100}
+    session.implementation.async_refresh_token = AsyncMock(return_value={"access_token": "new"})
+    refresher = AuthTokenRefresh(hass, entry, session)
+
+    with patch.object(hass.config_entries, "async_reload", AsyncMock()):
+        # Force it, the same way on_token_expired_event does, since the
+        # token is already expired.
+        await refresher.async_check_token_expiry(force_or_now=True)
+
+    session.implementation.async_refresh_token.assert_awaited_once()
+
+
+async def test_async_check_token_expiry_forced_redeems_an_already_expired_token(hass):
+    # This is the core fix for issues #75/#81/#97: a forced check (from
+    # on_token_expired_event) must still try the refresh_token even though
+    # the access token has already expired, instead of giving up right away.
+    entry = MockConfigEntry(domain=DOMAIN, data={"last_token_refresh": 0.0})
+    entry.add_to_hass(hass)
+    session = MagicMock()
+    session.token = {"expires_at": time.time() - 10}
+    session.implementation.async_refresh_token = AsyncMock(return_value={"access_token": "new"})
+    refresher = AuthTokenRefresh(hass, entry, session)
+    refresher.send_expired_notification = MagicMock()
+
+    with patch.object(hass.config_entries, "async_reload", AsyncMock()) as mock_reload:
+        await refresher.async_check_token_expiry(force_or_now=True)
+
+    session.implementation.async_refresh_token.assert_awaited_once()
+    mock_reload.assert_awaited_once_with(entry.entry_id)
+    refresher.send_expired_notification.assert_not_called()
+
+
+async def test_async_check_token_expiry_forced_notifies_when_refresh_fails(hass):
+    entry = MockConfigEntry(domain=DOMAIN, data={"last_token_refresh": 0.0})
+    entry.add_to_hass(hass)
+    session = MagicMock()
+    session.token = {"expires_at": time.time() - 10}
+    session.implementation.async_refresh_token = AsyncMock(side_effect=RuntimeError("refresh_token rejected"))
+    refresher = AuthTokenRefresh(hass, entry, session)
+    refresher.send_expired_notification = MagicMock()
+
+    await refresher.async_check_token_expiry(force_or_now=True)
+
+    refresher.send_expired_notification.assert_called_once()
+
+
+async def test_async_check_token_expiry_forced_uses_shorter_min_interval(hass):
+    # Forced checks use a 60s throttle instead of the normal 3600s one, so a
+    # burst of duplicate EVENT_TOKEN_EXPIRED events (e.g. from concurrent
+    # requests failing around the same time) doesn't refresh repeatedly, but
+    # a genuinely new expiry a minute later still gets a fresh attempt.
+    entry = MockConfigEntry(domain=DOMAIN, data={"last_token_refresh": time.time() - 30})
+    entry.add_to_hass(hass)
+    session = MagicMock()
+    session.token = {"expires_at": time.time() - 10}
+    session.implementation.async_refresh_token = AsyncMock(return_value={"access_token": "new"})
+    refresher = AuthTokenRefresh(hass, entry, session)
+
+    with patch.object(hass.config_entries, "async_reload", AsyncMock()):
+        await refresher.async_check_token_expiry(force_or_now=True)
+
+    session.implementation.async_refresh_token.assert_not_called()
 
 
 async def test_async_check_token_expiry_already_expired(hass):
