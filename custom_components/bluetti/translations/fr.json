@@ -1,0 +1,26 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Le compte est déjà configuré",
+            "already_in_progress": "Le flux de configuration est déjà en cours",
+            "authorize_url_timeout": "Délai d'attente dépassé lors de la génération de l'URL d'autorisation.",
+            "missing_configuration": "Le composant n'est pas configuré. Veuillez suivre la documentation.",
+            "no_url_available": "Aucune URL disponible. Pour plus d'informations sur cette erreur, [consultez la section d'aide]({docs_url})",
+            "oauth_error": "Données de jeton invalides reçues.",
+            "oauth_failed": "Erreur lors de l'obtention du jeton d'accès.",
+            "oauth_timeout": "Délai d'attente dépassé lors de la résolution du jeton OAuth.",
+            "oauth_unauthorized": "Erreur d'autorisation OAuth lors de l'obtention du jeton d'accès.",
+            "user_rejected_authorize": "Liaison du compte rejetée : {error}",
+            "all_devices_exists": "Tous les appareils et éléments physiques associés à ce compte ont déjà été inclus dans le package intégré BLUETTI.",
+            "no_devices_available": "Le compte actuel ne possède aucun appareil disponible."
+        },
+        "create_entry": {
+            "default": "Authentification réussie"
+        },
+        "step": {
+            "pick_implementation": {
+                "title": "Choisir la méthode d'authentification"
+            }
+        }
+    }
+}
