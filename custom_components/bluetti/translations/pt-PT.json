@@ -11,16 +11,55 @@
             "oauth_timeout": "Tempo para resolver o token de OAuth esgotado.",
             "oauth_unauthorized": "Erro de autorização OAuth durante a obtenção do token de acesso.",
             "user_rejected_authorize": "Vinculação de conta rejeitada: {error}",
-			"all_devices_exists": "Todos os dispositivos e itens físicos desta conta já foram incluídos no pacote de integração BLUETTI.",
-            "no_devices_available": "A conta actual não tem dispositivos disponíveis/compatíveis."
+            "all_devices_exists": "Todos os dispositivos e itens físicos desta conta já foram incluídos no pacote de integração BLUETTI.",
+            "no_devices_available": "A conta actual não tem dispositivos disponíveis/compatíveis.",
+            "cannot_connect": "Falha ao ligar ao servidor BLUETTI. Por favor, tente novamente.",
+            "reconfigure_failed": "Não foi possível encontrar a entrada de configuração a reconfigurar.",
+            "success": "Os seus dispositivos BLUETTI foram adicionados com sucesso."
         },
         "create_entry": {
             "default": "Autenticação bem sucedida"
         },
         "step": {
             "pick_implementation": {
-                "title": "Escolha o metodo de autenticação"
+                "title": "Escolha o metodo de autenticação",
+                "data": {
+                    "implementation": "Região"
+                }
             }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Adicionar dispositivos BLUETTI",
+                "description": "Selecione quaisquer dispositivos adicionais associados à sua conta BLUETTI que pretenda adicionar ao Home Assistant.",
+                "data": {
+                    "devices": "Dispositivos"
+                }
+            }
+        },
+        "abort": {
+            "no_devices_available": "A conta actual não tem dispositivos disponíveis/compatíveis.",
+            "all_devices_exists": "Todos os dispositivos e itens físicos desta conta já foram incluídos no pacote de integração BLUETTI.",
+            "cannot_connect": "Falha ao ligar ao servidor BLUETTI. Por favor, tente novamente."
+        }
+    },
+    "exceptions": {
+        "command_failed": {
+            "message": "Erro ao enviar o comando para {device_id}: {error}"
+        },
+        "select_option_read_only": {
+            "message": "{fn_code} é apenas de leitura e não pode ser alterado"
+        },
+        "select_option_invalid": {
+            "message": "Opção {option} inválida para {fn_code}"
+        }
+    },
+    "issues": {
+        "oauth_expired": {
+            "title": "Autenticação BLUETTI expirada",
+            "description": "A autorização da sua conta BLUETTI expirou. Aceda às definições da integração e selecione **Reconfigurar** para iniciar sessão novamente."
         }
     }
 }

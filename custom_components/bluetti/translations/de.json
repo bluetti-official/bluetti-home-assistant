@@ -11,16 +11,55 @@
             "oauth_timeout": "OAuth: Zeitüberschreitng beim verarbeiten des Zugrifftokens.",
             "oauth_unauthorized": "OAuth: Autorisierungsfehler beim Abrufen des Zugriffstokens.",
             "user_rejected_authorize": "Kontoverknüpfung fehlgeschlagen: {error}",
-			"all_devices_exists": "Alle unterstützten Geräte dieses Kontos wurden bereits konfiguriert.",
-            "no_devices_available": "Das aktuelle Konto verfügt über keine verfügbaren/kompatiblen Geräte."
+            "all_devices_exists": "Alle unterstützten Geräte dieses Kontos wurden bereits konfiguriert.",
+            "no_devices_available": "Das aktuelle Konto verfügt über keine verfügbaren/kompatiblen Geräte.",
+            "cannot_connect": "Verbindung zum BLUETTI-Server fehlgeschlagen. Bitte versuchen Sie es erneut.",
+            "reconfigure_failed": "Der zu rekonfigurierende Konfigurationseintrag wurde nicht gefunden.",
+            "success": "Ihre BLUETTI-Geräte wurden erfolgreich hinzugefügt."
         },
         "create_entry": {
             "default": "Erfolgreiche Authentifizierung"
         },
         "step": {
             "pick_implementation": {
-                "title": "Wählen Sie die Authentifizierungsmethode"
+                "title": "Wählen Sie die Authentifizierungsmethode",
+                "data": {
+                    "implementation": "Region"
+                }
             }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "BLUETTI-Geräte hinzufügen",
+                "description": "Wählen Sie weitere Geräte aus, die mit Ihrem BLUETTI-Konto verknüpft sind und die Sie zu Home Assistant hinzufügen möchten.",
+                "data": {
+                    "devices": "Geräte"
+                }
+            }
+        },
+        "abort": {
+            "no_devices_available": "Das aktuelle Konto verfügt über keine verfügbaren/kompatiblen Geräte.",
+            "all_devices_exists": "Alle Geräte und physischen Elemente dieses Kontos wurden bereits in das BLUETTI-Integrationspaket aufgenommen.",
+            "cannot_connect": "Verbindung zum BLUETTI-Server fehlgeschlagen. Bitte versuchen Sie es erneut."
+        }
+    },
+    "exceptions": {
+        "command_failed": {
+            "message": "Fehler beim Senden des Befehls an {device_id}: {error}"
+        },
+        "select_option_read_only": {
+            "message": "{fn_code} ist schreibgeschützt und kann nicht geändert werden"
+        },
+        "select_option_invalid": {
+            "message": "Ungültige Option {option} für {fn_code}"
+        }
+    },
+    "issues": {
+        "oauth_expired": {
+            "title": "BLUETTI-Authentifizierung abgelaufen",
+            "description": "Die Autorisierung Ihres BLUETTI-Kontos ist abgelaufen. Gehen Sie zu den Einstellungen der Integration und wählen Sie **Neu konfigurieren**, um sich erneut anzumelden."
         }
     }
 }

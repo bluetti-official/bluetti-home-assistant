@@ -12,15 +12,54 @@
             "oauth_unauthorized": "OAuth-autorisatiefout bij het verkrijgen van toegangstoken.",
             "user_rejected_authorize": "Accountkoppeling geweigerd: {error}",
             "all_devices_exists": "Alle apparaten en fysieke items onder dit account zijn al opgenomen in het BLUETTI-integratiepakket.",
-            "no_devices_available": "Het huidige account heeft geen beschikbare apparaten."
+            "no_devices_available": "Het huidige account heeft geen beschikbare apparaten.",
+            "cannot_connect": "Verbinding met de BLUETTI-server is mislukt. Probeer het opnieuw.",
+            "reconfigure_failed": "De te herconfigureren configuratie-invoer kon niet worden gevonden.",
+            "success": "Uw BLUETTI-apparaten zijn succesvol toegevoegd."
         },
         "create_entry": {
             "default": "Succesvol geverifieerd"
         },
         "step": {
             "pick_implementation": {
-              "title": "Kies een authenticatiemethode"
+                "title": "Kies een authenticatiemethode",
+                "data": {
+                    "implementation": "Regio"
+                }
             }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "BLUETTI-apparaten toevoegen",
+                "description": "Selecteer eventuele extra apparaten die aan uw BLUETTI-account zijn gekoppeld en die u aan Home Assistant wilt toevoegen.",
+                "data": {
+                    "devices": "Apparaten"
+                }
+            }
+        },
+        "abort": {
+            "no_devices_available": "Het huidige account heeft geen beschikbare apparaten.",
+            "all_devices_exists": "Alle apparaten en fysieke items onder dit account zijn al opgenomen in het BLUETTI-integratiepakket.",
+            "cannot_connect": "Verbinding met de BLUETTI-server is mislukt. Probeer het opnieuw."
+        }
+    },
+    "exceptions": {
+        "command_failed": {
+            "message": "Fout bij het verzenden van het commando naar {device_id}: {error}"
+        },
+        "select_option_read_only": {
+            "message": "{fn_code} is alleen-lezen en kan niet worden gewijzigd"
+        },
+        "select_option_invalid": {
+            "message": "Ongeldige optie {option} voor {fn_code}"
+        }
+    },
+    "issues": {
+        "oauth_expired": {
+            "title": "BLUETTI-authenticatie verlopen",
+            "description": "De autorisatie van uw BLUETTI-account is verlopen. Ga naar de instellingen van de integratie en selecteer **Herconfigureren** om opnieuw in te loggen."
         }
     }
 }

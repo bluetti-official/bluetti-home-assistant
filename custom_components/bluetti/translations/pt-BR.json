@@ -12,15 +12,54 @@
             "oauth_unauthorized": "Erro de autorização OAuth ao obter o token de acesso.",
             "user_rejected_authorize": "Vinculação da conta rejeitada: {error}",
             "all_devices_exists": "Todos os dispositivos e itens físicos desta conta já foram incluídos no pacote integrado BLUETTI.",
-            "no_devices_available": "A conta atual não possui dispositivos disponíveis."
+            "no_devices_available": "A conta atual não possui dispositivos disponíveis.",
+            "cannot_connect": "Falha ao conectar ao servidor BLUETTI. Tente novamente.",
+            "reconfigure_failed": "Não foi possível encontrar a entrada de configuração a ser reconfigurada.",
+            "success": "Seus dispositivos BLUETTI foram adicionados com sucesso."
         },
         "create_entry": {
             "default": "Autenticação realizada com sucesso"
         },
         "step": {
             "pick_implementation": {
-                "title": "Selecione o método de autenticação"
+                "title": "Selecione o método de autenticação",
+                "data": {
+                    "implementation": "Região"
+                }
             }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Adicionar dispositivos BLUETTI",
+                "description": "Selecione dispositivos adicionais vinculados à sua conta BLUETTI que deseja adicionar ao Home Assistant.",
+                "data": {
+                    "devices": "Dispositivos"
+                }
+            }
+        },
+        "abort": {
+            "no_devices_available": "A conta atual não possui dispositivos disponíveis.",
+            "all_devices_exists": "Todos os dispositivos e itens físicos desta conta já foram incluídos no pacote integrado BLUETTI.",
+            "cannot_connect": "Falha ao conectar ao servidor BLUETTI. Tente novamente."
+        }
+    },
+    "exceptions": {
+        "command_failed": {
+            "message": "Erro ao enviar comando para {device_id}: {error}"
+        },
+        "select_option_read_only": {
+            "message": "{fn_code} é somente leitura e não pode ser alterado"
+        },
+        "select_option_invalid": {
+            "message": "Opção {option} inválida para {fn_code}"
+        }
+    },
+    "issues": {
+        "oauth_expired": {
+            "title": "Autenticação BLUETTI expirada",
+            "description": "A autorização da sua conta BLUETTI expirou. Acesse as configurações da integração e selecione **Reconfigurar** para entrar novamente."
         }
     }
 }
