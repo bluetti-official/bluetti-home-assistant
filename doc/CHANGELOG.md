@@ -11,6 +11,7 @@ Fixes:
 - Fix the integration disappearing after a Home Assistant restart when adding a device for the first time.
 - Fix a control showing the device's serial number instead of its real name.
 - Fix a recurring "OAuth Expired" notification caused by a token-refresh timer leak that could accumulate duplicate timers on every reload.
+- Fix the cloud reporting a token as expired never actually attempting an automatic refresh - it only showed the "OAuth Expired" notification and required a manual reconfigure every time, even when the still-valid refresh token would have silently fixed it (#75, #81, #97).
 - Fix an unrecognized sensor type crashing the whole integration setup instead of just skipping that sensor.
 - Fix a blocking call, a websocket thread that could die silently without reconnecting, and several other reliability issues found during a full code review.
 
