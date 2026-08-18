@@ -102,11 +102,14 @@ There are two ways to install `BLUETTI Power Station Integration`.
 
 ### Install by HACS
 
-As the `BLUETTI Power Station Integration` has not yet been submitted to the
-official HACS repository, it is necessary to manually add a custom repository.
-HACS itself is a Home Assistant plugin (users need to install HACS first),
-similar to an app store. Through this app store, other third-party integrations
-can be installed.
+`BLUETTI Power Station Integration` hasn't been submitted to the default HACS
+repository list yet, so for now it has to be added as a **custom repository**
+(the repository already meets HACS's technical requirements for default
+inclusion - `hacs.json`, a passing `hassfest`/HACS validation workflow,
+tagged releases - submission to the default list is a step only this
+repository's maintainers can take). HACS itself is a Home Assistant plugin
+(users need to install HACS first), similar to an app store. Through this app
+store, other third-party integrations can be installed.
 
 1. Follow the steps "HACS -> Integration -> Custom Repository (it is in the
    upper right corner of the page)".

@@ -1,7 +1,6 @@
 {
   "domain": "bluetti",
   "name": "BLUETTI",
-  "version": "1.1.0",
   "codeowners": [
     "@bluetti-official"
   ],
@@ -9,6 +8,8 @@
   "documentation": "https://www.home-assistant.io/integrations/bluetti",
   "integration_type": "hub",
   "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/bluetti-official/bluetti-home-assistant/issues",
   "quality_scale": "gold",
-  "requirements": ["pydantic>=2.0", "stomper>=0.4", "websocket-client>=1.6"]
+  "requirements": ["pydantic>=2.0", "stomper>=0.4", "websocket-client>=1.6"],
+  "version": "1.1.0"
 }

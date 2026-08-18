@@ -19,6 +19,7 @@ Internal:
 - Adopted Home Assistant's DataUpdateCoordinator pattern for polling and push updates.
 - Reached Home Assistant's "Gold" integration quality scale.
 - Added a full automated test suite (100% line coverage).
+- Added `hacs.json` and a `hassfest`/HACS validation CI workflow, and filled in `manifest.json`'s `issue_tracker` field - the technical requirements for HACS default-repository inclusion (actual submission is still up to the maintainers).
 
 
 # 1.0.2 2026-03-31

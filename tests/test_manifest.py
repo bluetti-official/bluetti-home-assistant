@@ -56,6 +56,27 @@ def test_manifest_requirements_are_pinned():
         assert ">=" in requirement, f"{requirement} should specify a minimum version"
 
 
+def test_manifest_has_issue_tracker():
+    # Required by HACS for default-repository inclusion.
+    # https://hacs.xyz/docs/publish/integration
+    manifest = json.loads(MANIFEST_PATH.read_text())
+    assert manifest["issue_tracker"] == "https://github.com/bluetti-official/bluetti-home-assistant/issues"
+
+
+def test_manifest_keys_are_sorted_domain_name_then_alphabetical():
+    """hassfest requires this exact key order: domain, name, then alphabetical.
+
+    See sort_manifest() in home-assistant/core's script/hassfest/manifest.py -
+    the "Validate" CI workflow runs the real hassfest action, so a manifest
+    that fails this locally would fail CI too.
+    """
+    keys = [key for key, _ in json.loads(
+        MANIFEST_PATH.read_text(), object_pairs_hook=lambda pairs: pairs
+    )]
+    assert keys[:2] == ["domain", "name"]
+    assert keys[2:] == sorted(keys[2:])
+
+
 def test_quality_scale_yaml_covers_every_known_rule():
     rules = yaml.safe_load(QUALITY_SCALE_PATH.read_text())["rules"]
     all_known_rules = {rule for tier_rules in QUALITY_SCALE_TIERS.values() for rule in tier_rules}
