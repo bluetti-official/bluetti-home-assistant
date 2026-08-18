@@ -18,6 +18,7 @@ Internal:
 - Reached Home Assistant's "Gold" integration quality scale.
 - Added a full automated test suite (100% line coverage).
 - Filled in translation keys that had gone missing from every shipped language except English since the config flow and options flow were added, and added a regression test so a translation file falling behind again fails CI instead of going unnoticed.
+- Added `hacs.json` and a `hassfest`/HACS validation CI workflow, and filled in `manifest.json`'s `issue_tracker` field - the technical requirements for HACS default-repository inclusion (actual submission is still up to the maintainers).
 
 
 # 1.0.2 2026-03-31
