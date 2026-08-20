@@ -1,6 +1,7 @@
 """The BLUETTI integration."""
 # from __future__ import annotations
 
+import asyncio
 import logging
 from dataclasses import dataclass
 
@@ -91,8 +92,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
         device._entry_id = entry.entry_id
         coordinators[device.device_id] = BluettiDeviceCoordinator(hass, entry, device)
 
-    for coordinator in coordinators.values():
-        await coordinator.async_config_entry_first_refresh()
+    # Each device's first refresh is an independent network round-trip, so
+    # run them concurrently instead of one-by-one - otherwise setup time
+    # scales linearly with the number of devices on the account.
+    await asyncio.gather(
+        *(coordinator.async_config_entry_first_refresh() for coordinator in coordinators.values())
+    )
 
     entry.runtime_data = BluettiRuntimeData(
         auth=auth,

@@ -76,6 +76,45 @@ async def test_async_setup_entry_with_a_device(hass, enable_custom_integrations)
     mock_stomp_cls.return_value.connect.assert_called_once()
 
 
+async def test_async_setup_entry_with_multiple_devices_refreshes_concurrently(hass, enable_custom_integrations):
+    # Each device's first refresh is run via asyncio.gather() instead of
+    # sequentially, so setup time doesn't scale linearly with device count.
+    entry = _entry(
+        hass,
+        products=[
+            {"sn": "SN1", "name": "Device 1", "stateList": [], "online": "1"},
+            {"sn": "SN2", "name": "Device 2", "stateList": [], "online": "1"},
+        ],
+        devices=["SN1", "SN2"],
+    )
+    status_data = {
+        "SN1": MagicMock(sn="SN1", isBindByCurUser="1", online="1", stateList=[]),
+        "SN2": MagicMock(sn="SN2", isBindByCurUser="1", online="1", stateList=[]),
+    }
+
+    async def fake_get_device_status(sn):
+        return MagicMock(data=[status_data[sn]])
+
+    with patch("custom_components.bluetti.async_get_clientsession", MagicMock()), \
+         patch(
+             "custom_components.bluetti.config_entry_oauth2_flow.async_get_config_entry_implementation",
+             AsyncMock(return_value=MagicMock()),
+         ), \
+         patch("custom_components.bluetti.config_entry_oauth2_flow.OAuth2Session") as mock_session_cls, \
+         patch("custom_components.bluetti.StompClient") as mock_stomp_cls, \
+         patch("custom_components.bluetti.ProductClient") as mock_product_cls:
+        mock_session_cls.return_value.token = {"access_token": "tok", "expires_at": time.time() + 10000}
+        mock_product_cls.return_value.get_device_status = AsyncMock(side_effect=fake_get_device_status)
+
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.LOADED
+    coordinators = entry.runtime_data.coordinators
+    assert set(coordinators.keys()) == {"SN1", "SN2"}
+    assert all(c.last_update_success for c in coordinators.values())
+
+
 async def test_async_setup_entry_retries_on_failure(hass, enable_custom_integrations):
     entry = _entry(hass)
 

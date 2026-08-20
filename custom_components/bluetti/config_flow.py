@@ -8,6 +8,7 @@ from .oauth import OAuth2FlowHandler
 from .options_flow import BluettiOptionsFlowHandler
 from .api.bluetti import APPLICATION_PROFILE
 
+
 class BluettiConfigFlow(OAuth2FlowHandler, domain=DOMAIN):
     """BLUETTI Custom Integration config flow."""
 
