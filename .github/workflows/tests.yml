@@ -1,0 +1,38 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  pytest:
+    name: Run test suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements_test.txt
+          # Runtime dependencies from custom_components/bluetti/manifest.json -
+          # pytest-homeassistant-custom-component doesn't install these itself.
+          pip install "pydantic>=2.0" "stomper>=0.4" "websocket-client>=1.6"
+
+      - name: Run pytest with coverage
+        run: |
+          python -m pytest tests/ -q --cov=custom_components.bluetti --cov-report=term-missing --cov-fail-under=100
