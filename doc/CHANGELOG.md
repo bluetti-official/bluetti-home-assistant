@@ -1,3 +1,10 @@
+# Unreleased
+Fixes:
+- Fix the OAuth token-refresh timer leak that could accumulate duplicate timers on every reload, causing recurring forced re-logins.
+- Fix an unrecognized sensor type crashing the whole integration setup instead of just skipping that sensor.
+- Fix a blocking call, a websocket thread that could die silently without reconnecting, and several other reliability issues found during a full code review.
+
+
 # 1.0.2 2026-03-31
 New power station models have been supported:
 
