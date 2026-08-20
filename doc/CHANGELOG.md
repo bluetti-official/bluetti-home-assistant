@@ -1,3 +1,21 @@
+# Unreleased
+New:
+- Add more devices to an existing setup later without logging in again, via Settings -> Devices & services -> BLUETTI -> Configure.
+- Diagnostics download for troubleshooting, from the integration's device page.
+
+Fixes:
+- Fix the OAuth token-refresh timer leak that could accumulate duplicate timers on every reload, causing recurring forced re-logins.
+- Fix an unrecognized sensor type crashing the whole integration setup instead of just skipping that sensor.
+- Fix a blocking call, a websocket thread that could die silently without reconnecting, and several other reliability issues found during a full code review.
+- Fix the integration disappearing after a Home Assistant restart when adding a device for the first time.
+- Fix a control showing the device's serial number instead of its real name.
+
+Internal:
+- Adopted Home Assistant's DataUpdateCoordinator pattern for polling and push updates.
+- Reached Home Assistant's "Gold" integration quality scale.
+- Added a full automated test suite (100% line coverage).
+
+
 # 1.0.2 2026-03-31
 New power station models have been supported:
 

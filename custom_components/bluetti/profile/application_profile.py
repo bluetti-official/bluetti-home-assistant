@@ -15,7 +15,7 @@ class ApplicationProfile:
     config: dict = {}
 
     def __init__(self, active=None):
-        self.__active = active or os.getenv("bluetti.profile.active", "").lower()
+        self.__active = active or os.getenv("BLUETTI_PROFILE_ACTIVE", "").lower()
         __LOGGER__.info("Setting up application profile: %s", "prod" if self.__active == "" else self.__active)
 
         if self.__active != "":
@@ -29,9 +29,15 @@ class ApplicationProfile:
         return hass.async_add_executor_job(self.__load_config)
 
     def __load_config(self):
-        with open(self.__configPath, "r") as file:
-            __yaml__ = yaml.safe_load(file)
-            __LOGGER__.info("Load profile " f"{self.__configFile} of `{INTEGRATION_NAME}` integration successfully.")
+        try:
+            with open(self.__configPath, "r") as file:
+                __yaml__ = yaml.safe_load(file)
+        except (OSError, yaml.YAMLError) as err:
+            __LOGGER__.error(
+                "Failed to load profile %s of `%s` integration: %s",
+                self.__configFile, INTEGRATION_NAME, err,
+            )
+            raise
 
+        __LOGGER__.info("Load profile " f"{self.__configFile} of `{INTEGRATION_NAME}` integration successfully.")
         self.config = __yaml__['bluetti']
-        # print(self.config)

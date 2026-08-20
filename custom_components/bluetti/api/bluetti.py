@@ -48,7 +48,7 @@ class Bluetti(Generic[T]):
             method: Method,
             path: str,
             params: dict[str, Any] | None = None,
-            body: dict[str, Any] | None = {}
+            body: dict[str, Any] | None = None
     ) -> UnifyResponse[T] | str:
         """
         Send a request to the server.\n
@@ -95,7 +95,7 @@ class Bluetti(Generic[T]):
                 unify_response = TypeAdapter(UnifyResponse[responseType]).validate_python(data)
                 # self.logger.debug("<====== Server response body: %s", dumps(data, indent=4, ensure_ascii=False))
                 # print(repr(unify_response))
-                if data['code'] == 805:
+                if data.get('msgCode') == 805:
                     self._hass.bus.fire(EVENT_TOKEN_EXPIRED)
                     self.logger.info("token have expired")
                 return unify_response
