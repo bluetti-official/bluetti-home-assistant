@@ -58,10 +58,10 @@ class BluettiSelect(SelectEntity):
         # 检查是否为只读（根据fn_code判断）
         self._readonly = state.fn_code == "InvWorkState"
 
-        # 如果只读，让 Home Assistant 前端显示为只读（灰掉）
+        # 如果只读，标记为诊断实体；保留 options 列表以避免 current_option 不在
+        # options 列表中时 Home Assistant 记录 "not in the list of available options" 警告
         if self._readonly:
-            self._attr_options = []  # 不显示可选项
-            self._attr_entity_category = EntityCategory.DIAGNOSTIC  # 可选，标记为非操作类实体
+            self._attr_entity_category = EntityCategory.DIAGNOSTIC
 
         # print(f"注册设备: {device.name}, identifiers= {(DOMAIN, device.device_id)}")
 

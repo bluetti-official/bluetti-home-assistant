@@ -61,7 +61,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                 # 合并产品数据（去重）
                 existing_product_sns = {p.get('sn') if isinstance(p, dict) else p.sn for p in existing_products}
                 new_products = [p for p in self._products if p.sn not in existing_product_sns]
-                merged_products = existing_products + [p.__dict__ if hasattr(p, '__dict__') else p for p in new_products]
+                merged_products = existing_products + [p.model_dump() if hasattr(p, 'model_dump') else p for p in new_products]
                 
                 # 更新现有条目
                 self.hass.config_entries.async_update_entry(
@@ -196,11 +196,12 @@ class AuthTokenRefresh:
             self.send_expired_notification()
         else:
             interval = timedelta(days=1)
-            async_track_time_interval(
+            unsub = async_track_time_interval(
                 self.hass,
                 self.async_check_token_expiry,  # 要执行的任务函数
                 interval       # 执行间隔
             )
+            self.entry.async_on_unload(unsub)
             __LOGGER__.info("token is valid after 24 hours to check again")
         self.hass.async_create_task(self.async_check_token_expiry())
         
@@ -241,7 +242,10 @@ class AuthTokenRefresh:
     # check token is in 7 day if in 7day refesh token
     async def async_check_token_expiry(self):
         __LOGGER__.info("check token is expired")
-        expire_timestamp = cast(float, self.oAuth2Session.token["expires_at"])
+        expire_timestamp = self.oAuth2Session.token.get("expires_at")
+        if expire_timestamp is None:
+            __LOGGER__.warning("No expires_at in token, skipping expiry check")
+            return
         current_timestamp = time.time()
         remain_timestamp = expire_timestamp - current_timestamp
         if remain_timestamp < 0:

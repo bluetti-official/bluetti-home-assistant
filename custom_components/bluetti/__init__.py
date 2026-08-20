@@ -2,11 +2,11 @@
 # from __future__ import annotations
 
 import logging
-import asyncio
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_entry_oauth2_flow, device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers import storage
@@ -35,43 +35,46 @@ type BluettiConfigEntry = ConfigEntry[BluettiData]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
-    await APPLICATION_PROFILE.load_config(hass)
+    try:
+        await APPLICATION_PROFILE.load_config(hass)
 
-    enabled_devices = entry.options.get("devices", [])
-    all_products_data: list[dict] = entry.data.get("products", [])
-    all_products: list[UserProduct] = [
-        UserProduct.model_validate(p) if isinstance(p, dict) else p
-        for p in all_products_data
-    ]
-    
-    """OAUTH2: get the access token."""
-    implementation = (
-        await config_entry_oauth2_flow.async_get_config_entry_implementation(
-            hass, entry
+        enabled_devices = entry.options.get("devices", [])
+        all_products_data: list[dict] = entry.data.get("products", [])
+        all_products: list[UserProduct] = [
+            UserProduct.model_validate(p) if isinstance(p, dict) else p
+            for p in all_products_data
+        ]
+
+        """OAUTH2: get the access token."""
+        implementation = (
+            await config_entry_oauth2_flow.async_get_config_entry_implementation(
+                hass, entry
+            )
         )
-    )
-    __LOGGER__.debug("OAuth implementation is: %s", implementation.__class__)
+        __LOGGER__.debug("OAuth implementation is: %s", implementation.__class__)
 
-    httpSession = async_get_clientsession(hass)
-    oAuth2Session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
+        httpSession = async_get_clientsession(hass)
+        oAuth2Session = config_entry_oauth2_flow.OAuth2Session(hass, entry, implementation)
 
-    # If using a requests-based API lib
-    # entry.runtime_data = ConfigEntryAuth(hass, oAuth2Session)
+        # If using a requests-based API lib
+        # entry.runtime_data = ConfigEntryAuth(hass, oAuth2Session)
 
-    # If using an aiohttp-based API lib
-    entry.runtime_data = AsyncConfigEntryAuth(
-        httpSession, oAuth2Session
-    )
+        # If using an aiohttp-based API lib
+        entry.runtime_data = AsyncConfigEntryAuth(
+            httpSession, oAuth2Session
+        )
 
-    authTokenRefresh = AuthTokenRefresh(hass,entry,oAuth2Session)
-    authTokenRefresh.start_token_check()
-        
-    # await oAuth2Session.async_ensure_token_valid()
-    access_token = oAuth2Session.token["access_token"]
-    product_client = ProductClient(httpSession, access_token,hass)
-    # products = await product_client.get_user_products()
-    # print(products.data[0].__class__)
-    # print(products.data)
+        authTokenRefresh = AuthTokenRefresh(hass,entry,oAuth2Session)
+        authTokenRefresh.start_token_check()
+
+        # await oAuth2Session.async_ensure_token_valid()
+        access_token = oAuth2Session.token["access_token"]
+        product_client = ProductClient(httpSession, access_token,hass)
+        # products = await product_client.get_user_products()
+        # print(products.data[0].__class__)
+        # print(products.data)
+    except Exception as err:
+        raise ConfigEntryNotReady(f"BLUETTI setup failed: {err}") from err
 
     selected_products = [p for p in all_products if p.sn in enabled_devices]
 
@@ -98,12 +101,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
     for device in bluetti_devices.devices:
-        asyncio.run_coroutine_threadsafe(device.async_update(), hass.loop)
+        await device.async_update()
 
     # async def _after_start(event):
     #     # print(event)
     #     for device in bluetti_devices.devices:
-    #         asyncio.run_coroutine_threadsafe(device.async_update(), hass.loop)
+    #         await device.async_update()
 
     # hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _after_start)
     __LOGGER__.info('bluetti init ok')
@@ -118,7 +121,15 @@ def web_socket_message_handler(message: str):
 # TODO Update entry annotation
 async def async_unload_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
     """Unload a config entry."""
-    return await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)
+    unloaded = await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)
+    if unloaded:
+        data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+        if data and "stompClient" in data:
+            try:
+                data["stompClient"].disconnect()
+            except Exception as e:
+                __LOGGER__.warning("Error while disconnecting websocket: %s", e)
+    return unloaded
 
 async def async_remove_entry(hass, entry):
     """Handle removal of an entry."""

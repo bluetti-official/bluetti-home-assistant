@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Callable, Optional, List
 import asyncio
-import random
 import json
 import logging
 
@@ -121,7 +120,7 @@ class BluettiDevice:
         # self._ws_manager = ws_manager
 
         # 创建一个定时任务轮询获取设备状态
-        self.async_update = Throttle(timedelta(microseconds=1))(self._async_update)
+        self.async_update = Throttle(timedelta(seconds=5))(self._async_update)
 
     def __repr__(self):
         return f"<BluettiDevice id={self.device_id} name={self.name}>"
@@ -181,16 +180,6 @@ class BluettiDevice:
         return 0
 
     @property
-    def battery_voltage(self) -> float:
-        # TODO
-        return round(random.random() * 3 + 10, 2)
-
-    @property
-    def illuminance(self) -> int:
-        # TODO
-        return random.randint(0, 500)
-
-    @property
     def throttle(self):
         return self._t
 
@@ -199,34 +188,36 @@ class BluettiDevice:
         return self._schedule_state
 
     async def _async_update(self):
-        api_client = self._api_client
+        try:
+            api_client = self._api_client
 
-        device_status = await api_client.get_device_status(self.device_id)
-        # print(device_status.data[0])
-        data = device_status.data[0]
+            device_status = await api_client.get_device_status(self.device_id)
+            if not device_status.data:
+                __LOGGER__.warning("Empty status response for device %s", self.device_id)
+                return
+            data = device_status.data[0]
 
-        # print(f'device_status: {data}')
+            sn = data.sn
+            if sn != self.device_id:
+                return
 
-        sn = data.sn
-        if sn != self.device_id:
-            return
-        
-        if data.isBindByCurUser == '0':
-            # unbind device
-            if not self._unbind_processed:
-                await self._handle_unbind()
-            
+            if data.isBindByCurUser == '0':
+                # unbind device
+                if not self._unbind_processed:
+                    await self._handle_unbind()
 
-        self.on_line = data.online
+            self.on_line = data.online
 
-        new_states = data.stateList
+            new_states = data.stateList
 
-        for s in new_states:
-            state_obj = self.get_state(s["fnCode"])
-            if state_obj:
-                state_obj.fn_value = s["fnValue"]
+            for s in new_states:
+                state_obj = self.get_state(s["fnCode"])
+                if state_obj:
+                    state_obj.fn_value = s["fnValue"]
 
-        await self.publish_updates()
+            await self.publish_updates()
+        except Exception:
+            __LOGGER__.exception("Failed to update device %s", self.device_id)
 
     async def _handle_unbind(self):
         """Handle device unbinding: Clean up the device, entity, and configuration, and display the notification."""
@@ -335,7 +326,7 @@ class BluettiDevice:
                     f"If this is a mistake, please re-add the device."
                 )
                 
-                persistent_notification.create(
+                persistent_notification.async_create(
                     hass,
                     title=notification_title,
                     message=notification_message,

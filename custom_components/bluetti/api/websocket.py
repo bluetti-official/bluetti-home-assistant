@@ -64,7 +64,15 @@ class StompClient(object):
         self.reconnect_delay = 1  # 初始重连延迟（秒）
         self.max_reconnect_delay = 30  # 最大重连延迟（秒）
         # Run until interruption to client or server terminates connection.
-        Thread(target=self.websocket.run_forever).start()
+        Thread(target=self._run_forever_safe, daemon=True, name="bluetti-ws").start()
+
+    def _run_forever_safe(self):
+        try:
+            self.websocket.run_forever()
+        except Exception:
+            __LOGGER__.exception("BLUETTI WebSocket thread crashed")
+            if self.running:
+                self.reconnect()
 
     def disconnect(self):
         self.running = False
@@ -164,7 +172,11 @@ class StompListener:
             server_send, server_receive = map(int, heartbeat.split(','))
             __LOGGER__.info(f"Server heartbeat configuration: send={server_send}, receive={server_receive}")
 
-            destination = "/ws-subscribe/user/" + frame.headers['user-name'] + "/notify"
+            user_name = frame.headers.get('user-name')
+            if not user_name:
+                __LOGGER__.error("CONNECTED frame missing 'user-name' header, cannot subscribe")
+                return
+            destination = f"/ws-subscribe/user/{user_name}/notify"
             self.__on_subscribe(ws, destination)
         elif frame.cmd == "MESSAGE":
             self.__callback(self.__handler, frame.body)
@@ -179,7 +191,7 @@ class StompListener:
           error(str): Error received.
 
         """
-        print("The Error is:- " , error)
+        __LOGGER__.error("The BLUETTI WebSocket raised an error: %s", error)
 
     def on_close(self, ws, close_status_code, close_msg):
         __LOGGER__.debug(f"WebSocket 断开连接。状态码: {close_status_code}, 消息: {close_msg}")
