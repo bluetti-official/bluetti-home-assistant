@@ -1,5 +1,6 @@
 # Unreleased
 New:
+- Pick your BLUETTI cloud region (Global / US / EU) when adding the integration, to fix login failures and repeated "OAuth Expired" notifications caused by your network being geo-routed to the wrong regional server.
 - Add more devices to an existing setup later without logging in again, via Settings -> Devices & services -> BLUETTI -> Configure.
 - Diagnostics download for troubleshooting, from the integration's device page.
 
