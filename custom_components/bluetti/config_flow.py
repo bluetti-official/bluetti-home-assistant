@@ -11,6 +11,11 @@ from .oauth import OAuth2FlowHandler
 from .options_flow import BluettiOptionsFlowHandler
 from .api.bluetti import APPLICATION_PROFILE, EU_APPLICATION_PROFILE, US_APPLICATION_PROFILE
 
+# BLUETTI's public OAuth client for the Home Assistant integration (not a
+# per-user secret - shared by every installation, same as any other public/
+# native OAuth client per RFC 8252). _CLIENT_SECRET base64-decodes to the
+# literal string "HomeAssistant"; there is nothing confidential to redact
+# here, and this predates this branch's changes.
 _CLIENT_ID = "HomeAssistant"
 _CLIENT_SECRET = "SG9tZUFzc2lzdGFudA=="
 
