@@ -12,7 +12,10 @@
             "oauth_unauthorized": "Gaunant prieigos žetoną, įvyko OAuth protokolo autorizavimo klaida.",
             "user_rejected_authorize": "Paskyros susiejimo klaida: {error}",
             "all_devices_exists": "Visi paskyroje esantys įrenginiai jau yra įtraukti į integruotą BLUETTI paketą.",
-            "no_devices_available": "Paskyroje nėra palaikomų įrenginių."
+            "no_devices_available": "Paskyroje nėra palaikomų įrenginių.",
+            "cannot_connect": "Nepavyko prisijungti prie BLUETTI serverio. Bandykite dar kartą.",
+            "reconfigure_failed": "Nepavyko rasti perkonfigūruotino konfigūracijos įrašo.",
+            "success": "Jūsų BLUETTI įrenginiai sėkmingai pridėti."
         },
         "create_entry": {
             "default": "Autentifikacija sėkminga"
@@ -21,6 +24,39 @@
             "pick_implementation": {
                 "title": "Pasirinkite autentifikavimo metodą"
             }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Pridėti BLUETTI įrenginius",
+                "description": "Pasirinkite papildomus prie jūsų BLUETTI paskyros priskirtus įrenginius, kuriuos norite pridėti į Home Assistant.",
+                "data": {
+                    "devices": "Įrenginiai"
+                }
+            }
+        },
+        "abort": {
+            "no_devices_available": "Paskyroje nėra palaikomų įrenginių.",
+            "all_devices_exists": "Visi šios paskyros įrenginiai ir fiziniai elementai jau yra įtraukti į integruotą BLUETTI paketą.",
+            "cannot_connect": "Nepavyko prisijungti prie BLUETTI serverio. Bandykite dar kartą."
+        }
+    },
+    "exceptions": {
+        "command_failed": {
+            "message": "Klaida siunčiant komandą į {device_id}: {error}"
+        },
+        "select_option_read_only": {
+            "message": "{fn_code} yra tik skaitymui ir negali būti keičiamas"
+        },
+        "select_option_invalid": {
+            "message": "Netinkama parinktis {option} laukui {fn_code}"
+        }
+    },
+    "issues": {
+        "oauth_expired": {
+            "title": "BLUETTI autentifikacija baigėsi",
+            "description": "Jūsų BLUETTI paskyros autorizacija baigėsi. Eikite į integracijos nustatymus ir pasirinkite **Perkonfigūruoti**, kad prisijungtumėte iš naujo."
         }
     }
 }

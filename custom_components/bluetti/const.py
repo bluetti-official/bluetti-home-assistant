@@ -7,8 +7,13 @@ INTEGRATION_NAME: str = 'BLUETTI'
 EVENT_TOKEN_EXPIRED: str ="onTokenExpired"
 NOTIFY_ID_TOKEN_EXPIRED: str ="notifyTokenExpire"
 
-# TODO Update with your own urls
-BLUETTI_WSS_SERVER: str = "ws://local-gw.poweroak.ltd:18888/api/edgeiotgw/ws-coordination/websocket"
+# The BLUETTI cloud API does not expose a stable per-account identifier, and
+# this integration is designed around a single config entry that accumulates
+# every device bound to whichever BLUETTI account the user authenticates
+# with. This fixed unique_id lets the config flow use Home Assistant's
+# standard duplicate-prevention mechanism instead of matching on the entry
+# title.
+ACCOUNT_UNIQUE_ID: str = "account"
 
 class StringEnum(str, Enum):
     """String Enum define."""

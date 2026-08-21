@@ -27,6 +27,25 @@ The Integration's github repository is:
 - ✅ AC Ouput Power
 - ✅ DC Ouput Power
 
+## 💡 Use Cases
+
+- **Monitor your power station from anywhere** — battery level, inverter
+  status and input/output power show up as regular Home Assistant sensors,
+  so they work in dashboards, history graphs and the mobile app just like
+  any other device.
+- **Automate charging and discharging** — trigger automations based on
+  battery state of charge (e.g. stop charging above 90%, send an alert
+  below 20%).
+- **Control AC/DC outputs remotely** — turn the power station's outputs on
+  or off from Home Assistant, a script, or voice assistants integrated with
+  Home Assistant.
+- **Combine with energy dashboards** — use the power sensors (PV input,
+  grid input, AC/DC output) alongside Home Assistant's Energy dashboard to
+  track solar production and consumption.
+- **React to grid/power events** — build automations that respond to the
+  inverter or work-mode state, for example switching to backup mode when a
+  power outage is detected elsewhere in your setup.
+
 ## 🎮 Power Station Support List
 
 > [!NOTE]
@@ -83,11 +102,14 @@ There are two ways to install `BLUETTI Power Station Integration`.
 
 ### Install by HACS
 
-As the `BLUETTI Power Station Integration` has not yet been submitted to the
-official HACS repository, it is necessary to manually add a custom repository.
-HACS itself is a Home Assistant plugin (users need to install HACS first),
-similar to an app store. Through this app store, other third-party integrations
-can be installed.
+`BLUETTI Power Station Integration` hasn't been submitted to the default HACS
+repository list yet, so for now it has to be added as a **custom repository**
+(the repository already meets HACS's technical requirements for default
+inclusion - `hacs.json`, a passing `hassfest`/HACS validation workflow,
+tagged releases - submission to the default list is a step only this
+repository's maintainers can take). HACS itself is a Home Assistant plugin
+(users need to install HACS first), similar to an app store. Through this app
+store, other third-party integrations can be installed.
 
 1. Follow the steps "HACS -> Integration -> Custom Repository (it is in the
    upper right corner of the page)".
@@ -134,6 +156,77 @@ can be installed.
    <img src="./doc/images/6-choose_bluetti_devices.png" width="880">
    <img src="./doc/images/7-bluetti_device_in_ha.png" width="880">
 
+## 🔄 How Data Is Updated
+
+This integration is cloud-based: it talks to the BLUETTI cloud service, not
+directly to your power station over the local network.
+
+- **Push updates**: the integration keeps a WebSocket connection open to the
+  BLUETTI cloud. When your power station reports a change (e.g. you toggle
+  a switch in the official BLUETTI app), Home Assistant is notified and
+  refreshes that device's entities within a few seconds.
+- **Polling fallback**: independently of push updates, each device is also
+  polled every 30 seconds. This guarantees entities stay up to date even if
+  a push notification is missed.
+- **Availability**: if the BLUETTI cloud is unreachable or your account's
+  authorization expires, affected entities are marked `unavailable` in Home
+  Assistant rather than showing stale data.
+
+## 🧩 Example Automations
+
+Replace `sensor.xxx_battery_level` / `switch.xxx_ac_output` with the actual
+entity IDs created for your device (visible on the device page under
+**Settings -> Devices & services -> BLUETTI**).
+
+**Notify when the battery is low:**
+
+```yaml
+automation:
+  - alias: "BLUETTI: notify on low battery"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.xxx_battery_level
+        below: 20
+    action:
+      - service: notify.mobile_app_your_phone
+        data:
+          message: "BLUETTI power station battery is below 20%."
+```
+
+**Turn off the AC output at night:**
+
+```yaml
+automation:
+  - alias: "BLUETTI: turn off AC output at night"
+    trigger:
+      - platform: time
+        at: "23:00:00"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.xxx_ac_output
+```
+
+## 🗑️ Removing the Integration
+
+1. Go to **Settings -> Devices & services**, open the `BLUETTI` integration
+   card, click the three-dot menu on the integration entry and select
+   **Delete**. This removes the config entry, its devices and entities from
+   `Home Assistant`.
+
+2. Remove the integration files:
+
+   - **Installed via HACS**: go to **HACS -> Integrations**, open `BLUETTI`,
+     and select **Remove**.
+   - **Installed manually**: delete the `custom_components/bluetti` folder
+     from your `Home Assistant` configuration directory.
+
+3. Restart `Home Assistant` to complete the removal.
+
+4. (Optional) If you no longer want `Home Assistant` to have access to your
+   BLUETTI account, revoke it from your BLUETTI account's connected-apps
+   settings.
+
 ## ❓ Frequently Asked Questions (FAQ)
 
 ### Not found `BLUETTI Integration` after installation?
@@ -156,9 +249,24 @@ Please check the **network**, **ports** and **firewall** to ensure that
    git pull
    ```
    
-## Notice
+## ⚠️ Known Limitations
 
-### Balco260 Self-consumption mode need connect the electricity meter
+- **Cloud-dependent**: this integration relies on the BLUETTI cloud service
+  (OAuth2 login + WebSocket push). It does not work with BLUETTI power
+  stations over the local network, and stops updating if BLUETTI's cloud
+  service is unreachable.
+- **One BLUETTI account per Home Assistant install**: all devices from a
+  given BLUETTI account are grouped under a single integration entry. If
+  you have devices on multiple BLUETTI accounts, only the most recently
+  authenticated account's devices merge into that entry.
+- **Newly bound devices require a manual step**: after binding a new device
+  to your BLUETTI account, use **Settings -> Devices & services -> BLUETTI
+  -> Configure** to add it — it is not picked up automatically.
+- **Sensor coverage varies by model**: not every fn_code/sensor reported by
+  every power station model is mapped to a Home Assistant entity yet. If a
+  sensor is missing for your model, please open an issue.
+- **Balco260 self-consumption mode** needs the electricity meter connected
+  to report correctly.
 
 ## 📮 Support & Feedback
 
