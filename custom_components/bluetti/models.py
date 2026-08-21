@@ -1,15 +1,16 @@
 from __future__ import annotations
-from typing import Callable, Optional, List
+from typing import TYPE_CHECKING, Optional, List
 import asyncio
-import random
 import json
 import logging
 
-from homeassistant.util import Throttle, dt
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.components import persistent_notification
-from datetime import timedelta
 from .const import DOMAIN
+
+if TYPE_CHECKING:
+    from .coordinator import BluettiDeviceCoordinator  # pragma: no cover
 
 __LOGGER__ = logging.getLogger(__name__)
 
@@ -44,16 +45,18 @@ class BluettiData:
         return None
 
     def web_socket_message_handler(self, message: str):
-        __LOGGER__.debug(f"收到ws消息 {message}")
+        __LOGGER__.debug("Received BLUETTI websocket message: %s", message)
 
         res = json.loads(message)
-        # load api
         sn = res["data"]["deviceSn"]
 
         device = self.get_device_by_sn(sn)
-        if device:
-            # print(f'开始调用api获取设备状态: {sn}')
-            asyncio.run_coroutine_threadsafe(device.async_update(), self.loop)
+        if device and device.coordinator:
+            # This runs on the websocket thread, not the event loop, so a
+            # thread-safe scheduling call is required here.
+            asyncio.run_coroutine_threadsafe(
+                device.coordinator.async_request_refresh(), self.loop
+            )
 
 class BluettiState:
     """Represents a single function/state of the device."""
@@ -99,12 +102,15 @@ class BluettiDevice:
         self.sn = sn
         self.model = model
         self.manufacturer = manufacturer
-        self._callbacks: set[Callable[[], None]] = set()
-        self._loop = asyncio.get_event_loop()
+        self.coordinator: "BluettiDeviceCoordinator | None" = None
         self.states = [
             BluettiState(
                 fn_code=s.get("fnCode"),
-                fn_name=s.get("fnName") or "",
+                # Some fn_codes are not localized by the API and come back
+                # with an empty fnName; fall back to fn_code so entities
+                # never end up with a blank has_entity_name name (which
+                # Home Assistant displays using the raw entity_id instead).
+                fn_name=s.get("fnName") or s.get("fnCode") or "",
                 fn_value=s.get("fnValue"),
                 fn_type=s.get("fnType"),
                 support_mode_values=s.get("supportModeValues"),
@@ -118,56 +124,39 @@ class BluettiDevice:
         self._hass = None
         self._entry = None
         self._entry_id = None
-        # self._ws_manager = ws_manager
-
-        # 创建一个定时任务轮询获取设备状态
-        self.async_update = Throttle(timedelta(microseconds=1))(self._async_update)
 
     def __repr__(self):
         return f"<BluettiDevice id={self.device_id} name={self.name}>"
 
     def get_state(self, fn_code: str) -> Optional[BluettiState]:
-        # print('poll get device status')
         """Return state object by fn_code."""
         for s in self.states:
             if s.fn_code == fn_code:
                 return s
         return None
 
-    async def set_state_value(self, fn_code: str, value: str):
-        """Set a state value and notify callbacks."""
+    async def set_state_value(self, fn_code: str, value: str) -> None:
+        """Send a control command to the device and notify the coordinator."""
         state = self.get_state(fn_code)
         if not state:
             raise ValueError(f"No state with code {fn_code}")
 
         try:
-            # print({'sn': self.device_id, 'fnCode': fn_code, 'fnValue': value})
+            result = await self._api_client.control_device(
+                {'sn': self.device_id, 'fnCode': fn_code, 'fnValue': value}
+            )
+        except Exception as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="command_failed",
+                translation_placeholders={"device_id": self.device_id, "error": str(err)},
+            ) from err
 
-            api_client = self._api_client
-            result = await api_client.control_device({'sn': self.device_id, 'fnCode': fn_code, 'fnValue': value})
+        if result.msgCode == 0:
+            state.set_value(value)
 
-            # print(result)
-            if result.msgCode == 0:
-                state.set_value(value)
-
-        except Exception as e:
-            raise Exception(f"Error sending WebSocket command: {e}")
-
-        # state.set_value(value)
-        await self.publish_updates()
-
-    def register_callback(self, callback: Callable[[], None]):
-        self._callbacks.add(callback)
-        # print(len(self._callbacks))
-
-    def remove_callback(self, callback: Callable[[], None]):
-        self._callbacks.discard(callback)
-
-    async def publish_updates(self):
-        """Call registered callbacks."""
-        # print(len(self._callbacks))
-        for cb in self._callbacks:
-            cb()
+        if self.coordinator:
+            self.coordinator.async_set_updated_data(self)
 
     @property
     def online(self) -> bool:
@@ -180,152 +169,122 @@ class BluettiDevice:
             return int(state.fn_value)
         return 0
 
-    @property
-    def battery_voltage(self) -> float:
-        # TODO
-        return round(random.random() * 3 + 10, 2)
+    async def async_refresh_from_api(self) -> None:
+        """Fetch the latest state from the BLUETTI cloud API and apply it.
 
-    @property
-    def illuminance(self) -> int:
-        # TODO
-        return random.randint(0, 500)
-
-    @property
-    def throttle(self):
-        return self._t
-
-    @property
-    def schedule_state(self):
-        return self._schedule_state
-
-    async def _async_update(self):
-        api_client = self._api_client
-
-        device_status = await api_client.get_device_status(self.device_id)
-        # print(device_status.data[0])
+        Raises on any failure so the coordinator can classify and surface it.
+        """
+        device_status = await self._api_client.get_device_status(self.device_id)
+        if not device_status.data:
+            raise RuntimeError(f"Empty status response for device {self.device_id}")
         data = device_status.data[0]
 
-        # print(f'device_status: {data}')
-
-        sn = data.sn
-        if sn != self.device_id:
+        if data.sn != self.device_id:
             return
-        
-        if data.isBindByCurUser == '0':
-            # unbind device
-            if not self._unbind_processed:
-                await self._handle_unbind()
-            
+
+        if data.isBindByCurUser == '0' and not self._unbind_processed:
+            await self._handle_unbind()
+            return
 
         self.on_line = data.online
 
-        new_states = data.stateList
-
-        for s in new_states:
+        for s in data.stateList:
             state_obj = self.get_state(s["fnCode"])
             if state_obj:
                 state_obj.fn_value = s["fnValue"]
-
-        await self.publish_updates()
 
     async def _handle_unbind(self):
         """Handle device unbinding: Clean up the device, entity, and configuration, and display the notification."""
         self._unbind_processed = True
         
-        __LOGGER__.info(f"Detected device unbinding: {self.name} ({self.device_id})")
+        __LOGGER__.info("Detected device unbinding: %s (%s)", self.name, self.device_id)
         
         # Check if the necessary references exist
         if not self._hass or not self._entry:
-            __LOGGER__.error(f"Cannot handle device unbinding: Missing necessary references (hass={self._hass is not None}, entry={self._entry is not None})")
+            __LOGGER__.error(
+                "Cannot handle device unbinding: missing necessary references "
+                "(hass=%s, entry=%s)",
+                self._hass is not None, self._entry is not None,
+            )
             return
-        
+
         hass = self._hass
         entry = self._entry
         entry_id = self._entry_id or entry.entry_id
-        
+
         try:
-            __LOGGER__.info(f"Start handling device unbinding: {self.device_id}")
-            
+            __LOGGER__.info("Start handling device unbinding: %s", self.device_id)
+
             # 1. Get the device registry and entity registry
             device_registry = dr.async_get(hass)
             entity_registry = er.async_get(hass)
-            
+
             # 2. Find and delete all entities of the device
             device_entry = None
             for dev_entry in dr.async_entries_for_config_entry(device_registry, entry_id):
                 if (DOMAIN, self.device_id) in dev_entry.identifiers:
                     device_entry = dev_entry
                     break
-            
+
             if device_entry:
                 # Delete all entities of the device
                 entities_to_remove = []
                 for entity_entry in er.async_entries_for_config_entry(entity_registry, entry_id):
                     if entity_entry.device_id == device_entry.id:
                         entities_to_remove.append(entity_entry.entity_id)
-                
+
                 for entity_id in entities_to_remove:
                     try:
                         entity_registry.async_remove(entity_id)
-                        __LOGGER__.debug(f"Deleted entity: {entity_id}")
+                        __LOGGER__.debug("Deleted entity: %s", entity_id)
                     except Exception as e:
-                        __LOGGER__.warning(f"Error deleting entity {entity_id}: {e}")
-                
+                        __LOGGER__.warning("Error deleting entity %s: %s", entity_id, e)
+
                 # 3. Delete the device registry
                 try:
                     device_registry.async_remove_device(device_entry.id)
-                    __LOGGER__.debug(f"Deleted device registry: {device_entry.id}")
+                    __LOGGER__.debug("Deleted device registry: %s", device_entry.id)
                 except Exception as e:
-                    __LOGGER__.warning(f"Error deleting device registry: {e}")
+                    __LOGGER__.warning("Error deleting device registry: %s", e)
             else:
-                __LOGGER__.warning(f"Device registry not found: {self.device_id}")
-            
-            # 4. Clean up the bluetooth connection (if exists)
-            # if hasattr(self, '_bt_coordinator') and self._bt_coordinator:
-            #     try:
-            #         if hasattr(self._bt_coordinator, 'reader') and self._bt_coordinator.reader:
-            #             reader = self._bt_coordinator.reader
-            #             if hasattr(reader, 'client') and reader.client and reader.client.is_connected:
-            #                 await reader.client.disconnect()
-            #                 __LOGGER__.debug(f"已断开蓝牙连接: {self.device_id}")
-            #     except Exception as e:
-            #         __LOGGER__.warning(f"断开蓝牙连接时出错: {e}")
-            
-            # 5. Remove the device from the runtime data
+                __LOGGER__.warning("Device registry not found: %s", self.device_id)
+
+            # 4. Remove the device (and its coordinator) from the runtime data
             try:
-                domain_data = hass.data.get(DOMAIN, {})
-                entry_data = domain_data.get(entry_id)
-                if entry_data and "bluettiDevices" in entry_data:
-                    bluetti_data = entry_data["bluettiDevices"]
-                    if hasattr(bluetti_data, 'devices'):
-                        bluetti_data.devices = [
-                            d for d in bluetti_data.devices 
-                            if d.device_id != self.device_id
-                        ]
-                        __LOGGER__.debug(f"Removed device from runtime data: {self.device_id}")
+                runtime_data = getattr(entry, "runtime_data", None)
+                if runtime_data:
+                    runtime_data.bluetti_devices.devices = [
+                        d for d in runtime_data.bluetti_devices.devices
+                        if d.device_id != self.device_id
+                    ]
+                    runtime_data.coordinators.pop(self.device_id, None)
+                    __LOGGER__.debug("Removed device from runtime data: %s", self.device_id)
             except Exception as e:
-                __LOGGER__.warning(f"Error removing device from runtime data: {e}")
-            
-            # 6. Remove the device from the configuration entry
+                __LOGGER__.warning("Error removing device from runtime data: %s", e)
+
+            # 5. Remove the device from the configuration entry
             try:
                 current_options = dict(entry.options)
                 current_devices = current_options.get("devices", [])
-                
+
                 if self.device_id in current_devices:
                     new_devices = [d for d in current_devices if d != self.device_id]
-                    
+
                     hass.config_entries.async_update_entry(
                         entry,
                         options={**current_options, "devices": new_devices}
                     )
-                    __LOGGER__.debug(f"Removed device from configuration entry: {self.device_id}")
+                    __LOGGER__.debug("Removed device from configuration entry: %s", self.device_id)
                 else:
-                    __LOGGER__.warning(f"Device {self.device_id} not in the device list of the configuration entry")
+                    __LOGGER__.warning(
+                        "Device %s not in the device list of the configuration entry",
+                        self.device_id,
+                    )
             except Exception as e:
-                __LOGGER__.error(f"Error updating configuration entry: {e}", exc_info=True)
+                __LOGGER__.error("Error updating configuration entry: %s", e, exc_info=True)
                 # Even if the update fails, continue to display the notification
-            
-            # 7. Display persistent notification
+
+            # 6. Display persistent notification
             try:
                 notification_id = f"bluetti_unbind_{self.device_id}"
                 notification_title = "BLUETTI device has been unbound"
@@ -334,29 +293,29 @@ class BluettiDevice:
                     f"and has been automatically removed from the Home Assistant integration.\n\n"
                     f"If this is a mistake, please re-add the device."
                 )
-                
-                persistent_notification.create(
+
+                persistent_notification.async_create(
                     hass,
                     title=notification_title,
                     message=notification_message,
                     notification_id=notification_id
                 )
-                __LOGGER__.debug(f"Displayed unbinding notification: {self.device_id}")
+                __LOGGER__.debug("Displayed unbinding notification: %s", self.device_id)
             except Exception as e:
-                __LOGGER__.warning(f"Error displaying notification: {e}")
-            
-            # 8. Reload the configuration entry after a delay (ensure all cleanup operations are completed)
+                __LOGGER__.warning("Error displaying notification: %s", e)
+
+            # 7. Reload the configuration entry after a delay (ensure all cleanup operations are completed)
             async def _reload_after_cleanup():
                 try:
                     await asyncio.sleep(1)  # Delay 1 second to ensure all cleanup operations are completed
                     await hass.config_entries.async_reload(entry_id)
-                    __LOGGER__.info(f"Reloaded configuration entry: {entry_id}")
+                    __LOGGER__.info("Reloaded configuration entry: %s", entry_id)
                 except Exception as e:
-                    __LOGGER__.error(f"Error reloading configuration entry: {e}", exc_info=True)
-            
+                    __LOGGER__.error("Error reloading configuration entry: %s", e, exc_info=True)
+
             hass.async_create_task(_reload_after_cleanup())
-            
-            __LOGGER__.info(f"Device unbinding processing completed: {self.device_id}")
-            
+
+            __LOGGER__.info("Device unbinding processing completed: %s", self.device_id)
+
         except Exception as e:
-            __LOGGER__.error(f"Error handling device unbinding: {e}", exc_info=True)
+            __LOGGER__.error("Error handling device unbinding: %s", e, exc_info=True)

@@ -49,7 +49,7 @@ class ProductClient(Bluetti):
             params={'sns': sns}
         )
 
-    async def control_device(self, payload: str = None):
+    async def control_device(self, payload: dict = None):
         """
         控制设备
         """
@@ -59,7 +59,7 @@ class ProductClient(Bluetti):
             path="/api/bluiotdata/ha/v1/fulfillment",
             body=payload
         )
-    async def bind_devices(self, payload: str = None):
+    async def bind_devices(self, payload: dict = None):
         """
         bind devices
         """

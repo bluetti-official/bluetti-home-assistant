@@ -1,4 +1,4 @@
-class ApplicationRuntimeException(BaseException):
+class ApplicationRuntimeException(Exception):
     """The runtime exception for BLUETTI integration"""
 
     message: str = "An unknown error has occurred."

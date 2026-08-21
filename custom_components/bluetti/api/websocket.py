@@ -1,10 +1,16 @@
 import logging
 import json
 import time
+import warnings
 from threading import Thread
 from typing import Callable
 
-import stomper
+# stomper's stompbuffer module has an invalid regex escape sequence that
+# raises a SyntaxWarning on import (fixed in no released version as of
+# 0.4.3); silence it here so it isn't misattributed to this integration.
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", SyntaxWarning)
+    import stomper
 import websocket
 import threading
 
@@ -64,7 +70,15 @@ class StompClient(object):
         self.reconnect_delay = 1  # 初始重连延迟（秒）
         self.max_reconnect_delay = 30  # 最大重连延迟（秒）
         # Run until interruption to client or server terminates connection.
-        Thread(target=self.websocket.run_forever).start()
+        Thread(target=self._run_forever_safe, daemon=True, name="bluetti-ws").start()
+
+    def _run_forever_safe(self):
+        try:
+            self.websocket.run_forever()
+        except Exception:
+            __LOGGER__.exception("BLUETTI WebSocket thread crashed")
+            if self.running:
+                self.reconnect()
 
     def disconnect(self):
         self.running = False
@@ -106,7 +120,7 @@ class StompClient(object):
                 __LOGGER__.debug("Sent STOMP heartbeat")
                 
             except Exception as e:
-                __LOGGER__.error(f"Failed to send heartbeat: {e}")
+                __LOGGER__.error("Failed to send heartbeat: %s", e)
                 break
                 
             time.sleep(self.heartbeat_interval)
@@ -132,7 +146,7 @@ class StompListener:
                 callback(*args)
 
             except Exception as e:
-                __LOGGER__.error(f"error from callback {callback}: {e}")
+                __LOGGER__.error("error from callback %s: %s", callback, e)
                 # if self.on_error:
                 #    self.on_error(self, e)
 
@@ -162,9 +176,16 @@ class StompListener:
         elif frame.cmd == "CONNECTED":
             heartbeat = frame.headers.get('heart-beat', '0,0')
             server_send, server_receive = map(int, heartbeat.split(','))
-            __LOGGER__.info(f"Server heartbeat configuration: send={server_send}, receive={server_receive}")
+            __LOGGER__.info(
+                "Server heartbeat configuration: send=%s, receive=%s",
+                server_send, server_receive,
+            )
 
-            destination = "/ws-subscribe/user/" + frame.headers['user-name'] + "/notify"
+            user_name = frame.headers.get('user-name')
+            if not user_name:
+                __LOGGER__.error("CONNECTED frame missing 'user-name' header, cannot subscribe")
+                return
+            destination = f"/ws-subscribe/user/{user_name}/notify"
             self.__on_subscribe(ws, destination)
         elif frame.cmd == "MESSAGE":
             self.__callback(self.__handler, frame.body)
@@ -179,8 +200,11 @@ class StompListener:
           error(str): Error received.
 
         """
-        print("The Error is:- " , error)
+        __LOGGER__.error("The BLUETTI WebSocket raised an error: %s", error)
 
     def on_close(self, ws, close_status_code, close_msg):
-        __LOGGER__.debug(f"WebSocket 断开连接。状态码: {close_status_code}, 消息: {close_msg}")
+        __LOGGER__.debug(
+            "WebSocket connection closed. Status code: %s, message: %s",
+            close_status_code, close_msg,
+        )
         self.client.reconnect()
