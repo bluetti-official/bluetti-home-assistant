@@ -1,4 +1,4 @@
-# Unreleased
+# 1.1.0 2026-08-20
 New:
 - Add more devices to an existing setup later without logging in again, via Settings -> Devices & services -> BLUETTI -> Configure.
 - Diagnostics download for troubleshooting, from the integration's device page.
