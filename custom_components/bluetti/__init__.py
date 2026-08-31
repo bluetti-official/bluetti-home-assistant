@@ -137,7 +137,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
             hass.config_entries.async_update_entry(entry, data={**entry.data, "token": config_token})
 
         # Determine the WebSocket protocol
-        endpoint = (cloud_host or APPLICATION_PROFILE.config["server"]["gateway"]).split("//")
+        endpoint = (cloud_host or APPLICATION_PROFILE.config["server"]["gateway"]).split("://")
         if endpoint[0] == "https":
             ws_protocol = "wss://"
         else:
