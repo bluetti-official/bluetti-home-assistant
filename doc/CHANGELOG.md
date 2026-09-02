@@ -1,7 +1,8 @@
 # 1.0.4 2026-09-02
 
 ## 🐞Bug fixes
-- Fixed an issue where the integration did not work on linux-x86_64-musl platform.
+- [[#148](https://github.com/bluetti-official/bluetti-home-assistant/issues/148 "#148")] Fixed an issue where the integration did not work on linux-x86_64-musl platform.
+- [[#149](https://github.com/bluetti-official/bluetti-home-assistant/issues/149 "#149")] Fixed an issue where the WebSocket always uses `ws://` scheme.
 
 # 1.0.3 2026-08-31
 
