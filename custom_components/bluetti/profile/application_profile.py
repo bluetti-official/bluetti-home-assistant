@@ -16,7 +16,7 @@ class ApplicationProfile:
     config: dict = {}
 
     def __init__(self, active=None):
-        self.__active = active or os.getenv("bluetti.profile.active", "").lower()
+        self.__active = active or os.getenv("BLUETTI_PROFILE_ACTIVE", "").lower()
         __LOGGER__.info("Setting up application profile: %s", "prod" if self.__active == "" else self.__active)
 
         if self.__active != "":
