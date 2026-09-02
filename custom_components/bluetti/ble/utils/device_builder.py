@@ -2,6 +2,7 @@
 
 import re
 import logging
+import platform
 from ..devices.base_device.oak_device import *
 from ..devices.gen2.oak_balco_device import OakBalcoDevice
 from ..devices.gen2.oak_car_product_device import OakCarProductDevice
@@ -15,6 +16,8 @@ from ..devices.gen1.oak_ble_only_device import OakBleOnlyDeviceG1
 _LOGGER = logging.getLogger(__name__)
 
 _device_classes = []
+libc = ''
+machine = ''
 
 def register_device(device_class: type):
     """add device"""
@@ -40,7 +43,13 @@ def build_device_v2(address: str,bluetti_device: BluettiDevice):
     _LOGGER.info(f"unsupport model：{model}")
     return None
 
-def is_device_support(model: str):
+async def is_device_support(model: str):
+    global libc,machine
+    if libc == '':
+        libc,machine = await get_libc_ver()
+    if libc == 'musl' and machine in ["x86_64", "amd64"]:
+        return False
+    
     device_models = model.split('-')
     device_model = device_models[len(device_models)-1]
     device_model = device_model.upper()
@@ -48,6 +57,11 @@ def is_device_support(model: str):
         if device_class.supports_model(device_model):
             return True
     return False
+
+async def get_libc_ver():
+    libname, ver = platform.libc_ver()
+    machine = platform.machine().lower()
+    return libname,machine
 
 # "PR30V2,EL30V2,AORA30V2","PR100V2,EL100V2,AORA100V2"
 register_device(OakPortableDevice)
