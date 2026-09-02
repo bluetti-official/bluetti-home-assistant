@@ -17,13 +17,11 @@ try:
         from .lib.x86_64 import bluetti_ble_lib
         from .lib.x86_64.bluetti_ble_lib import BLUETTI_PROTO_DATA
     elif machine in ["arm64", "aarch64"]:
-        from .lib.arm64 import bluetti_ble_lib
-        from .lib.arm64.bluetti_ble_lib import BLUETTI_PROTO_DATA
+        from .lib.aarch64 import bluetti_ble_lib
+        from .lib.aarch64.bluetti_ble_lib import BLUETTI_PROTO_DATA
     else:
         raise ImportError(f"Unsupported architecture: {machine}")
 except ImportError as e:
-    from .lib.x86_64 import bluetti_ble_lib
-    from .lib.x86_64.bluetti_ble_lib import BLUETTI_PROTO_DATA
     _LOGGER.error(f'unsupport {machine} default load x86_64')
     # raise RuntimeError(f"Failed to import crypt module: {e}")
 

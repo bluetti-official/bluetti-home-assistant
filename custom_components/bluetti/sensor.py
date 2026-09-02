@@ -12,7 +12,6 @@ from .const import DOMAIN,ControlMode
 from .models import BluettiData, BluettiDevice, BluettiState
 from .icon_config import get_icon_for_fn_code
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from .ble.coordinator import PollingCoordinator
 from .api.bluetti import APPLICATION_PROFILE
 
 
@@ -82,6 +81,10 @@ async def async_setup_entry(
 
     bluetti_devices: BluettiData = entry_data["bluettiDevices"]
     entities = []
+
+    hasBleControl = any(device.control_mode == ControlMode.BLE for device in bluetti_devices.devices)
+    if hasBleControl:
+        from .ble.coordinator import PollingCoordinator
 
     for device in bluetti_devices.devices:
         # for state in device.states:

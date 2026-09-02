@@ -22,7 +22,6 @@ from .api.websocket import StompClient
 from .profile.application_profile import ApplicationProfile
 from .const import DOMAIN, DOWNDIR, DOWNDIR_DATA_KEY, EVENT_BLUETTI_SETUP_OK, ControlMode
 from .model.product import UserProduct
-from .ble.ble_decoder import start_ble_lib
 
 # from .localization import LocalizationManager
 
@@ -48,7 +47,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     # global LOCALIZATION_MANAGER
     # LOCALIZATION_MANAGER = LocalizationManager(hass, DOMAIN)
 
-    start_ble_lib()
     DOWNLOAD_DIR = os.path.join(hass.config.config_dir, f"custom_components/{DOMAIN}/{DOWNDIR}")
     if os.path.exists(DOWNLOAD_DIR) == False:
         # 2. 确保目录存在（异步执行文件操作，避免阻塞）
@@ -149,6 +147,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
         stomp_client = StompClient(ws_url, access_token, APPLICATION_PROFILE.config,
                                    bluetti_devices.web_socket_message_handler, hass)
         stomp_client.connect()
+
+    hasBleControl = any(device.control_mode == ControlMode.BLE for device in bluetti_devices.devices)
+    if hasBleControl:
+        from .ble.ble_decoder import start_ble_lib
+        start_ble_lib()
 
     # initialize data storage structure
     hass.data.setdefault(DOMAIN, {})
