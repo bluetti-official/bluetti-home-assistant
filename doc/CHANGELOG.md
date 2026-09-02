@@ -1,3 +1,8 @@
+# 1.0.4 2026-09-02
+
+## 🐞Bug fixes
+- Fixed an issue where the integration did not work on linux-x86_64-musl platform.
+
 # 1.0.3 2026-08-31
 
 > ℹ️ This version (1.0.3) has made significant changes to the OAuth access token. It is recommended to remove the BLUETTI integration and add it again. If you do not reconfigure the integration, you will not receive real-time device messages from the BLUETTI cloud.  

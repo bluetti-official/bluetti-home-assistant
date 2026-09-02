@@ -1,7 +1,7 @@
 {
   "domain": "bluetti",
   "name": "BLUETTI",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "codeowners": [
     "@bluetti-official"
   ],
