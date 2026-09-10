@@ -1,5 +1,6 @@
 import logging
 
+import string
 from typing import cast
 import time
 from datetime import datetime, timedelta
@@ -81,7 +82,9 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
             if not bt_device.name:
                 continue
 
-            bt_name = bt_device.name.strip()
+            # bt_name = bt_device.name.strip()
+            raw_name = bt_device.name
+            bt_name = ''.join(c for c in raw_name if c in string.printable).strip()
             bt_address = bt_device.address
 
             # direct match: bluetooth device name == cloud SN
@@ -93,7 +96,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                 )
             else:
                 __LOGGER__.debug(
-                    f"no match found: bluetooth device name={bt_name}, address={bt_address}"
+                    f"no match found: bluetooth device name={bt_name}, address={bt_address} ,hex={bt_name.encode("utf-8").hex()}"
                 )
 
         # check unmatched cloud devices
@@ -171,7 +174,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                         product.server_key = decrypt_info.encryptKey
                         product.proto_file_url = APPLICATION_PROFILE.config["server"]["gateway"] + AppPath.DECODE_CENTER_API +'/'+ decrypt_info.protoBufFileUrl
                         # all device have ble model,but the intergation may don't support, so check the device is supported by the cur ble lib version,
-                        if not await is_device_support(product.model):
+                        if not await is_device_support(self.hass,product.model):
                             unsupported_sn.append(product.sn)
                 except Exception as e:
                     errorDesc = f"Get Ble Key Error,Please try again later."
@@ -218,7 +221,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
 
         # filter out devices that have already been integrated
         available_devices = {
-            prod.sn: f"{prod.name} - {prod.sn}" + (f"-(Cloud)" if prod.supportNetwork == '1' else "") + (f"-(BLE)" if await is_device_support(prod.model) else "")
+            prod.sn: f"{prod.name} - {prod.sn}" + (f"-(Cloud)" if prod.supportNetwork == '1' else "") + (f"-(BLE)" if await is_device_support(self.hass,prod.model) else "")
             for prod in products.data
             if prod.sn not in integrated_devices
         }

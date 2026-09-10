@@ -49,6 +49,7 @@ class DeviceReaderV2:
 
         self.is_crypting = False
         self.enable_crypt = False
+        self.crypt_packs = []
 
     async def is_bluetooth_connected(self) -> bool:
         if self.client:
@@ -189,14 +190,18 @@ class DeviceReaderV2:
 
             retries = 0
             max_retries = 6;
+            self.crypt_packs = []
             while retries < max_retries:
                 try:
-                    self.notify_future = self.create_future()
-                    self.notify_response = bytearray()
+                    if self.notify_future is None or self.notify_future.done():
+                        self.notify_future = self.create_future()
+                        self.notify_response = bytearray()
                     # Wait for response
                     res = await asyncio.wait_for(
                         self.notify_future,
                         timeout=30)
+                    
+                    self.crypt_packs.append(self.notify_response.hex())
                     # use crypt module to connect bluetti device
                     status, response = self.ble_decoder_module.encrypt_link(self.notify_response)
 
@@ -204,19 +209,25 @@ class DeviceReaderV2:
                         """ Read the Serial Number and determine if it is authorized """
                         read_commands = self.oak_device.read_sn_command
                         for read_sn_command in read_commands:
-                            length, cmd = self.ble_decoder_module.get_read_cmd_message(read_sn_command)
-                            await self.client.write_gatt_char(
-                                WRITE_UUID,
-                                bytes(cmd))
+                            length, cmd = self.ble_decoder_module.get_read_cmd_message(read_sn_command)                        
+                            asyncio.create_task(
+                                self.client.write_gatt_char(WRITE_UUID, bytes(cmd))
+                            )
+                            # await self.client.write_gatt_char(
+                            #     WRITE_UUID,
+                            #     bytes(cmd))
                     elif (4 == status):
                         """ Encrypt link connected """
                         _LOGGER.info(f'client connect success')
                         return 1
                     elif (0 <= status and 0 < len(response)):
                         """ Pass-Through data to the bluetti encrypt module """
-                        await self.client.write_gatt_char(
-                            WRITE_UUID,
-                            bytes(response))
+                        asyncio.create_task(
+                            self.client.write_gatt_char(WRITE_UUID, bytes(response))
+                        )
+                        # await self.client.write_gatt_char(
+                        #     WRITE_UUID,
+                        #     bytes(response))
                         # _LOGGER.debug(f'client send authen data:' + response.hex())
 
                     retries += 1
@@ -317,6 +328,9 @@ class DeviceReaderV2:
         """Handle bt data."""
         _LOGGER.debug("_notification_handler")
 
+        if self.is_crypting and data.hex() in self.crypt_packs:
+            return
+        
         # Ignore notifications we don't expect
         if self.notify_future is None or self.notify_future.done():
             _LOGGER.warning(f"Unexpected notification self.cmd:{self.current_command}")

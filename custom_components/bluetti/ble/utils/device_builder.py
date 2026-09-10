@@ -43,25 +43,13 @@ def build_device_v2(address: str,bluetti_device: BluettiDevice):
     _LOGGER.info(f"unsupport model：{model}")
     return None
 
-async def is_device_support(model: str):
-    global libc,machine
-    if libc == '':
-        libc,machine = await get_libc_ver()
-    if libc == 'musl' and machine in ["x86_64", "amd64"]:
-        return False
-    
-    device_models = model.split('-')
-    device_model = device_models[len(device_models)-1]
-    device_model = device_model.upper()
-    for device_class in _device_classes:
-        if device_class.supports_model(device_model):
-            return True
+async def is_device_support(hass,model: str):
+    from ..ble_decoder import _get_full_tag_sync
+    full_tag = await hass.async_add_executor_job(_get_full_tag_sync)
+    if full_tag:
+        return True
     return False
 
-async def get_libc_ver():
-    libname, ver = platform.libc_ver()
-    machine = platform.machine().lower()
-    return libname,machine
 
 # "PR30V2,EL30V2,AORA30V2","PR100V2,EL100V2,AORA100V2"
 register_device(OakPortableDevice)

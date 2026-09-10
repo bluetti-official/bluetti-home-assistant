@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 import logging
 
+import string
 from bleak import BleakClient
 
 from homeassistant.components import bluetooth
@@ -68,7 +69,9 @@ class PollingCoordinator(DataUpdateCoordinator):
             if not bt_device.name:
                 continue
 
-            bt_name = bt_device.name.strip()
+            # bt_name = bt_device.name.strip()
+            raw_name = bt_device.name
+            bt_name = ''.join(c for c in raw_name if c in string.printable).strip()
             bt_address = bt_device.address
             if self.bluetti_device.sn == bt_name:
                 self.address = bt_address

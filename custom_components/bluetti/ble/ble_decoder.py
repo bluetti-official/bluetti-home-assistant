@@ -1,8 +1,9 @@
 import asyncio
 import logging
 import platform
-import importlib
+from importlib import import_module
 import os
+import sys
 
 from .utils.commands import OakReadCmd,OakWriteCmd
 from .devices.base_device.oak_device import OakDevice
@@ -11,22 +12,107 @@ from .devices.base_device.oak_device import OakDevice
 _LOGGER = logging.getLogger(__name__)
 
     
-machine = platform.machine().lower()
-try:
-    if machine in ["x86_64", "amd64"]:
-        from .lib.x86_64 import bluetti_ble_lib
-        from .lib.x86_64.bluetti_ble_lib import BLUETTI_PROTO_DATA
-    elif machine in ["arm64", "aarch64"]:
-        from .lib.aarch64 import bluetti_ble_lib
-        from .lib.aarch64.bluetti_ble_lib import BLUETTI_PROTO_DATA
+# ====================== 同步阻塞检测函数（放到executor_job执行） ======================
+def _get_full_tag_sync() -> str:
+    """get: linux-x86_64-musl-cp313"""
+    # arch
+    machine = platform.machine().lower()
+    if machine in ("x86_64", "amd64"):
+        arch = "x86_64"
+    elif machine in ("arm64", "aarch64"):
+        arch = "aarch64"
     else:
         raise ImportError(f"Unsupported architecture: {machine}")
-except ImportError as e:
-    _LOGGER.error(f'unsupport {machine} default load x86_64')
-    # raise RuntimeError(f"Failed to import crypt module: {e}")
 
-def start_ble_lib():
+    # python abi
+    py_ver = f"cp{sys.version_info.major}{sys.version_info.minor}"
+
+    # libc detect
+    libc = "none"
+    if sys.platform.startswith("linux"):
+        libc = _detect_libc_sync()
+    plat = sys.platform
+    if plat.startswith("linux"):
+        py_ver_num = py_ver.replace('cp','')
+        return f"linux_{arch}_{py_ver_num}_{libc}"
+    
+    _LOGGER.error(f"Unsupported platform {plat} {machine}")
+    return None
+
+def _detect_libc_sync() -> str:
+    import ctypes
+    if not sys.platform.startswith("linux"):
+        return "none"
+
+    try:
+        libc = ctypes.CDLL(None)
+        libc.gnu_get_libc_version.restype = ctypes.c_char_p
+        ver_ptr = libc.gnu_get_libc_version()
+        if ver_ptr:
+            return "gnu"
+    except AttributeError:
+        # musl
+        pass
+    except OSError:
+        pass
+
+    try:
+        with open(sys.executable, "rb") as f:
+            buf = f.read(128 * 1024)
+            if b"musl" in buf:
+                return "musl"
+    except OSError:
+        pass
+
+    try:
+        with open("/etc/os-release", "r", encoding="utf-8") as f:
+            content = f.read()
+            if "Alpine" in content:
+                return "musl"
+    except FileNotFoundError:
+        pass
+
+    raise RuntimeError("libc detection failed, cannot identify gnu/musl")
+
+
+def _load_bluetti_lib_sync():
+    """load lib from file"""
+    full_tag = _get_full_tag_sync()
+    if not full_tag:
+        _LOGGER.error(f'_load_bluetti_lib_sync failed,full_tag:{full_tag}')
+        return
+    module_path = f".lib.{full_tag}.bluetti_ble_lib"
+    _LOGGER.debug(f"Trying import module: {module_path}")
+    bluetti_ble_lib = import_module(module_path, __package__)
+    BLUETTI_PROTO_DATA = bluetti_ble_lib.BLUETTI_PROTO_DATA
+    return bluetti_ble_lib, BLUETTI_PROTO_DATA
+
+
+async def async_load_bluetti_lib(hass):
+    """async load lib"""
+    try:
+        bluetti_ble_lib, BLUETTI_PROTO_DATA = await hass.async_add_executor_job(
+            _load_bluetti_lib_sync
+        )
+        return bluetti_ble_lib, BLUETTI_PROTO_DATA
+    except ImportError as e:
+        _LOGGER.error(f"Platform tag lib import failed: {e}",exc_info=True)
+
+# ========= global var =========
+bluetti_ble_lib = None
+BLUETTI_PROTO_DATA = None
+
+async def async_get_bluetti_lib(hass):
+    global bluetti_ble_lib, BLUETTI_PROTO_DATA
+    if bluetti_ble_lib is not None:
+        return bluetti_ble_lib, BLUETTI_PROTO_DATA
+    bluetti_ble_lib, BLUETTI_PROTO_DATA = await async_load_bluetti_lib(hass)
+    return bluetti_ble_lib, bluetti_ble_lib
+
+async def start_ble_lib(hass):
+    await async_get_bluetti_lib(hass)
     bluetti_ble_lib.clear_link_device()
+
     
 class bleDecoder:
     def __init__(self,oak_device:OakDevice=None):

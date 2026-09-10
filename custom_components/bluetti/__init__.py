@@ -151,7 +151,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     hasBleControl = any(device.control_mode == ControlMode.BLE for device in bluetti_devices.devices)
     if hasBleControl:
         from .ble.ble_decoder import start_ble_lib
-        start_ble_lib()
+        await start_ble_lib(hass)
 
     # initialize data storage structure
     hass.data.setdefault(DOMAIN, {})
