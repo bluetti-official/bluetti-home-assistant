@@ -24,6 +24,8 @@ _LOGGER = logging.getLogger(__name__)
 
 def mac_loggable(mac: str) -> str:
     """Remove parts of the mac address for logging."""
+    if not mac:
+        return ''
     splitted = mac.split(":")
     return "XX:XX:XX:XX:XX:" + splitted[-1]
 
@@ -56,9 +58,10 @@ class PollingCoordinator(DataUpdateCoordinator):
         self.max_retries = max_retries
 
         # Create client
+        self.init_ok = False
         self.client = None
         self.check_address()
-        self.connect_ble()
+        self.init_ble()
 
     # check ble address is valid,if not discover it
     def check_address(self):
@@ -77,22 +80,25 @@ class PollingCoordinator(DataUpdateCoordinator):
                 self.address = bt_address
                 break
         
-    # connect to ble device
-    def connect_ble(self):
-        self.logger.debug("connect_ble")
+    # init ble device
+    def init_ble(self):
+        if self.init_ok:
+            return
+        
+        self.logger.debug("init_ble")
         try:
             if self.address == None or self.address == '':
                 return None
-            self.client = None
+            
+            oak_device = build_device_v2(self.address, self.bluetti_device)
+            if oak_device is None:
+                return None
+            
             ble_device = bluetooth.async_ble_device_from_address(self.hass, self.address)
             if ble_device is None:
                 self.logger.error("Device %s not available", mac_loggable(self.address))
                 return None
             self.client = BleakClient(ble_device,mtu_size=200)
-
-            oak_device = build_device_v2(self.address, self.bluetti_device)
-            if oak_device is None:
-                return None
             
             self.bluetti_device.device_reader = DeviceReaderV2(
                 self.client,
@@ -102,6 +108,7 @@ class PollingCoordinator(DataUpdateCoordinator):
                 polling_timeout = self.polling_timeout,
                 max_retries = self.max_retries,
             )
+            self.init_ok = True
         except Exception as e:
             self.address = ''
             self.logger.error(f"connect_ble error：{e}", exc_info=True)
@@ -117,16 +124,17 @@ class PollingCoordinator(DataUpdateCoordinator):
         """
 
         self.check_address()
-        # Check if device is connected
-        if self.address == None or self.address == '' or bluetooth.async_address_present(self.hass, self.address, connectable=True) is False:
-            self.logger.warning(f"Device {self.bluetti_device.name}(0x{id(self)}) not connected")
-            self.last_update_success = False
+        self.init_ble()
+
+        if not self.init_ok:
+            self.logger.warning("Device %s ble init_ble not ok,don't update ble data", mac_loggable(self.address))
             return None
-        
-        if hasattr(self,'client') and self.client is None:
-            self.logger.error("Device %s not available", mac_loggable(self.address))
-            self.connect_ble()
-            return None      
+
+        # Check if device is connected
+        if not self.bluetti_device.bluetooth_connected:
+            if not bluetooth.async_address_present(self.hass, self.address, connectable=True):
+                self.logger.warning(f"Device {self.bluetti_device.name}(0x{id(self)}) not connected and have no adv pack,don't update ble data")
+                return None      
 
         data = await self.bluetti_device.read_data_from_ble()
         return data
