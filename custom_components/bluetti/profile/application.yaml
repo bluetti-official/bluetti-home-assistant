@@ -4,7 +4,6 @@ bluetti:
   server:
     sso: 'https://sso.bluettipower.com'
     gateway: 'https://gw.bluettipower.com'
-    gatewaypry: 'https://gwpry.bluettipower.com'
   oauth:
     client-id: HomeAssistant
     client-secret: SG9tZUFzc2lzdGFudA==
