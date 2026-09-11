@@ -1,3 +1,16 @@
+# 1.0.5 2026-09-12
+
+## 🐞Bug fixes
+- [[#153](https://github.com/bluetti-official/bluetti-home-assistant/issues/153 "#153")] Fixed an issue where the ble can not work on the x86_64-musl platform.
+- [[#154](https://github.com/bluetti-official/bluetti-home-assistant/issues/154 "#154")] Fixed an issue where the integration can't get bluetooth name when use ESPHome bluetooth proxy
+- [[#158](https://github.com/bluetti-official/bluetti-home-assistant/issues/158 "#158")] Fixed an issue where the libc check don't work on the musl platform.
+
+## ✨What’s new
+- Add Ble support on x86_64 musl platform
+- Add ESPHome bluetooth proxy support
+- Add Python 3.14 support
+- 
+
 # 1.0.4 2026-09-02
 
 ## 🐞Bug fixes
