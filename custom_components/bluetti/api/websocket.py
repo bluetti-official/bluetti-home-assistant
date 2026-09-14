@@ -33,7 +33,9 @@ class StompClient(object):
         self.running = False
 
         self.heartbeat_thread = None
-        self.heartbeat_interval = 60
+        # The cloud gateway closes an idle socket at exactly 60s, so the
+        # keepalive has to be comfortably under that, not equal to it.
+        self.heartbeat_interval = 10
 
         self.reconnect_delay = None
         self.max_reconnect_delay = None
