@@ -93,7 +93,7 @@ class StompClient(object):
         interval = self.heartbeat_interval * 1000
         headers = {
             "accept-version": "1.0,1.1,2.0",
-            "heart-beat": f"{str(interval)},{str(interval)}",
+            "heart-beat": f"{str(interval - 10000)},{str(interval + 10000)}",
             **self.__headers
         }
 
