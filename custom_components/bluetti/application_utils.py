@@ -1,4 +1,5 @@
 import ctypes
+import hashlib
 import platform
 import sys
 
@@ -57,3 +58,15 @@ class EnvUtils:
             pass
 
         return "gnu"
+
+class EncryptUtils:
+    """Runtime Encryption Utility"""
+
+    @staticmethod
+    def sha256(filepath: str, chunk_size: int = 1 << 20) -> str:
+        """Stream the file to compute SHA256 (chunked reads, so large files don't consume memory)."""
+        digest = hashlib.sha256()
+        with open(filepath, "rb") as handle:
+            for chunk in iter(lambda: handle.read(chunk_size), b""):
+                digest.update(chunk)
+        return digest.hexdigest()

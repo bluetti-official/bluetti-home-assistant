@@ -1,67 +1,23 @@
-"""Loader for the pre-compiled Bluetti BLE shared library.
-
-The BLE stack of this integration requires a platform-specific native
-library (``_bluetti_ble_*.so``). This module provides the ``BleLibLoader``
-class which locates an already-present copy or, when it is missing,
-downloads the correct build from the official update server.
-
-Expected file name
-    _bluetti_ble_{os}_{arch}_{python}_{libc}_{compile_date}.so
-
-    e.g. _bluetti_ble_linux_aarch64_313_musl_20260914.so
-
-Download URL
-    https://www.bluetti.com/ha/{compile_date}/{os}/{arch}-{python}-{libc}
-
-The compile date is expressed as ``yyyyMMdd`` and is monotonically
-increasing: only the current date is ever requested, an older one never is.
-
-Usage::
-
-    from custom_components.bluetti.ble.lib.loader import BleLibLoader
-
-    loader = BleLibLoader()
-
-    # Fast synchronous check.
-    if (path := loader.get_lib_path()) is not None:
-        ...
-
-    # Asynchronous download with callback notification.
-    await loader.ensure_bluetti_lib(on_downloaded=handle_downloaded)
-
-    # Or block until the library is ready.
-    path = await loader.ensure_bluetti_lib()
-"""
+"""Loader for the pre-compiled Bluetti BLE shared library."""
 
 from __future__ import annotations
 
 import asyncio
 import glob
-import inspect
 import logging
 import os
-import re
+import pathlib
 import sys
-from typing import Any, Callable, Optional
+from typing import Optional
 
-from custom_components.bluetti.application_utils import EnvUtils
+from custom_components.bluetti.application_utils import EnvUtils, EncryptUtils
 from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
-__all__ = ["BleLibLoader"]
-
 
 class BleLibLoader:
-    """Locate or download the platform-specific Bluetti BLE shared library.
-
-    All implementation details are private; the public API consists of:
-
-    * ``get_lib_path()`` -- synchronous fast path;
-    * ``ensure_bluetti_lib(on_downloaded=None)`` -- async entry point;
-    * ``download_lib(compile_date=None)`` -- explicit one-shot download;
-    * ``cleanup_old_versions(keep_path)`` -- remove stale library files.
-    """
+    """Locate or download the platform-specific Bluetti BLE shared library."""
 
     #: Bytes read from the network per chunk while streaming the download.
     _CHUNK_SIZE = 64 * 1024
@@ -69,6 +25,7 @@ class BleLibLoader:
     #: Flush downloaded chunks to disk after this many chunks.
     _WRITE_FLUSH_CHUNKS = 16
 
+    #: The base dependency library file names of each platform
     _DEPENDENCY_MAP = {
         "linux_aarch64_musl": ["libcpsrt.so", "libmbedcrypto.so.3.6.4", "libmbedtls.so.3.6.4", "libmbedx509.so.3.6.4"],
         "linux_x86_64_gnu": ["libmbedcrypto.so.16", "libmbedtls.so.21", "libmbedx509.so.7"],
@@ -80,15 +37,12 @@ class BleLibLoader:
         lib_version: int,   # formatted as ``yyyyMMdd``
         oss_server: str,    # OSS file server
     ) -> None:
-        """Create a loader.
+        """
+        Create a so lib file's loader.
 
         Args:
-            lib_dir: Directory that holds (or will hold) the ``.so`` files.
-                Defaults to the directory of this module.
-            download_url_template: URL template using the same placeholders
-                as :attr:`_DOWNLOAD_URL_TEMPLATE`. Falls back to the
-                environment variable ``BLUETTI_BLE_DOWNLOAD_URL`` and then
-                to the official update server.
+            lib_version: compile date of the BLE so file.
+            oss_server: storage server address for the so file.
         """
         self.os_type = EnvUtils.get_env_os_type()
         self.arch_type = EnvUtils.get_env_arch()
@@ -97,13 +51,12 @@ class BleLibLoader:
 
         # libs path
         self.dependency_lib_paths = []
-        self.ble_lib_path = None
 
-        self._oss_server = oss_server
+        self._oss_server = oss_server + "/ha-libs"
+        self._lib_prefix = "bluetti_ble"
         self._lib_version = lib_version
-        self._lib_dir = os.path.dirname(os.path.abspath(__file__))
-        self._lib_file_pattern: Optional[re.Pattern] = None
-        self._download_url_template = "/ha-libs/" + str(self._lib_version) + "/{os}/{arch}_{python}_{libc}.so"
+        self._lib_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
+
         self._download_lock: Optional[asyncio.Lock] = None
         self._download_task: Optional[asyncio.Task] = None
 
@@ -112,20 +65,30 @@ class BleLibLoader:
     # Private: BLE naming / URL helpers
     # ------------------------------------------------------------------
     def _get_ble_lib_name(self) -> str:
-        """Build the expected library file name for a given compile date."""
+        """
+        Build the expected library file name for a given compile date.
+        for example: _bluetti_ble_linux_aarch64_314_musl.so
+        """
         return (
-            f"_bluetti_ble_{self.os_type}_{self.arch_type}_"
-            f"{self.python_version}_{self.libc_type}_"
-            f"{str(self._lib_version)}.so"
+            f"{self._lib_prefix}"
+            f"_{self.os_type}_{self.arch_type}"
+            f"_{self.python_version}_{self.libc_type}.so"
         )
 
-    def _get_ble_download_url(self) -> str:
-        """Build the ble lib's download URL for ``compile_date``."""
+    def _get_ble_lib_checksum_url(self, ble_lib_download_url) -> str:
+        """Convention: the checksum file must be placed in the same directory as the library file, named `SHA256SUMS`."""
+        return ble_lib_download_url.rsplit("/", 1)[0] + "/SHA256SUMS"
+
+    def _get_ble_lib_download_url(self) -> str:
+        """
+        Build the ble lib's download URL for ``compile_date``.
+        for example: https://download.bluetti.app/ha-libs/20260908/linux/_bluetti_ble_linux_aarch64_314_musl.so
+        """
         return (
-            f"{self._oss_server}/ha-libs"
+            f"{self._oss_server}"
             f"/{str(self._lib_version)}"
             f"/{self.os_type}"
-            f"/_bluetti_ble"
+            f"/{self._lib_prefix}"
             f"_{self.os_type}_{self.arch_type}"
             f"_{self.python_version}_{self.libc_type}.so"
         )
@@ -193,6 +156,7 @@ class BleLibLoader:
             return lib_path
 
     async def _download_dependency_libs(self):
+        """Download base dependency libraries."""
         lib_platform = self.os_type + "_" + self.arch_type + "_" + self.libc_type
         dependency_libs = self._DEPENDENCY_MAP[lib_platform]
 
@@ -202,7 +166,7 @@ class BleLibLoader:
                 self.dependency_lib_paths.append(lib_path)
                 continue
 
-            lib_url = "/ha-libs/dependency/" + self.os_type + "/" + self.arch_type + "_" + self.libc_type + "/" + lib_filename
+            lib_url = "/dependency/" + self.os_type + "/" + self.arch_type + "_" + self.libc_type + "/" + lib_filename
             lib_path = await self._download_once(lib_filename, lib_url)
             if lib_path is None:
                 _LOGGER.error("Failed to download BLUETTI BLE dependency library from %s: %s", lib_platform, dependency_libs)
@@ -232,11 +196,11 @@ class BleLibLoader:
             url = self._oss_server + lib_url
             lib_path = os.path.join(self._lib_dir, os.path.basename(url))
         else:
-            url = self._get_ble_download_url()
+            url = self._get_ble_lib_download_url()
             lib_path = os.path.join(self._lib_dir, self._get_ble_lib_name())
 
         tmp_path = f"{lib_path}.tmp"
-        _LOGGER.debug("Downloading BLE library from %s", url)
+        _LOGGER.debug("Downloading library from %s", url)
 
         try:
             # Remove a stale partial file from an earlier interrupted run.
@@ -280,10 +244,34 @@ class BleLibLoader:
             await asyncio.to_thread(self._remove_file, tmp_path)
             return None
 
+    async def _fetch_checksums(self, checksum_url: str) -> dict[str, str] | None:
+        try:
+            import aiohttp
+            async with aiohttp.ClientSession() as session:
+                async with session.get(checksum_url) as resp:
+                    if resp.status != 200:
+                        _LOGGER.warning("No checksum file at %s.", checksum_url, resp.status)
+                        return {}
+                    text = await resp.text()
+        except Exception as exc:
+            _LOGGER.warning("Failed to fetch checksum file %s: %s", checksum_url, exc)
+            return {}
+
+        checksums = {}
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split()
+            if len(parts) >= 2:
+                filename = parts[-1].lstrip("*")
+                checksums[filename] = parts[0].lower()
+        return checksums
+
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
-    def get_lib_path(self, lib_filename: str) -> Optional[str]:
+    def get_lib_path(self, lib_filename: str) -> str | None:
         """Return the path of an already-available library, or ``None``.
 
         Any build matching the current platform signature is accepted; when
@@ -294,18 +282,19 @@ class BleLibLoader:
         """
 
         try:
-            entries = os.listdir(self._lib_dir)
+            # entries = os.listdir(self._lib_dir)
+            entries = self._lib_dir.iterdir()
         except OSError as exc:
             _LOGGER.warning("Cannot scan library directory %s: %s", self._lib_dir, exc)
             return None
 
-        for name in entries:
-            match = name.endswith(lib_filename)
-            if not match:
+        for entry in entries:
+            if not entry.name.endswith(lib_filename):
                 continue
-            path = os.path.join(self._lib_dir, name)
+
+            path = os.path.join(self._lib_dir, entry.name)
             try:
-                if not os.path.isfile(path) or os.path.getsize(path) == 0:
+                if not entry.is_file() or entry.stat().st_size == 0:
                     continue
             except OSError:
                 continue
@@ -315,10 +304,28 @@ class BleLibLoader:
         return None
 
     async def download_ble_lib(self) -> Optional[str]:
-        """Download the latest BLE library."""
+        """
+        Download the latest BLE library.
+        using `__ble_lib_path = await self.bleLibLoader.download_ble_lib()` to get the ble lib path.
+        """
+        ble_lib_download_url = self._get_ble_lib_download_url()
+        checksums = await self._fetch_checksums(self._get_ble_lib_checksum_url(ble_lib_download_url))
+        expected = checksums.get(os.path.basename(ble_lib_download_url))
+
         ble_lib_name = self._get_ble_lib_name()
-        self.ble_lib_path = await self._download_lib(ble_lib_name, self._lib_version)
-        return self.ble_lib_path
+        ble_lib_path = await asyncio.to_thread(self.get_lib_path, ble_lib_name)
+
+        if ble_lib_path is not None and expected:
+            ble_lib_hash = await asyncio.to_thread(EncryptUtils.sha256, ble_lib_path, 1 << 20) # default: 1MB
+            if ble_lib_hash == expected:
+                return ble_lib_path
+
+            _LOGGER.info("SHA256 mismatch (local=%s, server=%s), redownloading %s",ble_lib_hash, expected, ble_lib_name)
+        elif ble_lib_path is not None and not expected:
+            _LOGGER.debug("No server checksum for %s, reuse local.", ble_lib_name)
+            return ble_lib_path
+
+        return await self._download_lib(ble_lib_download_url, self._lib_version)
 
     def download_dependency_libs(self, haas: HomeAssistant):
         """Download the dependency libs of OS"""

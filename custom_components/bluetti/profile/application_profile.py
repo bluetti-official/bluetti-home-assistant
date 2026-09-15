@@ -52,8 +52,8 @@ class ApplicationProfile:
         self.bleLibLoader = BleLibLoader(__ble_lib_version, self.config["server"]["oss"])
         self.bleLibLoader.download_dependency_libs(hass)
 
-        __ble_lib_path = await self.bleLibLoader.download_ble_lib()
-        print(__ble_lib_path)
+        # __ble_lib_path = await self.bleLibLoader.download_ble_lib()
+        # print(__ble_lib_path)
 
     def __load_config(self):
         with open(self.__configPath, "r") as file:

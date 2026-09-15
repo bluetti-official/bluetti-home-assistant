@@ -55,7 +55,7 @@ class StompClient(object):
         :return:
         """
 
-        stomp_trace = True
+        stomp_trace = False
         websocket.enableTrace(stomp_trace)
 
         __LOGGER__.info("Start to connect the BLUETTI WebSocket Server.")
