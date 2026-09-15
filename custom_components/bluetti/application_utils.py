@@ -22,8 +22,13 @@ class EnvUtils:
     @staticmethod
     def get_env_python_version() -> int:
         """Return the interpreter version as ``major`` + ``minor`` (e.g. ``313``)."""
-        py_version = f"{sys.version_info.major}{sys.version_info.minor}"
-        return int(py_version)
+        py_version = int(f"{sys.version_info.major}{sys.version_info.minor}")
+        if py_version < 313:
+            py_version = 313
+        elif py_version > 314:
+            py_version = 314
+
+        return py_version
 
     @staticmethod
     def get_env_libc_type() -> str:
