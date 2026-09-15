@@ -34,6 +34,10 @@ class StompClient(object):
 
         self.heartbeat_thread = None
         self.heartbeat_interval = 60
+        self.heartbeat_send_ms = 0              # Negotiated: client send interval (ms), 0 = do not send
+        self.heartbeat_recv_ms = 0              # Negotiated: client expected receive interval (ms), 0 = no monitoring
+        self.last_received = time.monotonic()   # Time of last received data from server
+        self.heartbeat_generation = 0           # Connection generation, to prevent old threads from polluting new connections
 
         self.reconnect_delay = None
         self.max_reconnect_delay = None
@@ -84,6 +88,7 @@ class StompClient(object):
 
     def disconnect(self):
         self.running = False
+        self.heartbeat_generation += 1
         if self.heartbeat_thread and self.heartbeat_thread.is_alive():
             self.heartbeat_thread.join(timeout=5)
         self.websocket.close()
@@ -93,7 +98,7 @@ class StompClient(object):
         interval = self.heartbeat_interval * 1000
         headers = {
             "accept-version": "1.0,1.1,2.0",
-            "heart-beat": f"{str(interval - 10000)},{str(interval + 10000)}",
+            "heart-beat": f"{str(interval)},{str(interval)}",
             **self.__headers
         }
 
@@ -119,27 +124,70 @@ class StompClient(object):
 
     def start_heartbeat(self):
         """start heartbeat thread"""
-        if self.heartbeat_thread and self.heartbeat_thread.is_alive():
-            return
+        self.heartbeat_generation += 1
+        generation = self.heartbeat_generation
 
-        self.heartbeat_thread = threading.Thread(target=self._send_heartbeat, daemon=True)
+        self.heartbeat_thread = threading.Thread(
+            target=self._heartbeat_loop, args=(generation,), daemon=True,
+            name="bluetti-ws-heartbeat",
+        )
+
         self.heartbeat_thread.start()
 
-    def _send_heartbeat(self):
-        """loop send heartbeat"""
-        while self.running and self.websocket and hasattr(self.websocket, 'sock') and self.websocket.sock:
-            try:
-                if not self.websocket.sock.connected:
-                    break
+    def _heartbeat_loop(self, generation: int):
+        """心跳发送 + 接收超时监控（STOMP 1.2）。"""
+        send_ms = self.heartbeat_send_ms
+        recv_ms = self.heartbeat_recv_ms
+        if send_ms <= 0 and recv_ms <= 0:
+            __LOGGER__.debug("No heartbeat negotiated, monitor disabled.")
+            return
 
-                self.websocket.send("\n")
-                __LOGGER__.debug("Sent STOMP heartbeat")
+        send_interval = send_ms / 1000.0 if send_ms > 0 else None
+        recv_timeout = 2 * recv_ms / 1000.0 if recv_ms > 0 else None
+        next_send = time.monotonic() + (send_interval or 3600)
 
-            except Exception as e:
-                __LOGGER__.error(f"Failed to send heartbeat: {e}")
+        while self.running and generation == self.heartbeat_generation:
+            now = time.monotonic()
+
+            # 接收监控：服务端承诺发心跳时，2 倍间隔没收到任何数据 → 判死
+            if recv_timeout and (now - self.last_received) > recv_timeout:
+                __LOGGER__.error(
+                    "Heartbeat timeout: no data from server for %.0fs (limit %.0fs), closing.",
+                    now - self.last_received, recv_timeout,
+                )
+                try:
+                    self.websocket.close()
+                except Exception:
+                    pass
                 break
 
-            time.sleep(self.heartbeat_interval)
+            # 发送心跳
+            if send_interval and now >= next_send:
+                try:
+                    if self.websocket and getattr(self.websocket, "sock", None):
+                        self.websocket.send("\n")
+                        __LOGGER__.debug("Sent STOMP heartbeat")
+                except Exception as exc:
+                    __LOGGER__.warning("Failed to send heartbeat: %s", exc)  # 不退出，下次重试
+                next_send = now + send_interval
+
+            time.sleep(1)
+
+    # def _send_heartbeat(self):
+    #     """loop send heartbeat"""
+    #     while self.running and self.websocket and hasattr(self.websocket, 'sock') and self.websocket.sock:
+    #         try:
+    #             if not self.websocket.sock.connected:
+    #                 break
+    #
+    #             self.websocket.send("\n")
+    #             __LOGGER__.debug("Sent STOMP heartbeat")
+    #
+    #         except Exception as e:
+    #             __LOGGER__.error(f"Failed to send heartbeat: {e}")
+    #             break
+    #
+    #         time.sleep(self.heartbeat_interval)
 
     def reconnect(self):
         __LOGGER__.info("Websocket reconnect")
@@ -171,6 +219,7 @@ class StompListener:
         ws.send(sub)
 
     def on_message(self, ws: websocket, message):
+        self.client.last_received = time.monotonic()
         __LOGGER__.debug("Received the BLUETTI websocket message:\n %s", message)
 
         if not message or message == "\n":
@@ -198,12 +247,16 @@ class StompListener:
             __LOGGER__.info("Connect the BLUETTI WebSocket Server successfully.")
             __LOGGER__.debug(f"Server heartbeat configuration: send={server_send}, receive={server_receive}")
 
-            # Heartbeat negotiation takes effect: The maximum value between the client's
-            # proposal and the server's configuration is adopted (in accordance with the STOMP specification)
-            client_propose_ms = self.client.heartbeat_interval * 1000
-            negotiated_ms = max(client_propose_ms, server_send, server_receive)
-            self.client.heartbeat_interval = negotiated_ms // 1000
-            __LOGGER__.debug(f"Heartbeat negotiated: {self.client.heartbeat_interval}s")
+            client_ms = self.client.heartbeat_interval * 1000   # cx = cy
+
+            # STOMP 1.2 Negotiation: Both directions are independent; if either is 0 → This direction will not send or does not expect anything.
+            self.client.heartbeat_send_ms = max(client_ms, server_receive) if server_receive else 0
+            self.client.heartbeat_recv_ms = max(client_ms, server_send) if server_send else 0
+            __LOGGER__.debug(
+                "Heartbeat negotiated: send=%sms, recv=%sms",
+                self.client.heartbeat_send_ms,
+                self.client.heartbeat_recv_ms,
+            )
 
             # These codes were contributed by @chpego
             username = frame.headers.get('user-name')
