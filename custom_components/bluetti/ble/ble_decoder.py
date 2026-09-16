@@ -1,32 +1,52 @@
 import asyncio
 import logging
-import platform
-import importlib
+from importlib import import_module
 import os
 
 from .utils.commands import OakReadCmd,OakWriteCmd
 from .devices.base_device.oak_device import OakDevice
-
+from custom_components.bluetti.application_utils import EnvUtils
+from ..api.bluetti import APPLICATION_PROFILE
 
 _LOGGER = logging.getLogger(__name__)
 
-    
-machine = platform.machine().lower()
-try:
-    if machine in ["x86_64", "amd64"]:
-        from .lib.x86_64 import bluetti_ble_lib
-        from .lib.x86_64.bluetti_ble_lib import BLUETTI_PROTO_DATA
-    elif machine in ["arm64", "aarch64"]:
-        from .lib.aarch64 import bluetti_ble_lib
-        from .lib.aarch64.bluetti_ble_lib import BLUETTI_PROTO_DATA
-    else:
-        raise ImportError(f"Unsupported architecture: {machine}")
-except ImportError as e:
-    _LOGGER.error(f'unsupport {machine} default load x86_64')
-    # raise RuntimeError(f"Failed to import crypt module: {e}")
 
-def start_ble_lib():
-    bluetti_ble_lib.clear_link_device()
+def get_full_tag_sync() -> str:
+    """get: linux-x86_64-musl-cp313"""
+    arch = EnvUtils.get_env_arch()
+    py_ver_num = EnvUtils.get_env_python_version()
+    libc = EnvUtils.get_env_libc_type()
+    if not arch or not py_ver_num or not libc:
+        return None
+    return f"linux_{arch}_{py_ver_num}_{libc}"
+
+
+# ========= global var =========
+bluetti_ble_lib = None
+BLUETTI_PROTO_DATA = None
+ble_lib_path = None
+
+def async_get_bluetti_lib():
+    global bluetti_ble_lib, BLUETTI_PROTO_DATA
+    if bluetti_ble_lib is not None:
+        return bluetti_ble_lib, BLUETTI_PROTO_DATA
+    # load ble lib module
+    try:
+        bluetti_ble_lib = import_module(f'.lib.bluetti_ble_lib', __package__)
+        BLUETTI_PROTO_DATA = bluetti_ble_lib.BLUETTI_PROTO_DATA
+    except Exception as e:
+        _LOGGER.error(f'load ble lib failed {e}',exc_info=True)
+
+async def start_ble_lib(hass):
+    global ble_lib_path
+    ble_lib_path =  await APPLICATION_PROFILE.bleLibLoader.download_ble_lib()
+    if not ble_lib_path or not os.path.exists(ble_lib_path):
+        _LOGGER.error(f'Ble lib ({ble_lib_path}) no exist,can not start ble lib')
+        return
+    
+    await hass.async_add_executor_job(async_get_bluetti_lib)
+    if bluetti_ble_lib:
+        bluetti_ble_lib.clear_link_device()
     
 class bleDecoder:
     def __init__(self,oak_device:OakDevice=None):

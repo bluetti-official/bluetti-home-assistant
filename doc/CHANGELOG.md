@@ -1,3 +1,33 @@
+# 1.0.5 2026-09-16
+
+## ✨What’s new
+- Add ESPHome bluetooth proxy support
+- Added cloud functionality support for the **Hub A1** device
+- The BLE communication library support has been further improved, with added support for the **x86_64 musl** platform. Detailed platform support is as follows:
+	- **Python 3.13 and below (HAOS ≤ 2026.2)**
+		- linux_aarch64_musl: ✔️
+		- linux_x86_64_gnu: &nbsp;&nbsp;&nbsp;✔️
+		- linux_x86_64_musl: &nbsp;&nbsp;✔️（untested — no physical device available）
+	- **Python 3.14 and above (HAOS ≥ 2026.3)**
+		- linux_aarch64_musl: ✔️（untested — no physical device available）
+		- linux_x86_64_gnu: &nbsp;&nbsp;&nbsp;✔️
+		- linux_x86_64_musl: &nbsp;&nbsp;✔️
+
+## 🚀Improvements
+- Optimized the distribution of the BLE communication library: it is **no longer bundled with the source code**, which significantly reduces the size of the release package. When loading, the latest version of the integration will actively download the platform-appropriate library file from the server. If your HAOS has no Internet access, you can manually download it from [https://download.bluetti.app/ha-libs/](https://download.bluetti.app/ha-libs/) and place it in the `custom_components/bluetti/ble/lib` directory.
+- Starting from **v1.3.0**, [BLUETTI Integration for Home Assistant (Community Edition)](https://github.com/bluetti-community/bluetti-home-assistant) also supports receiving real-time messages via WebSocket.
+
+## 🐞Bug fixes
+- [[#153](https://github.com/bluetti-official/bluetti-home-assistant/issues/153 "#153")] Fixed an issue where the ble can not work on the x86_64-musl platform.
+- [[#154](https://github.com/bluetti-official/bluetti-home-assistant/issues/154 "#154")] Fixed an issue where the integration can't get bluetooth name when use ESPHome bluetooth proxy
+- [[#158](https://github.com/bluetti-official/bluetti-home-assistant/issues/158 "#158")] Fixed an issue where the libc check don't work on the musl platform.
+- [[#165](https://github.com/bluetti-official/bluetti-home-assistant/issues/165 "#165")] Fixed an issue where the WebSocket reported "Connection lost -goodbye" erery 2 minutes.
+
+## ✨What’s new
+- Add Ble support on x86_64 musl platform
+- Add ESPHome bluetooth proxy support
+- Add Python 3.14 support
+
 # 1.0.4 2026-09-02
 
 ## 🐞Bug fixes

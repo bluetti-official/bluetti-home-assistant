@@ -3,6 +3,7 @@ bluetti:
     app-key: 19974C15BCCBC91B21A8BA71BF5
   server:
     sso: 'https://sso.bluettipower.com'
+    oss: 'https://download.bluetti.app'
     gateway: 'https://gw.bluettipower.com'
   oauth:
     client-id: HomeAssistant

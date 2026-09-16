@@ -1,7 +1,8 @@
 {
   "domain": "bluetti",
   "name": "BLUETTI",
-  "version": "1.0.4",
+  "version": "1.0.5",
+  "ble_lib_version": 20260908,
   "codeowners": [
     "@bluetti-official"
   ],

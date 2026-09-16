@@ -1,5 +1,8 @@
 import logging
 
+import string
+import asyncio
+import os
 from typing import cast
 import time
 from datetime import datetime, timedelta
@@ -34,6 +37,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
 
     DOMAIN = DOMAIN
     reauth_supported = True
+    download_task = None
 
     @property
     def logger(self) -> logging.Logger:
@@ -81,7 +85,9 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
             if not bt_device.name:
                 continue
 
-            bt_name = bt_device.name.strip()
+            # bt_name = bt_device.name.strip()
+            raw_name = bt_device.name
+            bt_name = ''.join(c for c in raw_name if c in string.printable).strip()
             bt_address = bt_device.address
 
             # direct match: bluetooth device name == cloud SN
@@ -93,7 +99,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                 )
             else:
                 __LOGGER__.debug(
-                    f"no match found: bluetooth device name={bt_name}, address={bt_address}"
+                    f"no match found: bluetooth device name={bt_name}, address={bt_address} ,hex={bt_name.encode("utf-8").hex()}"
                 )
 
         # check unmatched cloud devices
@@ -171,7 +177,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                         product.server_key = decrypt_info.encryptKey
                         product.proto_file_url = APPLICATION_PROFILE.config["server"]["gateway"] + AppPath.DECODE_CENTER_API +'/'+ decrypt_info.protoBufFileUrl
                         # all device have ble model,but the intergation may don't support, so check the device is supported by the cur ble lib version,
-                        if not await is_device_support(product.model):
+                        if not await is_device_support(self.hass,product.model):
                             unsupported_sn.append(product.sn)
                 except Exception as e:
                     errorDesc = f"Get Ble Key Error,Please try again later."
@@ -218,7 +224,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
 
         # filter out devices that have already been integrated
         available_devices = {
-            prod.sn: f"{prod.name} - {prod.sn}" + (f"-(Cloud)" if prod.supportNetwork == '1' else "") + (f"-(BLE)" if await is_device_support(prod.model) else "")
+            prod.sn: f"{prod.name} - {prod.sn}" + (f"-(Cloud)" if prod.supportNetwork == '1' else "") + (f"-(BLE)" if await is_device_support(self.hass,prod.model) else "")
             for prod in products.data
             if prod.sn not in integrated_devices
         }
@@ -257,20 +263,19 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
 
     async def async_step_confirm_mapping(self, user_input=None):
         """confirm bluetooth device mapping relationship."""
-        if user_input is not None:
-            # user confirmed, create config entry
-            pending_input = self._pending_user_input
-            pending_mapping = self._pending_device_mapping
-            control_mode = pending_input.get("control_mode", "cloud")
 
-            ble_setting = user_input
+        down_step = await self.start_down_ble_lib()
+        if down_step:
+            return down_step
 
-            return await self._create_config_entry(
-                pending_input, control_mode, ble_setting, pending_mapping
-            )
-
-            
-            
+        if user_input is not None:                        
+            # user confirmed, start down load ble lib
+            self._pending_ble_setting = user_input
+            return await self.start_down_ble_lib()
+        
+            # await APPLICATION_PROFILE.bleLibLoader.download_ble_lib()
+            # return await self.async_step_down_ble_lib_ok()
+    
         # show mapping relationship confirmation form
         pending_mapping = self._pending_device_mapping
         pending_products = self._pending_selected_products
@@ -288,7 +293,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                 f"• Device name mismatch\n\n"
                 f"You can continue to create the configuration, manually configure the Bluetooth mapping later, or retry after ensuring the device is in range."
             )
-        
+
         # config ble polling_interval 
         schema = vol.Schema({
             vol.Required('ble_polling_interval',default=10,): NumberSelector(
@@ -306,6 +311,37 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
             step_id="confirm_mapping",
             data_schema=schema,
             errors={"base": description} if description else None,
+        )
+
+    async def start_down_ble_lib(self, user_input=None):
+        if not hasattr(self,'_pending_ble_setting') or not self._pending_ble_setting:
+            return None
+        if self.download_task:
+            if not self.download_task.done():
+                return self.async_show_progress(
+                    progress_task = self.download_task,
+                    progress_action="down_ble_lib",
+                    description_placeholders={}
+                )
+            else:
+                return self.async_show_progress_done(next_step_id="down_ble_lib_ok")
+
+        self.download_task = self.hass.async_create_task(APPLICATION_PROFILE.bleLibLoader.download_ble_lib())
+        return self.async_show_progress(
+            progress_task = self.download_task,
+            progress_action="down_ble_lib",
+            description_placeholders={}
+        )
+
+    async def async_step_down_ble_lib_ok(self, user_input=None):
+        '''on ble lib down ok'''
+        pending_input = self._pending_user_input
+        pending_mapping = self._pending_device_mapping
+        control_mode = pending_input.get("control_mode", "cloud")
+        ble_setting = self._pending_ble_setting
+
+        return await self._create_config_entry(
+            pending_input, control_mode, ble_setting, pending_mapping
         )
 
     async def _create_config_entry(

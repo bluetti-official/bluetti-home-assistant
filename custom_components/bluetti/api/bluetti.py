@@ -63,20 +63,9 @@ class Bluetti(Generic[T]):
                                                    params,
                                                    body)
         if isinstance(response, UnifyResponse) and response.msgCode == 805:
-            if path.endswith('/ha/v2/devices') or path.endswith('/ha/v1/devices'):
-                await asyncio.sleep(5)
-            response_pry = await self._request_with_server(responseType,
-                                                           method,
-                                                           APPLICATION_PROFILE.config["server"]["gatewaypry"],
-                                                           path,
-                                                           params,
-                                                           body)
-            if isinstance(response_pry, UnifyResponse) and response_pry.msgCode == 805:
-                self._hass.bus.fire(EVENT_TOKEN_EXPIRED)
-                self.logger.info("token have expired")
-            return response_pry;
-        else:
-            return response
+            self._hass.bus.fire(EVENT_TOKEN_EXPIRED)
+            self.logger.info("token have expired")
+        return response
 
     async def _request_with_server(
             self,

@@ -122,7 +122,7 @@ class StompClient(object):
         if self.heartbeat_thread and self.heartbeat_thread.is_alive():
             return
 
-        self.heartbeat_thread = threading.Thread(target=self._send_heartbeat, daemon=True)
+        self.heartbeat_thread = threading.Thread(target=self._send_heartbeat, daemon=True, name="bluetti-heartbeat")
         self.heartbeat_thread.start()
 
     def _send_heartbeat(self):
@@ -200,7 +200,7 @@ class StompListener:
 
             # Heartbeat negotiation takes effect: The maximum value between the client's
             # proposal and the server's configuration is adopted (in accordance with the STOMP specification)
-            client_propose_ms = self.client.heartbeat_interval * 1000
+            client_propose_ms = (self.client.heartbeat_interval - 5) * 1000
             negotiated_ms = max(client_propose_ms, server_send, server_receive)
             self.client.heartbeat_interval = negotiated_ms // 1000
             __LOGGER__.debug(f"Heartbeat negotiated: {self.client.heartbeat_interval}s")
