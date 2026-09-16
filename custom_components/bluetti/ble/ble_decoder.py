@@ -31,8 +31,11 @@ def async_get_bluetti_lib():
     if bluetti_ble_lib is not None:
         return bluetti_ble_lib, BLUETTI_PROTO_DATA
     # load ble lib module
-    bluetti_ble_lib = import_module(f'.lib.bluetti_ble_lib', __package__)
-    BLUETTI_PROTO_DATA = bluetti_ble_lib.BLUETTI_PROTO_DATA
+    try:
+        bluetti_ble_lib = import_module(f'.lib.bluetti_ble_lib', __package__)
+        BLUETTI_PROTO_DATA = bluetti_ble_lib.BLUETTI_PROTO_DATA
+    except Exception as e:
+        _LOGGER.error(f'load ble lib failed {e}',exc_info=True)
 
 async def start_ble_lib(hass):
     global ble_lib_path
