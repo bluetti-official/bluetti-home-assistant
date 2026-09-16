@@ -44,8 +44,8 @@ def build_device_v2(address: str,bluetti_device: BluettiDevice):
     return None
 
 async def is_device_support(hass,model: str):
-    from ..ble_decoder import _get_full_tag_sync
-    full_tag = await hass.async_add_executor_job(_get_full_tag_sync)
+    from ..ble_decoder import get_full_tag_sync
+    full_tag = await hass.async_add_executor_job(get_full_tag_sync)
     if full_tag:
         return True
     return False

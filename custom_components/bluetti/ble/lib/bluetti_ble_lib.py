@@ -5,11 +5,12 @@
 # the SWIG interface file instead.
 
 from sys import version_info as _swig_python_version_info
-# Import the low-level C/C++ module
-if __package__ or "." in __name__:
-    from config.custom_components.bluetti.ble.lib.linux_aarch64_313_musl import _bluetti_ble_lib
-else:
-    import _bluetti_ble_lib
+import importlib.util
+from pathlib import Path
+from ..ble_decoder import ble_lib_path as so_path
+spec = importlib.util.spec_from_file_location('_bluetti_ble_lib', so_path)
+_bluetti_ble_lib = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(_bluetti_ble_lib)
 
 try:
     import builtins as __builtin__
