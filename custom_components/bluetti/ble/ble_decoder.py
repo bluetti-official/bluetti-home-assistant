@@ -40,13 +40,13 @@ def async_get_bluetti_lib():
 async def start_ble_lib(hass):
     global ble_lib_path
     ble_lib_path =  await APPLICATION_PROFILE.bleLibLoader.download_ble_lib()
-    is_lib_exist = os.path.exists(ble_lib_path)
-    if not is_lib_exist:
+    if not ble_lib_path or not os.path.exists(ble_lib_path):
         _LOGGER.error(f'Ble lib ({ble_lib_path}) no exist,can not start ble lib')
-        return None,None
+        return
     
     await hass.async_add_executor_job(async_get_bluetti_lib)
-    bluetti_ble_lib.clear_link_device()
+    if bluetti_ble_lib:
+        bluetti_ble_lib.clear_link_device()
     
 class bleDecoder:
     def __init__(self,oak_device:OakDevice=None):
