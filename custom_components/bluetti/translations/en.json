@@ -36,7 +36,7 @@
                 }
             },
             "confirm_mapping": {
-                "title": "BLE Setting",
+                "title": "BLE Setting And Download LIB",
                 "data": {
                     "ble_polling_interval": "Ble Poll Data Interval (second)",
                     "ble_polling_timeout": "Ble Poll Data Timeout (second)",

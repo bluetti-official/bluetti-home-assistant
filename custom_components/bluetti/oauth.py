@@ -263,12 +263,18 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
 
     async def async_step_confirm_mapping(self, user_input=None):
         """confirm bluetooth device mapping relationship."""
-        
+
+        down_step = await self.start_down_ble_lib()
+        if down_step:
+            return down_step
+
         if user_input is not None:                        
             # user confirmed, start down load ble lib
             self._pending_ble_setting = user_input
-            await APPLICATION_PROFILE.bleLibLoader.download_ble_lib()
-            return await self.async_step_down_ble_lib_ok()
+            return await self.start_down_ble_lib()
+        
+            # await APPLICATION_PROFILE.bleLibLoader.download_ble_lib()
+            # return await self.async_step_down_ble_lib_ok()
     
         # show mapping relationship confirmation form
         pending_mapping = self._pending_device_mapping
@@ -305,6 +311,26 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
             step_id="confirm_mapping",
             data_schema=schema,
             errors={"base": description} if description else None,
+        )
+
+    async def start_down_ble_lib(self, user_input=None):
+        if not hasattr(self,'_pending_ble_setting') or not self._pending_ble_setting:
+            return None
+        if self.download_task:
+            if not self.download_task.done():
+                return self.async_show_progress(
+                    progress_task = self.download_task,
+                    progress_action="down_ble_lib",
+                    description_placeholders={}
+                )
+            else:
+                return self.async_show_progress_done(next_step_id="down_ble_lib_ok")
+
+        self.download_task = self.hass.async_create_task(APPLICATION_PROFILE.bleLibLoader.download_ble_lib())
+        return self.async_show_progress(
+            progress_task = self.download_task,
+            progress_action="down_ble_lib",
+            description_placeholders={}
         )
 
     async def async_step_down_ble_lib_ok(self, user_input=None):
