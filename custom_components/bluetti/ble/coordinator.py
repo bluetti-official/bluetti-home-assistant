@@ -130,6 +130,8 @@ class PollingCoordinator(DataUpdateCoordinator):
             self.logger.warning("Device %s ble init_ble not ok,don't update ble data", mac_loggable(self.address))
             return None
 
+        self._remember_encryption_support()
+
         # Check if device is connected
         if not self.bluetti_device.bluetooth_connected:
             if not bluetooth.async_address_present(self.hass, self.address, connectable=True):
@@ -138,3 +140,28 @@ class PollingCoordinator(DataUpdateCoordinator):
 
         data = await self.bluetti_device.read_data_from_ble()
         return data
+
+    def _remember_encryption_support(self) -> None:
+        """Learn the BLUETTF flag from Home Assistant's advertisement cache.
+
+        Avoids BleakScanner.discover() on every poll
+        """
+        reader = getattr(self.bluetti_device, "device_reader", None)
+        if reader is None or reader.enable_crypt or not self.address:
+            return
+        try:
+            service_info = bluetooth.async_last_service_info(
+                self.hass, self.address, True
+            )
+        except Exception as err:
+            self.logger.debug("Could not read cached BLE advertisement: %s", err)
+            return
+        if service_info is None:
+            return
+        manufacturer_data = getattr(service_info, "manufacturer_data", None) or {}
+        if any(payload == b"BLUETTF" for payload in manufacturer_data.values()):
+            reader.enable_crypt = True
+            self.logger.debug(
+                "%s encrypted BLE flag found in advertisement cache",
+                self.bluetti_device.sn,
+            )
