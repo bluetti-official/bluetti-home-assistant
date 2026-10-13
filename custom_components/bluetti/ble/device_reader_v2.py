@@ -19,6 +19,11 @@ RESPONSE_TIMEOUT = 5
 WRITE_UUID = "0000ff02-0000-1000-8000-00805f9b34fb"
 NOTIFY_UUID = "0000ff01-0000-1000-8000-00805f9b34fb"
 DEVICE_NAME_UUID = "00002a00-0000-1000-8000-00805f9b34fb"
+# Wait after the latest notification before decoding.
+FRAGMENT_QUIET_SECONDS = 0.5
+ENCRYPTION_SCAN_TIMEOUT = 10
+
+
 
 class DeviceReaderV2:
 
@@ -50,6 +55,8 @@ class DeviceReaderV2:
         self.is_crypting = False
         self.enable_crypt = False
         self.crypt_packs = []
+        self._notify_generation = 0
+        self._fragment_timer: asyncio.TimerHandle | None = None
 
     async def is_bluetooth_connected(self) -> bool:
         if self.client:
@@ -80,21 +87,8 @@ class DeviceReaderV2:
 
         parsed_data: dict = {}
 
-        # Whether encryption is supported
-        result = await BleakScanner.discover(timeout=10, return_adv=True)
-        for address, (d, adv) in result.items():
-            bluetti_device_name = str(self.oak_device.sn) 
-            
-            if bluetti_device_name == d.name:
-                if adv.manufacturer_data:
-                    for cid, data in adv.manufacturer_data.items():
-                        if data == b'BLUETTF':
-                            self.enable_crypt = True
-                            break
-                            
-            else:
-                continue
-            break
+        if not self.enable_crypt and not self._client_is_connected():
+            await self._detect_encryption()
 
         async with self.polling_lock:
             try:
@@ -174,7 +168,44 @@ class DeviceReaderV2:
             bluetti_parsed_data = self.oak_device.parse_oak_state_data(parsed_data)
             return bluetti_parsed_data
 
+    def _client_is_connected(self) -> bool:
+        return bool(self.client and self.client.is_connected)
+
+    async def _detect_encryption(self) -> None:
+        """Set enable_crypt when the device advertises the BLUETTF flag."""
+        try:
+            result = await BleakScanner.discover(
+                timeout=ENCRYPTION_SCAN_TIMEOUT, return_adv=True
+            )
+        except Exception as err:
+            _LOGGER.debug("Encryption advertisement scan failed: %s", err)
+            return
+
+        serial = str(self.oak_device.sn)
+        for _address, (device, adv) in result.items():
+            if device.name != serial or not adv.manufacturer_data:
+                continue
+            if any(payload == b"BLUETTF" for payload in adv.manufacturer_data.values()):
+                self.enable_crypt = True
+                _LOGGER.info("%s uses encrypted BLE", serial)
+                return
+
+    def _cancel_fragment_timer(self) -> None:
+        timer = self._fragment_timer
+        self._fragment_timer = None
+        if timer is not None:
+            timer.cancel()
+
+    def _arm_notify_future(self) -> None:
+        """Prepare for one command response and invalidate an in-flight fragment flush."""
+        self._notify_generation += 1
+        self._cancel_fragment_timer()
+        self.notify_response = bytearray()
+        self.notify_future = self.create_future()
+
     async def _stop_notify(self):
+        self._notify_generation += 1
+        self._cancel_fragment_timer()
         if self.has_notifier:
             try:
                 await self.client.stop_notify(NOTIFY_UUID)
@@ -194,8 +225,7 @@ class DeviceReaderV2:
             while retries < max_retries:
                 try:
                     if self.notify_future is None or self.notify_future.done():
-                        self.notify_future = self.create_future()
-                        self.notify_response = bytearray()
+                        self._arm_notify_future()
                     # Wait for response
                     res = await asyncio.wait_for(
                         self.notify_future,
@@ -245,8 +275,7 @@ class DeviceReaderV2:
         try:
             # Prepare to make request
             self.current_command = command
-            self.notify_future = self.create_future()
-            self.notify_response = bytearray()
+            self._arm_notify_future()
 
             # Make request
             _LOGGER.debug("Requesting %s", command.fn_code)
@@ -293,8 +322,7 @@ class DeviceReaderV2:
             for command in command_list:
                 # Prepare to make request
                 self.current_command = command
-                self.notify_future = self.create_future()
-                self.notify_response = bytearray()
+                self._arm_notify_future()
                 # encrypt message
                 length, cmd = self.ble_decoder_module.get_write_cmd_message(command)
                 await self.client.write_gatt_char(WRITE_UUID, bytes(cmd))
@@ -326,35 +354,80 @@ class DeviceReaderV2:
 
     def _notification_handler(self, _sender: int, data: bytearray):
         """Handle bt data."""
-        _LOGGER.debug("_notification_handler")
+        _LOGGER.debug("_notification_handler (%d bytes)", len(data))
 
         if self.is_crypting and data.hex() in self.crypt_packs:
             return
-        
-        # Ignore notifications we don't expect
+
+        # Late fragments of a response we already finished, or notifies that
+        # arrive after a timeout.
         if self.notify_future is None or self.notify_future.done():
-            _LOGGER.warning(f"Unexpected notification self.cmd:{self.current_command}")
+            _LOGGER.warning(
+                "Ignoring late BLE notification (%d bytes) for %s",
+                len(data),
+                getattr(self.current_command, "fn_code", self.current_command),
+            )
             return
 
         # If something went wrong, we might get weird data.
         if data == b"AT+NAME?\r" or data == b"AT+ADV?\r":
+            self._cancel_fragment_timer()
             err = BadConnectionError("Got AT+ notification")
             self.notify_future.set_exception(err)
             return
 
-        # Save data
         self.notify_response.extend(data)
 
-        if self.is_crypting is False:
-            bluetti_data = {}
-            if type(self.current_command) is OakReadCmd:
-                bluetti_data = self.ble_decoder_module.message_handle(self.current_command,data)
-            elif type(self.current_command) is OakWriteCmd:
-                bluetti_data = self.ble_decoder_module.message_handle(self.current_command,data)
-            self.notify_future.set_result(bluetti_data)
-        else:
-            """ Bluetooth is establishing an encrypted channel and Pass-Through data to the bluetti encryption module """
-            _LOGGER.debug(f' bluetooth is encrypting... ')
-            self.notify_future.set_result(self.notify_response)                     
-                                    
+        if self.is_crypting:
+            # Handshake packets are discrete messages for the crypt module.
+            _LOGGER.debug("bluetooth is encrypting...")
+            self._cancel_fragment_timer()
+            self.notify_future.set_result(bytes(self.notify_response))
+            return
+
+        self._cancel_fragment_timer()
+        try:
+            self._fragment_timer = asyncio.get_running_loop().call_later(
+                FRAGMENT_QUIET_SECONDS,
+                self._finish_notification,
+                self._notify_generation,
+            )
+        except RuntimeError:
+            self._finish_notification(self._notify_generation)
+        
+        _LOGGER.debug(
+            "Buffering BLE notification, %d bytes so far",
+            len(self.notify_response),
+        )
+        
+
+    def _finish_notification(self, generation: int) -> None:
+        self._cancel_fragment_timer()
+        if generation != self._notify_generation:
+            return
+        if self.notify_future is None or self.notify_future.done():
+            return
+        if not self.notify_response:
+            return
+
+        if self.is_crypting:
+            self.notify_future.set_result(bytes(self.notify_response))
+            return
+
+        decoded = {}
+        
+        command = self.current_command
+        payload = bytes(self.notify_response)
+        if type(command) in (OakReadCmd, OakWriteCmd):
+            try:
+                decoded = self.ble_decoder_module.message_handle(command, payload)
+            except Exception as err:
+                _LOGGER.warning(
+                    "Failed to decode BLE response for %s: %s",
+                    getattr(command, "fn_code", command),
+                    err,
+                )
+
+        self.notify_future.set_result(decoded)
+        
 
