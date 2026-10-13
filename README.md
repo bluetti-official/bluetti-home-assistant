@@ -39,8 +39,8 @@ based on their needs. The core differences between the two editions are compared
 - ✅ Sleep Mode
 - ✅ PV Input Power
 - ✅ Grid Input Power
-- ✅ AC Ouput Power
-- ✅ DC Ouput Power
+- ✅ AC Output Power
+- ✅ DC Output Power
 
 ## 🎮 Power Station Support List
 
@@ -48,7 +48,7 @@ based on their needs. The core differences between the two editions are compared
 >
 > More power station models will be added in the future.
 
-| Power Station Model | Buesiness Name | Cloud Control | BLE Control | Inverter Status |  Battery SOC   | AC Switch | DC Switch | power switch | AC ECO | DC ECO | Work mode switch | Sleep Mode | PV Input Power | Grid Input Power | AC Output Power | DC Output Power | 
+| Power Station Model | Business Name  | Cloud Control | BLE Control | Inverter Status |  Battery SOC   | AC Switch | DC Switch | power switch | AC ECO | DC ECO | Work mode switch | Sleep Mode | PV Input Power | Grid Input Power | AC Output Power | DC Output Power | 
 |:-------------------:|:--------------:|:-------------:|:-----------:|:---------------:|:--------------:|:---------:|:---------:|:------------:|:------:|:------:|:----------------:|:----------:|:--------------:|:----------------:|:---------------:|:---------------:|
 |       AC200L        |     AC200L     |       ✅       |      ✅      |                 |       ✅        |     ✅     |      ✅     |             |   ✅    |   ✅    |        ✅         |            |       ✅        |        ✅         |        ✅        |        ✅        |
 |       AC200PL       |    AC200PL     |       ✅       |      ✅      |                 |       ✅        |     ✅     |      ✅     |             |   ✅    |   ✅    |        ✅         |            |       ✅        |        ✅         |        ✅        |        ✅        |
@@ -60,7 +60,7 @@ based on their needs. The core differences between the two editions are compared
 |      AORA30V2       |   AORA 30 V2   |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
 |      AORA100V2      |  AORA 100 V2   |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
 |       AORA200       |    AORA 200    |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
-|      AORA200V2      |  AORA 200 v2   |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
+|      AORA200V2      |  AORA 200 V2   |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
 |       AORA300       |    AORA 300    |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
 |       AORA320       |    AORA 320    |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
 |      Balco260       |    Balco260    |       ✅       |      ✅      |        ✅        |       ✅        |     ✅     |           |             |        |        |        ✅         |            |       ✅        |        ✅         |        ✅        |                 |
@@ -142,7 +142,7 @@ can be installed.
    <img src="./doc/images/1-setting_devices_and_services.png" width="880">
 
 2. Click the "Add Integration" button, then search for the brand keyword
-   `bluetti`; select the `BLUETTI` integration to proceed with the OAUTH
+   `bluetti`; select the `BLUETTI` integration to proceed with the OAuth
    authorization login.
 
    <img src="./doc/images/2-search_and_add_integration.png" width="880">
@@ -152,11 +152,11 @@ can be installed.
 
    <img src="./doc/images/3-oauth_agree_to_connect_with_bluetti.png">
 
-4. Enter your BLUETTI account to authorize and login.
+4. Enter your BLUETTI account to authorize and log in.
 
    <img src="./doc/images/4-oauth_enter_bluetti_account.png">
 
-5. You must agree that `Home Assistant` link to your BLUETTI account.
+5. You must agree that `Home Assistant` can link to your BLUETTI account.
 
    <img src="./doc/images/5-oauth_link_account_to_ha.png">
 
@@ -188,12 +188,12 @@ can be installed.
 
 ## ❓ Frequently Asked Questions (FAQ)
 
-### Not found `BLUETTI Integration` after installation?
+### `BLUETTI Integration` not found after installation?
 
 Please check whether the `custom_components` path is correct and confirm whether
 the `Home Assistant` system has been restarted.
 
-### Always offline or failed connect to BLUETTI server?
+### Always offline, or failed to connect to the BLUETTI server?
 
 Please check the **network**, **ports** and **firewall** to ensure that
 `Home Assistant` can access the power station devices.
@@ -210,7 +210,7 @@ Please check the **network**, **ports** and **firewall** to ensure that
    
 ## Notice
 
-### Balco260 Self-consumption mode need connect the electricity meter
+### Balco260 self-consumption mode needs the electricity meter connected
 
 ## 📮 Support & Feedback
 
