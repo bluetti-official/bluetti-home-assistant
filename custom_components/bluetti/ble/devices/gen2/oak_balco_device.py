@@ -32,7 +32,7 @@ class OakBalcoDevice(OakDeviceGen2):
 
         return bluetti_state
 
-    # call when read ble data to state alue,after parse_oak_state_data
+    # call when read ble data to state value,after parse_oak_state_data
     def proto_fn_to_oakfn(self,proto_fn:str)->str:
         if proto_fn == PROTO_FN_CODE.WorkMode:
             return PROTO_FN_CODE.WorkModeBalco

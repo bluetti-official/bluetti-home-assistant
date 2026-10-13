@@ -83,7 +83,7 @@ class DeviceReaderV2:
         polling_commands = self.oak_device.polling_commands
         # pack_commands = self.oak_device.pack_polling_commands
         _LOGGER.debug("Device:"+self.oak_device.sn+" Polling commands: " + ",".join([f"{c.fn_code}" for c in polling_commands]))
-        # _LOGGER.info("Pack comands: " + ",".join([f"{c.starting_address}-{c.starting_address + c.quantity - 1}" for c in pack_commands]))
+        # _LOGGER.info("Pack commands: " + ",".join([f"{c.starting_address}-{c.starting_address + c.quantity - 1}" for c in pack_commands]))
 
         parsed_data: dict = {}
 
@@ -110,7 +110,7 @@ class DeviceReaderV2:
                             if attempt == self.max_retries:
                                 raise e # pass exception on max_retries attempt
                             else:
-                                _LOGGER.warning(f"{self.oak_device.sn} Connect unsucessful (attempt {attempt}): {e}. Retrying...")
+                                _LOGGER.warning(f"{self.oak_device.sn} Connect unsuccessful (attempt {attempt}): {e}. Retrying...")
                                 _LOGGER.error(f"{self.oak_device.sn} connect_ble error：{e}", exc_info=True)
                                 await asyncio.sleep(2)
 
