@@ -36,7 +36,8 @@
       }
     },
     "error": {
-      "invalid_auth": "BLUETTI refused these credentials, or its sign-in page has changed."
+      "invalid_auth": "BLUETTI refused these credentials, or its sign-in page has changed.",
+      "cannot_connect": "Could not reach the BLUETTI sign-in service, or it answered unexpectedly. Try again later."
     }
   }
 }

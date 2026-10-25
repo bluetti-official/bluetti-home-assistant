@@ -49,6 +49,37 @@ async def test_sign_in_posts_the_form_and_exchanges_the_code():
 
 
 @pytest.mark.asyncio
+async def test_a_failed_code_exchange_is_an_sso_login_error():
+    impl = implementation()
+    impl.async_resolve_external_data.side_effect = KeyError("expires_in")
+    with aioresponses() as m:
+        m.get(LOGIN_RE, status=200, body="")
+        m.post(AUTH_URL, payload={"msgCode": 0, "data": REDIRECT + "?code=abc"})
+        with pytest.raises(sso_login.SsoLoginError, match="code exchange failed") as info:
+            await sso_login.async_login(SSO, impl, "me@example.com", "DIGEST")
+    assert info.value.refused is False
+
+
+@pytest.mark.asyncio
+async def test_no_redirect_uri_outside_a_request_is_an_sso_login_error():
+    impl = implementation()
+    type(impl).redirect_uri = property(lambda self: (_ for _ in ()).throw(RuntimeError("No current request")))
+    with pytest.raises(sso_login.SsoLoginError, match="no redirect URI"):
+        await sso_login.async_login(SSO, impl, "me@example.com", "DIGEST")
+
+
+@pytest.mark.asyncio
+async def test_only_an_sso_refusal_is_marked_refused():
+    impl = implementation()
+    with aioresponses() as m:
+        m.get(LOGIN_RE, status=200, body="")
+        m.post(AUTH_URL, payload={"msgCode": 1012, "message": "wrong password"})
+        with pytest.raises(sso_login.SsoLoginError) as info:
+            await sso_login.async_login(SSO, impl, "me@example.com", "DIGEST")
+    assert info.value.refused is True
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "status,payload,match",
     [

@@ -7,18 +7,22 @@ Facts this is built on (measured on a live install, 2026-10):
   original 31-day mark, to the minute. So ``expires_at`` cannot be trusted and a
   refresh cannot keep the integration alive.
 * The cloud also rejects tokens early with msgCode 805 (or 400/403/600 on the
-  websocket); a refresh-token grant does recover those.
+  websocket); a refresh-token grant recovers some of those.
 
 So this owner tracks ``session_started_at`` itself and, if the user has stored
-credentials, signs in again at day 28. Early rejections get a refresh first and
-a sign-in if that fails. Only when no unattended route works does it raise the
-"OAuth Expired" notification asking the user to reconfigure.
+credentials, signs in again at day 28. A rejected token gets a refresh first;
+a rejection that comes back soon after a refresh gets a sign-in. Only when no
+unattended route works does it raise the "OAuth Expired" notification asking
+the user to reconfigure.
 
-The ProductClient and StompClient are built with a static access token, so every
-token change ends in a (deduplicated, rate-limited) reload of the entry.
+Every new token, from whatever route, goes through ``record_new_session`` or
+``record_refreshed_token``. The ProductClient and StompClient are built with a
+static access token, so each token change ends in a reload of the entry, at
+most one per ``RELOAD_FLOOR_S`` and deferred (not dropped) inside the floor.
 """
 from __future__ import annotations
 
+import hashlib
 import logging
 import time
 from datetime import timedelta
@@ -26,7 +30,7 @@ from typing import Any, Awaitable, Callable
 
 from homeassistant.components import persistent_notification
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.event import async_call_later, async_track_time_interval
 
 from .const import DOMAIN, EVENT_TOKEN_EXPIRED, NOTIFY_ID_TOKEN_EXPIRED
 from .sso_login import SsoLoginError, async_login
@@ -37,15 +41,16 @@ SESSION_LIFETIME = timedelta(days=31)
 RELOGIN_AFTER = timedelta(days=28)
 CHECK_INTERVAL = timedelta(hours=1)
 REJECTION_FLOOR_S = 300
+REFRESH_DID_NOT_HELP_S = 1800
 RELOAD_FLOOR_S = 300
+LOGIN_FAILURE_BACKOFF_S = 6 * 3600
 
 # Entry data keys owned here.
 KEY_SESSION_STARTED_AT = "session_started_at"
 KEY_LAST_TOKEN_REFRESH = "last_token_refresh"
 KEY_CREDENTIALS = "sso_credentials"
 
-# Survives entry reloads, which is what a floor across reloads needs.
-_last_reload: dict[str, float] = {}
+_STATE_KEY = f"{DOMAIN}_token_state"
 
 
 def session_expires_at(entry_data: dict[str, Any]) -> float | None:
@@ -75,6 +80,71 @@ def seed_session_started_at(entry_data: dict[str, Any]) -> float | None:
     return issued
 
 
+def new_session_data(token: dict[str, Any], now: float) -> dict[str, Any]:
+    """Entry-data fields for a token from a fresh sign-in (interactive or unattended)."""
+    return {"token": token, KEY_SESSION_STARTED_AT: now, KEY_LAST_TOKEN_REFRESH: now}
+
+
+def record_new_session(
+    hass: HomeAssistant,
+    entry: Any,
+    token: dict[str, Any],
+    *,
+    credentials: dict[str, Any] | None = None,
+    now: float | None = None,
+) -> None:
+    """Store a token from a fresh sign-in, clear any expiry notice, and reload the entry."""
+    now = time.time() if now is None else now
+    changes = new_session_data(token, now)
+    if credentials is not None:
+        changes[KEY_CREDENTIALS] = credentials
+    hass.config_entries.async_update_entry(entry, data={**entry.data, **changes})
+    state = _state(hass, entry)
+    state.pop("login_failed", None)
+    state.pop("refreshed_at", None)
+    persistent_notification.async_dismiss(hass, notification_id=NOTIFY_ID_TOKEN_EXPIRED)
+    schedule_reload(hass, entry, now)
+
+
+def record_refreshed_token(hass: HomeAssistant, entry: Any, token: dict[str, Any], now: float) -> None:
+    """Store a refreshed token. The session clock does not move: a refresh does not extend the session."""
+    hass.config_entries.async_update_entry(entry, data={**entry.data, "token": token, KEY_LAST_TOKEN_REFRESH: now})
+    _state(hass, entry)["refreshed_at"] = now
+    persistent_notification.async_dismiss(hass, notification_id=NOTIFY_ID_TOKEN_EXPIRED)
+    schedule_reload(hass, entry, now)
+
+
+def schedule_reload(hass: HomeAssistant, entry: Any, now: float) -> None:
+    """Reload the entry so its clients pick up the new token: at most one per floor, deferred inside it."""
+    state = _state(hass, entry)
+    if state.get("reload_pending"):
+        return
+    wait = state.get("last_reload", float("-inf")) + RELOAD_FLOOR_S - now
+    if wait <= 0:
+        state["last_reload"] = now
+        hass.config_entries.async_schedule_reload(entry.entry_id)
+        return
+
+    def _deferred(_now: Any) -> None:
+        state["reload_pending"] = False
+        state["last_reload"] = time.time()
+        hass.config_entries.async_schedule_reload(entry.entry_id)
+
+    state["reload_pending"] = True
+    # Deliberately not bound to the entry's unload: the reload must still happen if
+    # the entry reloads for another reason in between (async_schedule_reload dedupes).
+    async_call_later(hass, wait, _deferred)
+
+
+def _state(hass: HomeAssistant, entry: Any) -> dict[str, Any]:
+    """Per-entry state that must survive the entry's own reloads."""
+    return hass.data.setdefault(_STATE_KEY, {}).setdefault(entry.entry_id, {})
+
+
+def _credentials_fingerprint(creds: dict[str, Any]) -> str:
+    return hashlib.sha256(f"{creds.get('username')}\0{creds.get('password_sha256')}".encode()).hexdigest()
+
+
 class AuthTokenRefresh:
     """Owns the entry's token: early-rejection recovery, day-28 sign-in, and the last-resort notification."""
 
@@ -93,17 +163,15 @@ class AuthTokenRefresh:
         self._sso_base = sso_base
         self._login = login
         self._clock = clock
-        self._last_rejection = 0.0
         entry.async_on_unload(hass.bus.async_listen(EVENT_TOKEN_EXPIRED, self.on_token_expired_event))
 
-    # -- lifecycle ---------------------------------------------------------
-
     def start_token_check(self) -> None:
-        persistent_notification.async_dismiss(self.hass, notification_id=NOTIFY_ID_TOKEN_EXPIRED)
         if KEY_SESSION_STARTED_AT not in self.entry.data:
             started = seed_session_started_at(dict(self.entry.data))
             if started is not None:
-                self._update_data({KEY_SESSION_STARTED_AT: started})
+                self.hass.config_entries.async_update_entry(
+                    self.entry, data={**self.entry.data, KEY_SESSION_STARTED_AT: started}
+                )
         self.entry.async_on_unload(
             async_track_time_interval(self.hass, self.async_check_token_expiry, CHECK_INTERVAL)
         )
@@ -121,27 +189,36 @@ class AuthTokenRefresh:
             await self._async_relogin_or_notify("access token expired")
 
     async def on_token_expired_event(self, event: Any = None) -> None:
-        """The cloud rejected the token (805 et al.): refresh, then sign in, then ask."""
+        """The cloud rejected the token (805 et al.): refresh; if a refresh recently failed to help, sign in."""
+        state = _state(self.hass, self.entry)
         current = self._clock()
-        if current - self._last_rejection < REJECTION_FLOOR_S:
+        if current - state.get("last_rejection", float("-inf")) < REJECTION_FLOOR_S:
             return
-        self._last_rejection = current
+        state["last_rejection"] = current
+        if current - state.get("refreshed_at", float("-inf")) < REFRESH_DID_NOT_HELP_S:
+            await self._async_relogin_or_notify("token rejected again soon after a refresh")
+            return
         try:
             new_token = await self.oAuth2Session.implementation.async_refresh_token(self.oAuth2Session.token)
         except Exception as err:  # noqa: BLE001 - any failure means try the next route
             _LOGGER.warning("BLUETTI token refresh after rejection failed (%s); signing in", type(err).__name__)
             await self._async_relogin_or_notify("token rejected and refresh failed")
             return
-        self._update_data({"token": new_token, KEY_LAST_TOKEN_REFRESH: current})
         _LOGGER.info("BLUETTI token refreshed after the cloud rejected it")
-        self._schedule_reload()
-
-    # -- routes ------------------------------------------------------------
+        record_refreshed_token(self.hass, self.entry, new_token, current)
 
     async def _async_relogin_or_notify(self, reason: str) -> None:
         creds = self.entry.data.get(KEY_CREDENTIALS)
         if not creds:
             _LOGGER.warning("BLUETTI session needs a new sign-in (%s) and no credentials are stored", reason)
+            self.send_expired_notification()
+            return
+        state = _state(self.hass, self.entry)
+        current = self._clock()
+        failed = state.get("login_failed")
+        fingerprint = _credentials_fingerprint(creds)
+        if failed and failed["creds"] == fingerprint and current - failed["at"] < LOGIN_FAILURE_BACKOFF_S:
+            # Same credentials failed recently: do not hammer the account into a lockout.
             self.send_expired_notification()
             return
         try:
@@ -152,15 +229,14 @@ class AuthTokenRefresh:
                 creds["password_sha256"],
                 creds.get("password", ""),
             )
-        except SsoLoginError as err:
-            _LOGGER.error("BLUETTI unattended sign-in failed (%s): %s", reason, err)
+        except Exception as err:  # noqa: BLE001 - every failure must reach the user, never die in a timer
+            detail = str(err) if isinstance(err, SsoLoginError) else type(err).__name__
+            _LOGGER.error("BLUETTI unattended sign-in failed (%s): %s", reason, detail)
+            state["login_failed"] = {"creds": fingerprint, "at": current}
             self.send_expired_notification()
             return
-        current = self._clock()
-        self._update_data({"token": token, KEY_SESSION_STARTED_AT: current, KEY_LAST_TOKEN_REFRESH: current})
         _LOGGER.info("BLUETTI signed in again unattended (%s)", reason)
-        persistent_notification.async_dismiss(self.hass, notification_id=NOTIFY_ID_TOKEN_EXPIRED)
-        self._schedule_reload()
+        record_new_session(self.hass, self.entry, token, now=current)
 
     def send_expired_notification(self) -> None:
         reauth_url = f"/config/integrations/integration/{DOMAIN}"
@@ -172,17 +248,3 @@ class AuthTokenRefresh:
             title="OAuth Expired",
             notification_id=NOTIFY_ID_TOKEN_EXPIRED,
         )
-
-    # -- helpers -----------------------------------------------------------
-
-    def _update_data(self, changes: dict[str, Any]) -> None:
-        self.hass.config_entries.async_update_entry(self.entry, data={**self.entry.data, **changes})
-
-    def _schedule_reload(self) -> None:
-        """The API clients hold a static token, so a new token needs a reload; at most one per 5 min."""
-        current = self._clock()
-        if current - _last_reload.get(self.entry.entry_id, 0.0) < RELOAD_FLOOR_S:
-            _LOGGER.debug("BLUETTI reload suppressed by the %s s floor", RELOAD_FLOOR_S)
-            return
-        _last_reload[self.entry.entry_id] = current
-        self.hass.config_entries.async_schedule_reload(self.entry.entry_id)

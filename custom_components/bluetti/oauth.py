@@ -25,7 +25,7 @@ from.ble.utils.device_builder import is_device_support
 from .api.product_client import ProductClient
 from .const import DOMAIN, INTEGRATION_NAME,AppPath,ControlMode
 from .sso_login import SsoLoginError, async_login, password_digest
-from .token_lifecycle import KEY_CREDENTIALS, KEY_LAST_TOKEN_REFRESH, KEY_SESSION_STARTED_AT
+from .token_lifecycle import KEY_CREDENTIALS, new_session_data, record_new_session
 
 __LOGGER__ = logging.getLogger(__name__)
 
@@ -124,12 +124,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
         if "entry_id" in self.context:
             cur_entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
             __LOGGER__.info("reconfigure token")
-            new_data = {**cur_entry.data,"token":self._oauth_data["token"]}
-            self.hass.config_entries.async_update_entry(
-                    cur_entry,
-                    data=new_data
-                )
-            await self.hass.config_entries.async_reload(cur_entry.entry_id)
+            record_new_session(self.hass, cur_entry, self._oauth_data["token"])
             return self.async_abort(reason="success")
         
         # select device
@@ -389,9 +384,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                     # Stored unattended-sign-in credentials survive a reconfigure.
                     **{k: v for k, v in existing_entry.data.items() if k == KEY_CREDENTIALS},
                     "auth_implementation": self._oauth_data["auth_implementation"],
-                    "token": self._oauth_data["token"],
                     "products": merged_products,
-                    KEY_SESSION_STARTED_AT: time.time(),
                 },
                 options={
                     "devices": merged_devices,
@@ -401,8 +394,8 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                 }
             )
 
-            # reload integrated entry to include new devices
-            await self.hass.config_entries.async_reload(existing_entry.entry_id)
+            # store the new sign-in; this also reloads the entry to include new devices
+            record_new_session(self.hass, existing_entry, self._oauth_data["token"])
 
             return self.async_abort(reason="success")
         else:
@@ -411,9 +404,8 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                 title=f"{INTEGRATION_NAME} Power Integration",
                 data={
                     "auth_implementation": self._oauth_data["auth_implementation"],
-                    "token": self._oauth_data["token"],
                     "products": self._products,
-                    KEY_SESSION_STARTED_AT: time.time(),
+                    **new_session_data(self._oauth_data["token"], time.time()),
                 },
                 options={
                     "devices": user_input["devices"],
@@ -460,23 +452,23 @@ class SsoCredentialsOptionsFlow(config_entries.OptionsFlow):
             username = user_input["username"].strip()
             digest = password_digest(user_input["password"])
             creds = {"username": username, "password_sha256": digest}
+            token = None
             try:
                 token = await async_login(sso_base, implementation, username, digest)
-            except SsoLoginError:
-                # Some SSO builds may check the plaintext field too.
-                try:
-                    token = await async_login(sso_base, implementation, username, digest, user_input["password"])
-                    creds["password"] = user_input["password"]
-                except SsoLoginError as err:
+            except SsoLoginError as err:
+                if err.refused:
+                    # Only a refusal is worth one retry with the plaintext field filled.
+                    try:
+                        token = await async_login(sso_base, implementation, username, digest, user_input["password"])
+                        creds["password"] = user_input["password"]
+                    except SsoLoginError as err2:
+                        __LOGGER__.warning("BLUETTI credential check failed: %s", err2)
+                        errors["base"] = "invalid_auth" if err2.refused else "cannot_connect"
+                else:
                     __LOGGER__.warning("BLUETTI credential check failed: %s", err)
-                    errors["base"] = "invalid_auth"
+                    errors["base"] = "cannot_connect"
             if not errors:
-                self.hass.config_entries.async_update_entry(
-                    entry,
-                    data={**entry.data, KEY_CREDENTIALS: creds, "token": token,
-                          KEY_SESSION_STARTED_AT: time.time(), KEY_LAST_TOKEN_REFRESH: time.time()},
-                )
-                self.hass.config_entries.async_schedule_reload(entry.entry_id)
+                record_new_session(self.hass, entry, token, credentials=creds)
                 return self.async_create_entry(data=dict(entry.options))
 
         stored = self.config_entry.data.get(KEY_CREDENTIALS) or {}
