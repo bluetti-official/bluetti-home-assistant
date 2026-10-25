@@ -15,7 +15,8 @@ from homeassistant.helpers import storage
 from homeassistant.loader import async_get_integration
 
 from .models import BluettiData
-from .oauth import AsyncConfigEntryAuth, AuthTokenRefresh
+from .oauth import AsyncConfigEntryAuth
+from .token_lifecycle import AuthTokenRefresh
 from .api.bluetti import APPLICATION_PROFILE
 from .api.product_client import ProductClient
 from .api.websocket import StompClient
@@ -82,7 +83,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
         httpSession, oAuth2Session
     )
 
-    authTokenRefresh = AuthTokenRefresh(hass, entry, oAuth2Session)
+    authTokenRefresh = AuthTokenRefresh(hass, entry, oAuth2Session, APPLICATION_PROFILE.config["server"]["sso"])
     authTokenRefresh.start_token_check()
 
     # await oAuth2Session.async_ensure_token_valid()

@@ -13,6 +13,9 @@ from .models import BluettiData, BluettiDevice, BluettiState
 from .icon_config import get_icon_for_fn_code
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .api.bluetti import APPLICATION_PROFILE
+from .token_lifecycle import KEY_CREDENTIALS, session_expires_at
+from homeassistant.const import EntityCategory
+from homeassistant.util import dt as dt_util
 
 
 class BaseSensorMetaInfo(TypedDict):
@@ -117,10 +120,38 @@ async def async_setup_entry(
                 device._bleClient = coordinator.reader.client
             entities.append(BluettiBluetoothBinarySensor(device, coordinator))
 
+    entities.append(BluettiSessionExpiresSensor(config_entry))
+
     if entities:
         async_add_entities(entities)
 
     return True
+
+
+class BluettiSessionExpiresSensor(SensorEntity):
+    """When the BLUETTI cloud will end the current sign-in (31 days after it began).
+
+    Not the token's own expires_at, which a refresh pushes forward without the
+    server honouring it.
+    """
+
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_name = "BLUETTI session expires at"
+    _attr_icon = "mdi:account-clock"
+
+    def __init__(self, entry: BluettiConfigEntry) -> None:
+        self._entry = entry
+        self._attr_unique_id = f"{entry.entry_id}_session_expires_at"
+
+    @property
+    def native_value(self):
+        ts = session_expires_at(dict(self._entry.data))
+        return None if ts is None else dt_util.utc_from_timestamp(ts)
+
+    @property
+    def extra_state_attributes(self):
+        return {"unattended_sign_in": bool(self._entry.data.get(KEY_CREDENTIALS))}
 
 
 class BluettiSensor(SensorEntity):
