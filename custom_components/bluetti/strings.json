@@ -22,5 +22,21 @@
     "create_entry": {
       "default": "[%key:common::config_flow::create_entry::authenticated%]"
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Unattended sign-in",
+        "description": "BLUETTI ends a sign-in after 31 days. With your BLUETTI account stored here the integration signs in again by itself before then. Saving signs in once to check the credentials. Only a SHA-256 of the password is kept unless the BLUETTI server also needs the password itself; either is kept in Home Assistant's storage and backups.",
+        "data": {
+          "username": "BLUETTI account (email or phone)",
+          "password": "Password",
+          "forget": "Forget stored credentials"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "BLUETTI refused these credentials, or its sign-in page has changed."
+    }
   }
 }

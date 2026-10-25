@@ -3,13 +3,9 @@ import logging
 import string
 import asyncio
 import os
-from typing import cast
 import time
-from datetime import datetime, timedelta
-from homeassistant.components import persistent_notification
-from homeassistant.helpers.event import async_track_time_interval
 from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_entry_oauth2_flow
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -27,7 +23,9 @@ import voluptuous as vol
 
 from.ble.utils.device_builder import is_device_support
 from .api.product_client import ProductClient
-from .const import DOMAIN, INTEGRATION_NAME,EVENT_TOKEN_EXPIRED,NOTIFY_ID_TOKEN_EXPIRED,AppPath,ControlMode
+from .const import DOMAIN, INTEGRATION_NAME,AppPath,ControlMode
+from .sso_login import SsoLoginError, async_login, password_digest
+from .token_lifecycle import KEY_CREDENTIALS, KEY_LAST_TOKEN_REFRESH, KEY_SESSION_STARTED_AT
 
 __LOGGER__ = logging.getLogger(__name__)
 
@@ -388,9 +386,12 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
             self.hass.config_entries.async_update_entry(
                 existing_entry,
                 data={
+                    # Stored unattended-sign-in credentials survive a reconfigure.
+                    **{k: v for k, v in existing_entry.data.items() if k == KEY_CREDENTIALS},
                     "auth_implementation": self._oauth_data["auth_implementation"],
                     "token": self._oauth_data["token"],
-                    "products": merged_products
+                    "products": merged_products,
+                    KEY_SESSION_STARTED_AT: time.time(),
                 },
                 options={
                     "devices": merged_devices,
@@ -411,7 +412,8 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                 data={
                     "auth_implementation": self._oauth_data["auth_implementation"],
                     "token": self._oauth_data["token"],
-                    "products": self._products
+                    "products": self._products,
+                    KEY_SESSION_STARTED_AT: time.time(),
                 },
                 options={
                     "devices": user_input["devices"],
@@ -428,6 +430,67 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
             return self.async_abort(reason="reconfigure_failed")
 
         return await self.async_step_user()
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Options: credentials for unattended sign-in."""
+        return SsoCredentialsOptionsFlow()
+
+
+class SsoCredentialsOptionsFlow(config_entries.OptionsFlow):
+    """Store BLUETTI credentials so the integration can sign in again before the 31-day session ends.
+
+    The credentials are checked by signing in with them, which also starts a
+    new 31-day session. Only the SHA-256 the SSO form expects is stored unless
+    the SSO turns out to need the plaintext as well. Either way the value is in
+    Home Assistant's config entry storage and therefore in its backups.
+    """
+
+    async def async_step_init(self, user_input=None):
+        errors = {}
+        if user_input is not None:
+            entry = self.config_entry
+            if user_input.get("forget"):
+                data = {k: v for k, v in entry.data.items() if k != KEY_CREDENTIALS}
+                self.hass.config_entries.async_update_entry(entry, data=data)
+                return self.async_create_entry(data=dict(entry.options))
+            implementation = await config_entry_oauth2_flow.async_get_config_entry_implementation(self.hass, entry)
+            sso_base = APPLICATION_PROFILE.config["server"]["sso"]
+            username = user_input["username"].strip()
+            digest = password_digest(user_input["password"])
+            creds = {"username": username, "password_sha256": digest}
+            try:
+                token = await async_login(sso_base, implementation, username, digest)
+            except SsoLoginError:
+                # Some SSO builds may check the plaintext field too.
+                try:
+                    token = await async_login(sso_base, implementation, username, digest, user_input["password"])
+                    creds["password"] = user_input["password"]
+                except SsoLoginError as err:
+                    __LOGGER__.warning("BLUETTI credential check failed: %s", err)
+                    errors["base"] = "invalid_auth"
+            if not errors:
+                self.hass.config_entries.async_update_entry(
+                    entry,
+                    data={**entry.data, KEY_CREDENTIALS: creds, "token": token,
+                          KEY_SESSION_STARTED_AT: time.time(), KEY_LAST_TOKEN_REFRESH: time.time()},
+                )
+                self.hass.config_entries.async_schedule_reload(entry.entry_id)
+                return self.async_create_entry(data=dict(entry.options))
+
+        stored = self.config_entry.data.get(KEY_CREDENTIALS) or {}
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Required("username", default=stored.get("username", "")): str,
+                vol.Required("password"): selector.TextSelector(
+                    selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
+                ),
+                vol.Optional("forget", default=False): bool,
+            }),
+            errors=errors,
+        )
 
 
 class AsyncConfigEntryAuth:
@@ -446,96 +509,3 @@ class AsyncConfigEntryAuth:
         """Return a valid access token."""
         await self._oauth_session.async_ensure_token_valid()
         return self._oauth_session.token["access_token"]
-
-
-class AuthTokenRefresh:
-    """Handler Token expired and refresh token."""
-    def __init__(self,hass:HomeAssistant,entry,oauth_session: config_entry_oauth2_flow.OAuth2Session)->None:
-        self.hass = hass
-        self.entry = entry
-        self.oAuth2Session = oauth_session
-        unsub = hass.bus.async_listen(EVENT_TOKEN_EXPIRED, self.on_token_expired_event)
-        entry.async_on_unload(unsub)
-
-    async def on_token_expired_event(self,event):
-        __LOGGER__.info("on_token_expired_event")
-        self.send_expired_notification()
-
-    def start_token_check(self):
-        # first clear old notify
-        persistent_notification.async_dismiss(self.hass,notification_id=NOTIFY_ID_TOKEN_EXPIRED)
-        if self.is_token_valid() == False:
-            __LOGGER__.info("token have expired send notify")
-            self.send_expired_notification()
-        else:
-            interval = timedelta(days=1)
-            async_track_time_interval(
-                self.hass,
-                self.async_check_token_expiry,  # 要执行的任务函数
-                interval       # 执行间隔
-            )
-            __LOGGER__.info("token is valid after 24 hours to check again")
-        self.hass.async_create_task(self.async_check_token_expiry())
-        
-
-    # check oauth2 token is ok
-    def is_token_valid(self) -> bool:
-        """check token"""
-        token = self.oAuth2Session.token
-        if not token:
-            return False
-        
-        if "expires_at" in token:
-            expire_timestamp = cast(float, token["expires_at"]) - 30
-            current_timestamp = time.time()
-            return expire_timestamp > current_timestamp
-        
-        if "expires_in" in token and "created_at" in token:
-            expire_timestamp = cast(float, token["created_at"]) + cast(float, token["expires_in"]) - 30
-            current_timestamp = time.time()
-            return expire_timestamp > current_timestamp
-        
-        return False
-
-    # show token expire notify
-    def send_expired_notification(self):
-        reauth_url = f"/config/integrations/integration/{DOMAIN}"
-        notification_message = (
-            f"Your OAuth Have Expired！\n"
-            f"Please go to the **[integration settings]({reauth_url})** page and click [Reconfigure] to complete the login."
-        )
-        persistent_notification.async_create(
-            self.hass,
-            notification_message,
-            title = 'OAuth Expired',
-            notification_id = NOTIFY_ID_TOKEN_EXPIRED,
-        )
-
-    # check token is in 7 day if in 7day refesh token
-    async def async_check_token_expiry(self, now=None):
-        __LOGGER__.info("check token is expired")
-        expire_timestamp = cast(float, self.oAuth2Session.token["expires_at"])
-        current_timestamp = time.time()
-        remain_timestamp = expire_timestamp - current_timestamp
-        if remain_timestamp < 0:
-            self.send_expired_notification()
-            return
-        
-        if remain_timestamp < 3600*24*7 :
-            try:
-                __LOGGER__.info('start refresh token')
-                last_refesh = self.entry.data.get("last_token_refresh", 0.0)
-                # 1 hour only one time ,when server is 500 do not always refesh token
-                if current_timestamp - last_refesh < 3600 : 
-                    __LOGGER__.info('last refesh token in 1 hour,this do not refesh return')
-                    return
-                last_refesh = current_timestamp
-
-                new_token = await self.oAuth2Session.implementation.async_refresh_token(self.oAuth2Session.token)
-                self.hass.config_entries.async_update_entry(
-                    self.entry, data={**self.entry.data, "token": new_token,"last_token_refresh":last_refesh}
-                )
-                __LOGGER__.info('refresh token ok,then reload')
-                await self.hass.config_entries.async_reload(self.entry.entry_id)
-            except Exception as e:
-                __LOGGER__.error(f"refresh token failed: {e}")
