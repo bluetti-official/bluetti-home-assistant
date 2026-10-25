@@ -29,7 +29,7 @@ from datetime import timedelta
 from typing import Any, Awaitable, Callable
 
 from homeassistant.components import persistent_notification
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
 
 from .const import DOMAIN, EVENT_TOKEN_EXPIRED, NOTIFY_ID_TOKEN_EXPIRED
@@ -110,7 +110,10 @@ def record_refreshed_token(hass: HomeAssistant, entry: Any, token: dict[str, Any
     """Store a refreshed token. The session clock does not move: a refresh does not extend the session."""
     hass.config_entries.async_update_entry(entry, data={**entry.data, "token": token, KEY_LAST_TOKEN_REFRESH: now})
     _state(hass, entry)["refreshed_at"] = now
-    persistent_notification.async_dismiss(hass, notification_id=NOTIFY_ID_TOKEN_EXPIRED)
+    started = entry.data.get(KEY_SESSION_STARTED_AT)
+    if started is not None and now - float(started) < RELOGIN_AFTER.total_seconds():
+        # Past day 28 a refresh cannot rescue the session, so an open notice stays open.
+        persistent_notification.async_dismiss(hass, notification_id=NOTIFY_ID_TOKEN_EXPIRED)
     schedule_reload(hass, entry, now)
 
 
@@ -125,6 +128,9 @@ def schedule_reload(hass: HomeAssistant, entry: Any, now: float) -> None:
         hass.config_entries.async_schedule_reload(entry.entry_id)
         return
 
+    # @callback keeps this on the event loop; a plain function here would be run
+    # in an executor thread, where async_schedule_reload must not be called.
+    @callback
     def _deferred(_now: Any) -> None:
         state["reload_pending"] = False
         state["last_reload"] = time.time()

@@ -94,8 +94,9 @@ async def async_login(
             if resp.status != 200:
                 raise SsoLoginError(f"authentication answered HTTP {resp.status}")
             body = await resp.json(content_type=None)
-    except aiohttp.ClientError as err:
-        raise SsoLoginError(f"SSO unreachable: {type(err).__name__}") from err
+    except (aiohttp.ClientError, TimeoutError, ValueError) as err:
+        # ValueError: the answer was not JSON; TimeoutError: the 30 s total timeout.
+        raise SsoLoginError(f"SSO unreachable or unreadable: {type(err).__name__}") from err
     finally:
         if own_session:
             await session.close()

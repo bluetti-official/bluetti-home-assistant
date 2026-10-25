@@ -97,3 +97,14 @@ async def test_refusals_raise_and_never_exchange(status, payload, match):
         with pytest.raises(sso_login.SsoLoginError, match=match):
             await sso_login.async_login(SSO, impl, "me@example.com", "DIGEST")
     impl.async_resolve_external_data.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("post_kwargs", [{"body": "<html>maintenance</html>"}, {"exception": TimeoutError()}])
+async def test_unreadable_or_slow_answers_raise(post_kwargs):
+    impl = implementation()
+    with aioresponses() as m:
+        m.get(LOGIN_RE, status=200, body="")
+        m.post(AUTH_URL, status=200, **post_kwargs)
+        with pytest.raises(sso_login.SsoLoginError, match="unreachable or unreadable"):
+            await sso_login.async_login(SSO, impl, "me@example.com", "DIGEST")

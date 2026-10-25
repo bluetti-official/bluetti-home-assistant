@@ -159,16 +159,28 @@ async def test_rejection_storm_is_handled_once_per_floor(hass, reload_spy, notif
 
 # -- reloads and notifications ------------------------------------------------
 
-async def test_reload_inside_the_floor_is_deferred_not_dropped(hass, reload_spy, notify_spy):
+async def test_reload_inside_the_floor_is_deferred_not_dropped(hass, notify_spy):
+    # The real async_schedule_reload runs here, so a deferred call made from the
+    # wrong thread would raise instead of reloading.
     entry, owner, *_ = make(hass, age_days=3)
-    now = dt_util.utcnow().timestamp()
-    tl.schedule_reload(hass, entry, now)
-    tl.schedule_reload(hass, entry, now + 10)
-    tl.schedule_reload(hass, entry, now + 20)
-    assert reload_spy.call_count == 1
-    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=tl.RELOAD_FLOOR_S + 1))
-    await hass.async_block_till_done()
-    assert reload_spy.call_count == 2
+    with patch.object(hass.config_entries, "async_reload", AsyncMock(return_value=True)) as reload:
+        now = dt_util.utcnow().timestamp()
+        tl.schedule_reload(hass, entry, now)
+        tl.schedule_reload(hass, entry, now + 10)
+        tl.schedule_reload(hass, entry, now + 20)
+        await hass.async_block_till_done()
+        assert reload.await_count == 1
+        async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=tl.RELOAD_FLOOR_S + 1))
+        await hass.async_block_till_done()
+        assert reload.await_count == 2
+        reload.assert_awaited_with(entry.entry_id)
+
+
+async def test_a_refresh_past_day_28_leaves_the_expiry_notice_open(hass, reload_spy):
+    entry, *_ = make(hass, age_days=40)
+    with patch.object(tl.persistent_notification, "async_dismiss") as dismiss:
+        tl.record_refreshed_token(hass, entry, {"access_token": "refreshed"}, T0 + 40 * DAY)
+    dismiss.assert_not_called()
 
 
 async def test_record_new_session_is_the_one_writer_for_a_fresh_sign_in(hass, reload_spy):
