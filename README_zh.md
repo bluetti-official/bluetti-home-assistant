@@ -49,7 +49,7 @@ BLUETTI储能集成是一个由BLUETTI官方提供的Home Assistant集成插件�
 |      AORA30V2      |   AORA 30 V2   |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
 |     AORA100V2      |  AORA 100 V2   |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
 |      AORA200       |    AORA 200    |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
-|     AORA200V2      |  AORA 200 v2   |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
+|     AORA200V2      |  AORA 200 V2   |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
 |      AORA300       |    AORA 300    |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
 |      AORA320       |    AORA 320    |       ✅       |      ✅      |                 |       ✅        |     ✅     |     ✅     |             |   ✅    |   ✅    |        ✅         |     ✅      |       ✅        |        ✅         |        ✅        |        ✅        |
 |      Balco260      |    Balco260    |       ✅       |      ✅      |        ✅        |       ✅        |     ✅     |           |             |        |        |        ✅         |            |       ✅        |        ✅         |        ✅        |                 |
@@ -104,7 +104,7 @@ BLUETTI储能集成是一个由BLUETTI官方提供的Home Assistant集成插件�
 
 ### 方法B：通过HACS安装
 
-由于目前Bluetti home assistant集成尚未提交至 HACS 官方仓库，需要手动添加自定义仓库。 HACS 本身是一个 Home Assistant 插件（用户需要先安装 HACS），类似应用市场，通过该应用市场来安装其他三方集成。
+由于目前BLUETTI Home Assistant集成尚未提交至 HACS 官方仓库，需要手动添加自定义仓库。 HACS 本身是一个 Home Assistant 插件（用户需要先安装 HACS），类似应用市场，通过该应用市场来安装其他三方集成。
 
 1. 打开 HACS → 集成 → 自定义仓库（右上角）
 
@@ -115,7 +115,7 @@ BLUETTI储能集成是一个由BLUETTI官方提供的Home Assistant集成插件�
     ```
     类型选择：Integration
 
-3. 接着在 HACS 的“集成”页面，就能看到Bluetti的插件，点击安装。
+3. 接着在 HACS 的“集成”页面，就能看到BLUETTI的插件，点击安装。
 
 4. 安装后，重启Home Assistant。
 
@@ -127,7 +127,7 @@ BLUETTI储能集成是一个由BLUETTI官方提供的Home Assistant集成插件�
 
    <img src="./doc/images/1-setting_devices_and_services.png" width="880">
 
-2. 点击“添加集成”按钮，然后搜索品牌关键词`bluetti`；选择`BLUETTI`集成进行下一步的OAUTH授权登录。
+2. 点击“添加集成”按钮，然后搜索品牌关键词`bluetti`；选择`BLUETTI`集成进行下一步的OAuth授权登录。
 
    <img src="./doc/images/2-search_and_add_integration.png" width="880">
 
