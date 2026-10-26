@@ -19,7 +19,7 @@ class OakCmd:
             return True
 
     def is_valid_response(self, response: bytes):
-        """Validates that the reponse is complete and uncorrupted"""
+        """Validates that the response is complete and uncorrupted"""
         if len(response) < 3:
             return False
 

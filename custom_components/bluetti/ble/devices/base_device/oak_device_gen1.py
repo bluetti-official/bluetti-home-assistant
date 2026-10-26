@@ -56,7 +56,7 @@ class OakDeviceGen1(OakDeviceGen2):
         oak_server_cmds = [OakReadCmd(self.fncode_gen1_map.get(state.fn_code,state.fn_code)) for state in self.bluetti_device.states]
         have_sleep_fn = any(state.fn_code == PROTO_FN_CODE.SleepModeFnCode for state in self.bluetti_device.states)
         if have_sleep_fn == True:
-            # local funtion,fn_type "SWITCH","SENSOR" will show in swtich entity empty not show is front
+            # local function,fn_type "SWITCH","SENSOR" will show in switch entity empty not show is front
             remoteSet = OakReadCmd(PROTO_FN_CODE.RemoteSet,"Sleep Switch","0","")
             remoteSetSoc = OakReadCmd(PROTO_FN_CODE.RemoteSetSoc,"Sleep Min SOC","0","")
             iotState = OakReadCmd(PROTO_FN_CODE.IotState,"Iot State","0","")

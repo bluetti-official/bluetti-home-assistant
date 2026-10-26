@@ -40,7 +40,7 @@ def build_device_v2(address: str,bluetti_device: BluettiDevice):
         if device_class.supports_model(device_model):
             return device_class(address,bluetti_device)
         
-    _LOGGER.info(f"unsupport model：{model}")
+    _LOGGER.info(f"unsupported model：{model}")
     return None
 
 async def is_device_support(hass,model: str):
@@ -59,7 +59,7 @@ register_device(OakBalcoDevice)
 register_device(OakCarProductDevice)
 # "FP"
 register_device(OakFPDevice)
-# "EL400","EL320,AORA320","PR200V2,Elite 200 V2,AORA200"
+# "EL400","EL320,AORA320","PR200V2,Elite 200 V2,AORA200,AORA200V2"
 register_device(OakVersatileV1Device)
 # "EL300,AORA300","AP300,AP300V2","AP200"
 register_device(OakVersatileV2Device)

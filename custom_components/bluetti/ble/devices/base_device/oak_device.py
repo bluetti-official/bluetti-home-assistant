@@ -37,7 +37,7 @@ class OakDevice(ABC):
         if cls.SUPPORTED_MODELS_CACHE is None:
             cls.SUPPORTED_MODELS_CACHE = set()
             for supported_str in cls.SUPPORTED_MODELS:
-                # splite model
+                # split model
                 supported_models = [m.strip().upper() for m in supported_str.split(",")]
                 cls.SUPPORTED_MODELS_CACHE.update(supported_models)
         return cls.SUPPORTED_MODELS_CACHE
@@ -89,7 +89,7 @@ class OakDevice(ABC):
         __LOGGER__.debug(f'get_write_cmd no impl')
         return [OakWriteCmd(fn_code=fn_code,write_value=fn_value)]
     
-    # conver local value to server define 1-workmode_3 custom 2-workmode_0 self_use 4-workmode_1 backup use 5-workmode_2 save use
+    # convert local value to server define 1-workmode_3 custom 2-workmode_0 self_use 4-workmode_1 backup use 5-workmode_2 save use
     @abstractmethod
     def parse_oak_state_data(self,coordinator_data: dict) -> dict:
         __LOGGER__.debug(f'parse_oak_state_data no impl')

@@ -168,7 +168,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                 self._pending_device_mapping = device_mapping
                 self._pending_selected_products = selected_products
 
-                # get dencrypt info and check all device is suuport ble
+                # get decrypt info and check all device is support ble
                 unsupported_sn = []
                 try:
                     for product in selected_products:
@@ -176,7 +176,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                         decrypt_info = decrypt_info_resp.data
                         product.server_key = decrypt_info.encryptKey
                         product.proto_file_url = APPLICATION_PROFILE.config["server"]["gateway"] + AppPath.DECODE_CENTER_API +'/'+ decrypt_info.protoBufFileUrl
-                        # all device have ble model,but the intergation may don't support, so check the device is supported by the cur ble lib version,
+                        # all device have ble model,but the integration may don't support, so check the device is supported by the cur ble lib version,
                         if not await is_device_support(self.hass,product.model):
                             unsupported_sn.append(product.sn)
                 except Exception as e:
@@ -511,7 +511,7 @@ class AuthTokenRefresh:
             notification_id = NOTIFY_ID_TOKEN_EXPIRED,
         )
 
-    # check token is in 7 day if in 7day refesh token
+    # check token is in 7 day if in 7day refresh token
     async def async_check_token_expiry(self, now=None):
         __LOGGER__.info("check token is expired")
         expire_timestamp = cast(float, self.oAuth2Session.token["expires_at"])
@@ -525,9 +525,9 @@ class AuthTokenRefresh:
             try:
                 __LOGGER__.info('start refresh token')
                 last_refesh = self.entry.data.get("last_token_refresh", 0.0)
-                # 1 hour only one time ,when server is 500 do not always refesh token
+                # 1 hour only one time ,when server is 500 do not always refresh token
                 if current_timestamp - last_refesh < 3600 : 
-                    __LOGGER__.info('last refesh token in 1 hour,this do not refesh return')
+                    __LOGGER__.info('last refresh token in 1 hour,this do not refresh return')
                     return
                 last_refesh = current_timestamp
 
