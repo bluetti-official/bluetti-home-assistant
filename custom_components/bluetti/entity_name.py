@@ -10,10 +10,17 @@ TRANSLATED_NAMES: dict[str, dict[str, str]] = {
         "PVAllTotalPower": "pvalltotalpower",
         "GridAllTotalPower": "gridalltotalpower",
         "ACLoadAllTotalPower": "acloadalltotalpower",
+        "DCLoadAllTotalPower": "dcloadalltotalpower",
+        "DsgFullTime": "dsgfulltime",
+        "ChgFullTime": "chgfulltime",
+        "InvWorkState": "invworkstate",
     },
     "switch": {
         "SetCtrlAc": "setctrlac",
         "SetCtrlStandby": "setctrlstandby",
+        "SetCtrlDc": "setctrldc",
+        "SetDCECO": "setdceco",
+        "SetACECO": "setaceco",
     },
     "select": {
         "SetCtrlWorkModeBalco": "setctrlworkmodebalco",

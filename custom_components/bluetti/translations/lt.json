@@ -49,6 +49,18 @@
             },
             "acloadalltotalpower": {
                 "name": "AC išėjimo galia"
+            },
+            "dcloadalltotalpower": {
+                "name": "DC išėjimo galia"
+            },
+            "dsgfulltime": {
+                "name": "Likęs veikimo laikas"
+            },
+            "chgfulltime": {
+                "name": "Numatomas laikas iki pilno įkrovimo"
+            },
+            "invworkstate": {
+                "name": "Inverterio būsena"
             }
         },
         "switch": {
@@ -57,6 +69,15 @@
             },
             "setctrlstandby": {
                 "name": "Budėjimo režimas"
+            },
+            "setctrldc": {
+                "name": "DC išėjimas"
+            },
+            "setdceco": {
+                "name": "DC-ECO"
+            },
+            "setaceco": {
+                "name": "AC-ECO"
             }
         },
         "select": {

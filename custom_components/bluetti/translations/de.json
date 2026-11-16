@@ -49,6 +49,18 @@
             },
             "acloadalltotalpower": {
                 "name": "AC-Ausgangsleistung"
+            },
+            "dcloadalltotalpower": {
+                "name": "DC-Ausgangsleistung"
+            },
+            "dsgfulltime": {
+                "name": "Verbleibende Zeit"
+            },
+            "chgfulltime": {
+                "name": "Voraussichtliche Ladezeit"
+            },
+            "invworkstate": {
+                "name": "Wechselrichterstatus"
             }
         },
         "switch": {
@@ -57,6 +69,15 @@
             },
             "setctrlstandby": {
                 "name": "Standby"
+            },
+            "setctrldc": {
+                "name": "DC-Ausgang"
+            },
+            "setdceco": {
+                "name": "DC-ECO"
+            },
+            "setaceco": {
+                "name": "AC-ECO"
             }
         },
         "select": {

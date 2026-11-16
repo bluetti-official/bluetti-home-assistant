@@ -36,6 +36,18 @@
             },
             "acloadalltotalpower": {
                 "name": "Puissance de sortie AC"
+            },
+            "dcloadalltotalpower": {
+                "name": "Puissance de sortie DC"
+            },
+            "dsgfulltime": {
+                "name": "Durée d'utilisation restante"
+            },
+            "chgfulltime": {
+                "name": "Temps estimé pour charge complète"
+            },
+            "invworkstate": {
+                "name": "État de l'onduleur"
             }
         },
         "switch": {
@@ -44,6 +56,15 @@
             },
             "setctrlstandby": {
                 "name": "Veille"
+            },
+            "setctrldc": {
+                "name": "Sortie DC"
+            },
+            "setdceco": {
+                "name": "DC-ECO"
+            },
+            "setaceco": {
+                "name": "AC-ECO"
             }
         },
         "select": {

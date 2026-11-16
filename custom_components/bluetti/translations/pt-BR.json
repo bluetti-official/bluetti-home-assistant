@@ -36,6 +36,18 @@
             },
             "acloadalltotalpower": {
                 "name": "Potência de saída CA"
+            },
+            "dcloadalltotalpower": {
+                "name": "Potência de saída CC"
+            },
+            "dsgfulltime": {
+                "name": "Tempo restante"
+            },
+            "chgfulltime": {
+                "name": "Tempo estimado de carga"
+            },
+            "invworkstate": {
+                "name": "Status do inversor"
             }
         },
         "switch": {
@@ -44,6 +56,15 @@
             },
             "setctrlstandby": {
                 "name": "Modo de espera"
+            },
+            "setctrldc": {
+                "name": "Saída CC"
+            },
+            "setdceco": {
+                "name": "CC-ECO"
+            },
+            "setaceco": {
+                "name": "CA-ECO"
             }
         },
         "select": {

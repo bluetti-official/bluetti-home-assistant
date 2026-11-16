@@ -63,6 +63,18 @@
             },
             "acloadalltotalpower": {
                 "name": "Alternating Current Out Power"
+            },
+            "dcloadalltotalpower": {
+                "name": "Direct Current Out Power"
+            },
+            "dsgfulltime": {
+                "name": "Battery Time In Minutes"
+            },
+            "chgfulltime": {
+                "name": "Full Charge Time In Minutes"
+            },
+            "invworkstate": {
+                "name": "Inverter Status"
             }
         },
         "switch": {
@@ -71,6 +83,15 @@
             },
             "setctrlstandby": {
                 "name": "Standby"
+            },
+            "setctrldc": {
+                "name": "DC"
+            },
+            "setdceco": {
+                "name": "DC-ECO"
+            },
+            "setaceco": {
+                "name": "AC-ECO"
             }
         },
         "select": {

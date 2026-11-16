@@ -36,6 +36,18 @@
             },
             "acloadalltotalpower": {
                 "name": "Вихідна потужність AC"
+            },
+            "dcloadalltotalpower": {
+                "name": "Вихідна потужність DC"
+            },
+            "dsgfulltime": {
+                "name": "Залишилося часу"
+            },
+            "chgfulltime": {
+                "name": "Приблизний час заряджання"
+            },
+            "invworkstate": {
+                "name": "Стан інвертора"
             }
         },
         "switch": {
@@ -44,6 +56,15 @@
             },
             "setctrlstandby": {
                 "name": "Режим очікування"
+            },
+            "setctrldc": {
+                "name": "Вихід DC"
+            },
+            "setdceco": {
+                "name": "DC-ЕКО"
+            },
+            "setaceco": {
+                "name": "AC-ЕКО"
             }
         },
         "select": {
