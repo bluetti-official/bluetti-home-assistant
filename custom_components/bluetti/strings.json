@@ -67,10 +67,10 @@
         "name": "DC"
       },
       "setdceco": {
-        "name": "DC-ECO"
+        "name": "DC ECO"
       },
       "setaceco": {
-        "name": "AC-ECO"
+        "name": "AC ECO"
       }
     },
     "select": {
