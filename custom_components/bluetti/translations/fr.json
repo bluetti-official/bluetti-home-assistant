@@ -48,6 +48,12 @@
             },
             "invworkstate": {
                 "name": "État de l'onduleur"
+            },
+            "gridpowerimport": {
+                "name": "Puissance importée du réseau"
+            },
+            "gridpowerexport": {
+                "name": "Puissance injectée"
             }
         },
         "switch": {

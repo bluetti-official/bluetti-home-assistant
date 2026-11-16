@@ -61,6 +61,12 @@
             },
             "invworkstate": {
                 "name": "Inverterio būsena"
+            },
+            "gridpowerimport": {
+                "name": "Iš tinklo importuojama galia"
+            },
+            "gridpowerexport": {
+                "name": "Į tinklą eksportuojama galia"
             }
         },
         "switch": {

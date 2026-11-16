@@ -14,6 +14,8 @@ TRANSLATED_NAMES: dict[str, dict[str, str]] = {
         "DsgFullTime": "dsgfulltime",
         "ChgFullTime": "chgfulltime",
         "InvWorkState": "invworkstate",
+        "GridPowerImport": "gridpowerimport",
+        "GridPowerExport": "gridpowerexport",
     },
     "switch": {
         "SetCtrlAc": "setctrlac",

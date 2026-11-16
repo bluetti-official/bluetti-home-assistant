@@ -48,6 +48,12 @@
             },
             "invworkstate": {
                 "name": "Стан інвертора"
+            },
+            "gridpowerimport": {
+                "name": "Потужність імпорту з мережі"
+            },
+            "gridpowerexport": {
+                "name": "Потужність експорту в мережу"
             }
         },
         "switch": {

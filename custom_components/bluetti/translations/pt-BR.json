@@ -48,6 +48,12 @@
             },
             "invworkstate": {
                 "name": "Status do inversor"
+            },
+            "gridpowerimport": {
+                "name": "Potência importada da rede"
+            },
+            "gridpowerexport": {
+                "name": "Potência injetada na rede"
             }
         },
         "switch": {

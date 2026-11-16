@@ -61,6 +61,12 @@
             },
             "invworkstate": {
                 "name": "Wechselrichterstatus"
+            },
+            "gridpowerimport": {
+                "name": "Netzbezugsleistung"
+            },
+            "gridpowerexport": {
+                "name": "Einspeiseleistung"
             }
         },
         "switch": {

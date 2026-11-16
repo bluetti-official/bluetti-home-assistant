@@ -48,6 +48,12 @@
       },
       "invworkstate": {
         "name": "Inverter Status"
+      },
+      "gridpowerimport": {
+        "name": "Grid Import Power"
+      },
+      "gridpowerexport": {
+        "name": "Grid Export Power"
       }
     },
     "switch": {

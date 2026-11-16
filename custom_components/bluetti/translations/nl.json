@@ -61,6 +61,12 @@
             },
             "invworkstate": {
                 "name": "Omvormerstatus"
+            },
+            "gridpowerimport": {
+                "name": "Netafnamevermogen"
+            },
+            "gridpowerexport": {
+                "name": "Terugleververmogen"
             }
         },
         "switch": {
