@@ -1,0 +1,56 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "La cuenta ya está configurada",
+            "already_in_progress": "El flujo de configuración ya está en curso",
+            "authorize_url_timeout": "Se ha agotado el tiempo de espera al generar la URL de autorización.",
+            "missing_configuration": "El componente no está configurado. Sigue la documentación.",
+            "no_url_available": "No hay ninguna URL disponible. Para obtener información sobre este error, [consulta la sección de ayuda]({docs_url})",
+            "oauth_error": "Se han recibido datos de token no válidos.",
+            "oauth_failed": "Error al obtener el token de acceso.",
+            "oauth_timeout": "Se ha agotado el tiempo de espera al resolver el token de OAuth.",
+            "oauth_unauthorized": "Error de autorización de OAuth al obtener el token de acceso.",
+            "user_rejected_authorize": "Vinculación de cuenta rechazada: {error}",
+            "all_devices_exists": "Todos los dispositivos y equipos de esta cuenta ya están incluidos en la integración de BLUETTI.",
+            "no_devices_available": "La cuenta actual no tiene dispositivos disponibles.",
+            "no_bluetooth_devices_matched": "No se ha encontrado ningún dispositivo Bluetooth que coincida."
+        },
+        "create_entry": {
+            "default": "Autenticado correctamente"
+        },
+        "step": {
+            "pick_implementation": {
+                "title": "Selecciona el método de autenticación"
+            },
+            "select_devices": {
+                "title": "Seleccionar dispositivos",
+                "data": {
+                    "devices": "Seleccionar dispositivos",
+                    "control_mode": "Modo de control"
+                },
+                "data_options": {
+                    "control_mode": {
+                        "cloud": "Control en la nube",
+                        "bluetooth": "Control por Bluetooth"
+                    }
+                }
+            },
+            "confirm_mapping": {
+                "title": "Ajustes de BLE y descarga de la biblioteca",
+                "data": {
+                    "ble_polling_interval": "Intervalo de sondeo de datos BLE (segundos)",
+                    "ble_polling_timeout": "Tiempo de espera del sondeo de datos BLE (segundos)",
+                    "ble_max_retries": "Número máximo de reintentos de conexión BLE"
+                },
+                "data_description": {
+                    "ble_polling_interval": "Home Assistant actualizará los datos del dispositivo cada N segundos. Se recomienda un valor de entre 5 y 60 segundos.",
+                    "ble_polling_timeout": "Tiempo de espera del sondeo de datos BLE (segundos)",
+                    "ble_max_retries": "Número máximo de reintentos de conexión BLE"
+                }
+            }
+        }
+    },
+    "res": {
+        "SetCtrlAc": "AC"
+    }
+}
