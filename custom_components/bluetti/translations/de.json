@@ -36,7 +36,60 @@
             }
         }
     },
-    "res":{
-        "SetCtrlAc":"AC-de"
+    "entity": {
+        "sensor": {
+            "soc": {
+                "name": "Batterieladezustand (SoC)"
+            },
+            "pvalltotalpower": {
+                "name": "PV-Eingangsleistung"
+            },
+            "gridalltotalpower": {
+                "name": "Netzeingangsleistung"
+            },
+            "acloadalltotalpower": {
+                "name": "AC-Ausgangsleistung"
+            },
+            "dcloadalltotalpower": {
+                "name": "DC-Ausgangsleistung"
+            },
+            "dsgfulltime": {
+                "name": "Verbleibende Zeit"
+            },
+            "chgfulltime": {
+                "name": "Voraussichtliche Ladezeit"
+            },
+            "invworkstate": {
+                "name": "Wechselrichterstatus"
+            },
+            "gridpowerimport": {
+                "name": "Netzbezugsleistung"
+            },
+            "gridpowerexport": {
+                "name": "Einspeiseleistung"
+            }
+        },
+        "switch": {
+            "setctrlac": {
+                "name": "AC-Ausgang"
+            },
+            "setctrlstandby": {
+                "name": "Standby"
+            },
+            "setctrldc": {
+                "name": "DC-Ausgang"
+            },
+            "setdceco": {
+                "name": "DC-ECO"
+            },
+            "setaceco": {
+                "name": "AC-ECO"
+            }
+        },
+        "select": {
+            "setctrlworkmodebalco": {
+                "name": "Arbeitsmodus"
+            }
+        }
     }
 }

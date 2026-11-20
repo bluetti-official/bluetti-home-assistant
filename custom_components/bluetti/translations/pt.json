@@ -35,5 +35,61 @@
                 }
             }
         }
+    },
+    "entity": {
+        "sensor": {
+            "soc": {
+                "name": "SoC da bateria"
+            },
+            "pvalltotalpower": {
+                "name": "Potência de entrada PV"
+            },
+            "gridalltotalpower": {
+                "name": "Potência de entrada da rede"
+            },
+            "acloadalltotalpower": {
+                "name": "Potência de saída CA"
+            },
+            "dcloadalltotalpower": {
+                "name": "Potência de saída CC"
+            },
+            "dsgfulltime": {
+                "name": "Tempo restante"
+            },
+            "chgfulltime": {
+                "name": "Tempo estimado de carga"
+            },
+            "invworkstate": {
+                "name": "Estado do inversor"
+            },
+            "gridpowerimport": {
+                "name": "Potência importada da rede"
+            },
+            "gridpowerexport": {
+                "name": "Potência injetada na rede"
+            }
+        },
+        "switch": {
+            "setctrlac": {
+                "name": "Saída CA"
+            },
+            "setctrlstandby": {
+                "name": "Modo de espera"
+            },
+            "setctrldc": {
+                "name": "Saída CC"
+            },
+            "setdceco": {
+                "name": "CC-ECO"
+            },
+            "setaceco": {
+                "name": "CA-ECO"
+            }
+        },
+        "select": {
+            "setctrlworkmodebalco": {
+                "name": "Modo de Operação"
+            }
+        }
     }
 }

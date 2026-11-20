@@ -22,5 +22,61 @@
                 "title": "Choisir la méthode d'authentification"
             }
         }
+    },
+    "entity": {
+        "sensor": {
+            "soc": {
+                "name": "SoC batterie"
+            },
+            "pvalltotalpower": {
+                "name": "Puissance d'entrée PV"
+            },
+            "gridalltotalpower": {
+                "name": "Puissance d'entrée réseau"
+            },
+            "acloadalltotalpower": {
+                "name": "Puissance de sortie AC"
+            },
+            "dcloadalltotalpower": {
+                "name": "Puissance de sortie DC"
+            },
+            "dsgfulltime": {
+                "name": "Durée d'utilisation restante"
+            },
+            "chgfulltime": {
+                "name": "Temps estimé pour charge complète"
+            },
+            "invworkstate": {
+                "name": "État de l'onduleur"
+            },
+            "gridpowerimport": {
+                "name": "Puissance importée du réseau"
+            },
+            "gridpowerexport": {
+                "name": "Puissance injectée"
+            }
+        },
+        "switch": {
+            "setctrlac": {
+                "name": "Sortie AC"
+            },
+            "setctrlstandby": {
+                "name": "Veille"
+            },
+            "setctrldc": {
+                "name": "Sortie DC"
+            },
+            "setdceco": {
+                "name": "DC-ECO"
+            },
+            "setaceco": {
+                "name": "AC-ECO"
+            }
+        },
+        "select": {
+            "setctrlworkmodebalco": {
+                "name": "Mode de fonctionnement"
+            }
+        }
     }
 }

@@ -35,5 +35,61 @@
                 }
             }
         }
+    },
+    "entity": {
+        "sensor": {
+            "soc": {
+                "name": "Batterij-SoC"
+            },
+            "pvalltotalpower": {
+                "name": "PV-ingangsvermogen"
+            },
+            "gridalltotalpower": {
+                "name": "Netingangsvermogen"
+            },
+            "acloadalltotalpower": {
+                "name": "AC-uitgangsvermogen"
+            },
+            "dcloadalltotalpower": {
+                "name": "DC-uitgangsvermogen"
+            },
+            "dsgfulltime": {
+                "name": "Resterende looptijd"
+            },
+            "chgfulltime": {
+                "name": "Geschatte tijd tot vol"
+            },
+            "invworkstate": {
+                "name": "Omvormerstatus"
+            },
+            "gridpowerimport": {
+                "name": "Netafnamevermogen"
+            },
+            "gridpowerexport": {
+                "name": "Terugleververmogen"
+            }
+        },
+        "switch": {
+            "setctrlac": {
+                "name": "AC-uitgang"
+            },
+            "setctrlstandby": {
+                "name": "Stand-by"
+            },
+            "setctrldc": {
+                "name": "DC-uitgang"
+            },
+            "setdceco": {
+                "name": "DC-ECO"
+            },
+            "setaceco": {
+                "name": "AC-ECO"
+            }
+        },
+        "select": {
+            "setctrlworkmodebalco": {
+                "name": "Werkmodus"
+            }
+        }
     }
 }

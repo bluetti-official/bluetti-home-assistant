@@ -35,5 +35,61 @@
                 }
             }
         }
+    },
+    "entity": {
+        "sensor": {
+            "soc": {
+                "name": "Baterijos SoC"
+            },
+            "pvalltotalpower": {
+                "name": "PV įėjimo galia"
+            },
+            "gridalltotalpower": {
+                "name": "Tinklo įėjimo galia"
+            },
+            "acloadalltotalpower": {
+                "name": "AC išėjimo galia"
+            },
+            "dcloadalltotalpower": {
+                "name": "DC išėjimo galia"
+            },
+            "dsgfulltime": {
+                "name": "Likęs veikimo laikas"
+            },
+            "chgfulltime": {
+                "name": "Numatomas laikas iki pilno įkrovimo"
+            },
+            "invworkstate": {
+                "name": "Inverterio būsena"
+            },
+            "gridpowerimport": {
+                "name": "Iš tinklo importuojama galia"
+            },
+            "gridpowerexport": {
+                "name": "Į tinklą eksportuojama galia"
+            }
+        },
+        "switch": {
+            "setctrlac": {
+                "name": "AC išėjimas"
+            },
+            "setctrlstandby": {
+                "name": "Budėjimo režimas"
+            },
+            "setctrldc": {
+                "name": "DC išėjimas"
+            },
+            "setdceco": {
+                "name": "DC-ECO"
+            },
+            "setaceco": {
+                "name": "AC-ECO"
+            }
+        },
+        "select": {
+            "setctrlworkmodebalco": {
+                "name": "Darbo režimas"
+            }
+        }
     }
 }

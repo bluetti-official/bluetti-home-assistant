@@ -10,6 +10,7 @@ from . import BluettiConfigEntry
 from .const import DOMAIN
 from .models import BluettiData, BluettiDevice, BluettiState
 from .icon_config import get_icon_for_fn_code
+from .entity_name import BluettiEntityNameMixin
 
 __LOGGER__ = logging.getLogger(__name__)
 BLUE_RES_PRE = "bluett.res."
@@ -57,7 +58,7 @@ async def async_setup_entry(
     return True
 
 
-class BluettiSwitch(SwitchEntity):
+class BluettiSwitch(BluettiEntityNameMixin, SwitchEntity):
     """Representation of a Bluetti switch."""
 
     should_poll = False
@@ -69,7 +70,7 @@ class BluettiSwitch(SwitchEntity):
         # print(f'device.device_id= {device.device_id}')
 
         self._attr_unique_id = f"{device.device_id}_{state.fn_code}"
-        self._attr_name = f"{device.name} {state.fn_name}"
+        self._set_entity_name("switch", device, state)
         self._attr_icon = get_icon_for_fn_code(state.fn_code)
         self._attr_device_info = {
             "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID

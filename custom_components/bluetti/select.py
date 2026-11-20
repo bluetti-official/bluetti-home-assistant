@@ -7,6 +7,7 @@ from . import BluettiConfigEntry
 from .const import DOMAIN
 from .models import BluettiData, BluettiDevice, BluettiState
 from .icon_config import get_icon_for_fn_code
+from .entity_name import BluettiEntityNameMixin
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -33,7 +34,7 @@ async def async_setup_entry(
     return True
 
 
-class BluettiSelect(SelectEntity):
+class BluettiSelect(BluettiEntityNameMixin, SelectEntity):
     """Representation of a Bluetti select (mode choice)."""
 
     should_poll = False
@@ -43,7 +44,7 @@ class BluettiSelect(SelectEntity):
         self._state_obj = state
 
         self._attr_unique_id = f"{device.device_id}_{state.fn_code}"
-        self._attr_name = f"{device.name} {state.fn_name}"
+        self._set_entity_name("select", device, state)
         self._attr_icon = get_icon_for_fn_code(state.fn_code)
         self._attr_device_info = {
             "identifiers": {(DOMAIN, device.device_id)},  # 唯一ID

@@ -13,6 +13,7 @@ from .models import BluettiData, BluettiDevice, BluettiState
 from .icon_config import get_icon_for_fn_code
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .api.bluetti import APPLICATION_PROFILE
+from .entity_name import BluettiEntityNameMixin
 
 
 class BaseSensorMetaInfo(TypedDict):
@@ -123,7 +124,7 @@ async def async_setup_entry(
     return True
 
 
-class BluettiSensor(SensorEntity):
+class BluettiSensor(BluettiEntityNameMixin, SensorEntity):
     """Bluetti sensor for numeric or enum states."""
     should_poll = False
 
@@ -135,7 +136,7 @@ class BluettiSensor(SensorEntity):
         self._meta = meta
 
         self._attr_unique_id = f"{device.device_id}_{state.fn_code}"
-        self._attr_name = f"{device.name} {meta['name']}"
+        self._set_entity_name("sensor", device, state)
         self._attr_device_class = meta["device_class"]
         self._attr_state_class = meta["state_class"]
         self._attr_native_unit_of_measurement = meta["unit"]
