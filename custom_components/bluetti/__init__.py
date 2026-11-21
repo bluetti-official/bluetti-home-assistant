@@ -5,12 +5,14 @@ import json
 import logging
 import os
 import asyncio
+from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_entry_oauth2_flow, device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers import storage
 from homeassistant.loader import async_get_integration
 
@@ -27,6 +29,8 @@ from .model.product import UserProduct
 
 
 __LOGGER__ = logging.getLogger(__name__)
+
+CLOUD_POLL_INTERVAL = timedelta(seconds=60)
 
 # TODO List the platforms that you want to support.
 # For your initial PR, limit it to 1 platform. Platform.LIGHT,
@@ -147,6 +151,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
         stomp_client = StompClient(ws_url, access_token, APPLICATION_PROFILE.config,
                                    bluetti_devices.web_socket_message_handler, hass)
         stomp_client.connect()
+
+        entry.async_on_unload(async_track_time_interval(
+            hass, bluetti_devices.async_poll_cloud_devices, CLOUD_POLL_INTERVAL
+        ))
 
     hasBleControl = any(device.control_mode == ControlMode.BLE for device in bluetti_devices.devices)
     if hasBleControl:

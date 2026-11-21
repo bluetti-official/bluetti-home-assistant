@@ -450,16 +450,52 @@ class AsyncConfigEntryAuth:
 
 class AuthTokenRefresh:
     """Handler Token expired and refresh token."""
+
+    # Minimum time between refreshes triggered by a rejected token. Tracked in the entry
+    # data, so it survives the reload that follows a refresh and cannot turn into a loop.
+    REJECTED_TOKEN_REFRESH_COOLDOWN = 600
+
     def __init__(self,hass:HomeAssistant,entry,oauth_session: config_entry_oauth2_flow.OAuth2Session)->None:
         self.hass = hass
         self.entry = entry
         self.oAuth2Session = oauth_session
+        self._refresh_lock = asyncio.Lock()
         unsub = hass.bus.async_listen(EVENT_TOKEN_EXPIRED, self.on_token_expired_event)
         entry.async_on_unload(unsub)
 
     async def on_token_expired_event(self,event):
+        """The cloud rejected the access token: refresh it, or ask the user to sign in again."""
         __LOGGER__.info("on_token_expired_event")
-        self.send_expired_notification()
+        if self._refresh_lock.locked():
+            return
+        async with self._refresh_lock:
+            now = time.time()
+            if now - self.entry.data.get("last_rejected_token_refresh", 0.0) < self.REJECTED_TOKEN_REFRESH_COOLDOWN:
+                __LOGGER__.warning("Token rejected again shortly after a refresh, a new sign-in is required")
+                self.send_expired_notification()
+                return
+
+            self._update_entry_data(last_rejected_token_refresh=now)
+            if not await self._async_refresh_and_reload():
+                self.send_expired_notification()
+
+    async def _async_refresh_and_reload(self) -> bool:
+        """Redeem the refresh token, store the new token and reload the entry."""
+        try:
+            new_token = await self.oAuth2Session.implementation.async_refresh_token(self.oAuth2Session.token)
+        except Exception as e:
+            __LOGGER__.error(f"refresh token failed: {e}")
+            return False
+
+        # The refresh token rotates: store the new one before anything else can fail.
+        self._update_entry_data(token=new_token, last_token_refresh=time.time())
+        persistent_notification.async_dismiss(self.hass, notification_id=NOTIFY_ID_TOKEN_EXPIRED)
+        __LOGGER__.info('refresh token ok,then reload')
+        self.hass.config_entries.async_schedule_reload(self.entry.entry_id)
+        return True
+
+    def _update_entry_data(self, **changes) -> None:
+        self.hass.config_entries.async_update_entry(self.entry, data={**self.entry.data, **changes})
 
     def start_token_check(self):
         # first clear old notify
@@ -469,11 +505,11 @@ class AuthTokenRefresh:
             self.send_expired_notification()
         else:
             interval = timedelta(days=1)
-            async_track_time_interval(
+            self.entry.async_on_unload(async_track_time_interval(
                 self.hass,
                 self.async_check_token_expiry,  # 要执行的任务函数
                 interval       # 执行间隔
-            )
+            ))
             __LOGGER__.info("token is valid after 24 hours to check again")
         self.hass.async_create_task(self.async_check_token_expiry())
         
@@ -522,20 +558,12 @@ class AuthTokenRefresh:
             return
         
         if remain_timestamp < 3600*24*7 :
-            try:
-                __LOGGER__.info('start refresh token')
-                last_refesh = self.entry.data.get("last_token_refresh", 0.0)
-                # 1 hour only one time ,when server is 500 do not always refresh token
-                if current_timestamp - last_refesh < 3600 : 
-                    __LOGGER__.info('last refresh token in 1 hour,this do not refresh return')
-                    return
-                last_refesh = current_timestamp
+            __LOGGER__.info('start refresh token')
+            last_refesh = self.entry.data.get("last_token_refresh", 0.0)
+            # 1 hour only one time ,when server is 500 do not always refresh token
+            if current_timestamp - last_refesh < 3600 : 
+                __LOGGER__.info('last refresh token in 1 hour,this do not refresh return')
+                return
 
-                new_token = await self.oAuth2Session.implementation.async_refresh_token(self.oAuth2Session.token)
-                self.hass.config_entries.async_update_entry(
-                    self.entry, data={**self.entry.data, "token": new_token,"last_token_refresh":last_refesh}
-                )
-                __LOGGER__.info('refresh token ok,then reload')
-                await self.hass.config_entries.async_reload(self.entry.entry_id)
-            except Exception as e:
-                __LOGGER__.error(f"refresh token failed: {e}")
+            async with self._refresh_lock:
+                await self._async_refresh_and_reload()

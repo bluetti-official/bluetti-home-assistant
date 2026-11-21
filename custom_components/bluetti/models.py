@@ -51,6 +51,20 @@ class BluettiData:
         await asyncio.sleep(0.1)
         return True
 
+    async def async_poll_cloud_devices(self, now=None) -> None:
+        """Fetch the state of every cloud device over REST.
+
+        A fallback for websocket pushes, which can stop while the connection stays open,
+        and the way a rejected access token gets noticed.
+        """
+        for device in self.devices:
+            if device.control_mode != ControlMode.CLOUD:
+                continue
+            try:
+                await device.async_update()
+            except Exception as e:
+                __LOGGER__.warning("BLUETTI cloud poll failed for %s: %s", device.sn, e)
+
     def get_device_by_sn(self, sn):
         for dev in self.devices:
             if dev.device_id == sn:
