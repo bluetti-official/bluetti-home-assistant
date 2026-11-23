@@ -1,3 +1,15 @@
+# v1.0.6 2026-11-23
+
+## ✨What’s new
+- [[#209](https://github.com/bluetti-official/bluetti-home-assistant/pull/209 "#209")] Add Spanish translation. Thanks [@PedroFlores199](https://github.com/PedroFlores199 "@PedroFlores199").
+
+## 🚀Improvements
+- [[#206](https://github.com/bluetti-official/bluetti-home-assistant/pull/206 "#206")] Show the main entity names in the user's language. Thanks [@chpego](https://github.com/chpego).
+
+## 🐞Bug fixes
+- [[#197](https://github.com/bluetti-official/bluetti-home-assistant/pull/197 "#197")] Fixed an issue where the refresh token expired.
+- [[#212](https://github.com/bluetti-official/bluetti-home-assistant/pull/212 "#212")] Fixed an issue where error 800 (access token expired) could not trigger the refresh_token flow, causing entities to freeze silently until user re-authentication. Thanks [@andriyor](https://github.com/andriyor "@andriyor")
+
 # 1.0.5 2026-09-16
 
 ## ✨What’s new
