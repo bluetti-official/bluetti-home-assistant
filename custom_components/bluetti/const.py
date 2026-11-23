@@ -10,6 +10,9 @@ EVENT_BLUETTI_SETUP_OK: str ="onBluettiSetup"
 
 EVENT_TOKEN_EXPIRED: str ="onTokenExpired"
 NOTIFY_ID_TOKEN_EXPIRED: str ="notifyTokenExpire"
+# Cloud msgCodes meaning the access token is no longer accepted.
+# 805 = expired; 800 = "访问令牌已过期" (token revoked early by the backend).
+TOKEN_REJECTED_CODES: frozenset[int] = frozenset({800, 805})
 
 # TODO Update with your own urls
 BLUETTI_WSS_SERVER: str = "ws://local-gw.poweroak.ltd:18888/api/edgeiotgw/ws-coordination/websocket"

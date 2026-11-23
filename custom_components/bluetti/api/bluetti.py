@@ -11,7 +11,7 @@ from pydantic import TypeAdapter
 from homeassistant.core import HomeAssistant
 
 from .unify_response import UnifyResponse
-from ..const import Method, EVENT_TOKEN_EXPIRED
+from ..const import Method, EVENT_TOKEN_EXPIRED, TOKEN_REJECTED_CODES
 from ..application_exception import ApplicationRuntimeException
 from ..profile.application_profile import ApplicationProfile
 
@@ -62,7 +62,7 @@ class Bluetti(Generic[T]):
                                                    path,
                                                    params,
                                                    body)
-        if isinstance(response, UnifyResponse) and response.msgCode == 805:
+        if isinstance(response, UnifyResponse) and response.msgCode in TOKEN_REJECTED_CODES:
             self._hass.bus.fire(EVENT_TOKEN_EXPIRED)
             self.logger.info("token have expired")
         return response

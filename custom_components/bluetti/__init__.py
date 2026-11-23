@@ -5,12 +5,14 @@ import json
 import logging
 import os
 import asyncio
+from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_entry_oauth2_flow, device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers import storage
 from homeassistant.loader import async_get_integration
 
@@ -27,6 +29,8 @@ from .model.product import UserProduct
 
 
 __LOGGER__ = logging.getLogger(__name__)
+
+CLOUD_POLL_INTERVAL = timedelta(seconds=60)
 
 # TODO List the platforms that you want to support.
 # For your initial PR, limit it to 1 platform. Platform.LIGHT,
