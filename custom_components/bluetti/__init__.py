@@ -152,10 +152,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
                                    bluetti_devices.web_socket_message_handler, hass)
         stomp_client.connect()
 
-        entry.async_on_unload(async_track_time_interval(
-            hass, bluetti_devices.async_poll_cloud_devices, CLOUD_POLL_INTERVAL
-        ))
-
     hasBleControl = any(device.control_mode == ControlMode.BLE for device in bluetti_devices.devices)
     if hasBleControl:
         from .ble.ble_decoder import start_ble_lib
