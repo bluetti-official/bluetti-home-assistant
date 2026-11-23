@@ -57,6 +57,9 @@ class DeviceReaderV2:
         self.crypt_packs = []
         self._notify_generation = 0
         self._fragment_timer: asyncio.TimerHandle | None = None
+        # True while a future armed before start_notify is waiting for the
+        # first handshake packet (see read_data / _encrypt_link)
+        self._handshake_armed = False
 
     async def is_bluetooth_connected(self) -> bool:
         if self.client:
@@ -97,7 +100,12 @@ class DeviceReaderV2:
                     for attempt in range(1, self.max_retries + 1):
                         try:
                             if not self.client.is_connected:
-                                
+                                # GATT notifications do not survive a disconnect: after an
+                                # unexpected drop they must be enabled again, otherwise the
+                                # encryption handshake never receives the device's packets.
+                                self.has_notifier = False
+                                self._handshake_armed = False
+
                                 self.ble_decoder_module.start(self.enable_crypt)   # start bluetti crypt module
                                 await self.client.connect()
 
@@ -116,6 +124,14 @@ class DeviceReaderV2:
 
                     # Attach notifier if needed
                     if not self.has_notifier:
+                        # The device may send its first handshake packet as soon as
+                        # notifications are enabled, before _encrypt_link() is waiting
+                        # for it. Arm the future first so that packet is not dropped.
+                        if self.is_crypting is True:
+                            self.crypt_packs = []
+                            self._arm_notify_future()
+                            self._handshake_armed = True
+
                         await self.client.start_notify(
                             NOTIFY_UUID, self._notification_handler
                         )
@@ -224,7 +240,11 @@ class DeviceReaderV2:
             self.crypt_packs = []
             while retries < max_retries:
                 try:
-                    if self.notify_future is None or self.notify_future.done():
+                    if self._handshake_armed:
+                        # Use the future armed before start_notify: it may already
+                        # hold the first handshake packet.
+                        self._handshake_armed = False
+                    elif self.notify_future is None or self.notify_future.done():
                         self._arm_notify_future()
                     # Wait for response
                     res = await asyncio.wait_for(
@@ -282,6 +302,14 @@ class DeviceReaderV2:
 
             # encrypt message
             length, cmd = self.ble_decoder_module.get_read_cmd_message(command)
+
+            # Some commands (e.g. DsgFullTime on the PR100V2) produce an empty
+            # message. Writing zero bytes fails on ESPHome Bluetooth proxies
+            # ("esp_ble_gattc_write_char failed, status=258"), so skip them.
+            if not cmd:
+                _LOGGER.debug("Skipping %s: empty command message", command.fn_code)
+                return bytes()
+
             logging.debug("send len: " + str(length) + " message: " + cmd.hex())
 
             await self.client.write_gatt_char(WRITE_UUID, bytes(cmd))
