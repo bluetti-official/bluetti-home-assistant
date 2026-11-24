@@ -106,6 +106,16 @@ class DeviceReaderV2:
                                 self.has_notifier = False
                                 self._handshake_armed = False
 
+                                # Use a fresh crypt module for every new connection. Reusing
+                                # the previous one lets the device accept a short handshake
+                                # after which no response can be decrypted ("invalid decrypt
+                                # len") until the integration is reloaded.
+                                self.ble_decoder_module = bleDecoder(self.oak_device)
+                                proto_data_ok = await self.ble_decoder_module.load_device_proto()
+                                if proto_data_ok == False:
+                                    _LOGGER.error(f"proto data {self.oak_device.proto_file_path} load fail!!!")
+                                    return None
+
                                 self.ble_decoder_module.start(self.enable_crypt)   # start bluetti crypt module
                                 await self.client.connect()
 
