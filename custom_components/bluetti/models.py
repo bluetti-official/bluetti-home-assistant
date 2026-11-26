@@ -341,39 +341,66 @@ class BluettiDevice:
         return self._schedule_state
 
     async def check_ble_server_key(self,data):
-        if self.device_reader == None or not await self.device_reader.is_bluetooth_connected():
-            return
-        if data == None and self.device_reader != None and await self.device_reader.is_device_key_ok() == 0:
-            __LOGGER__.info(f"Device {self.name} ble key have expired!")
-            entry = self._entry
-            if entry:
-                all_products_data: list[dict] = entry.data.get("products", [])
-                all_products: list[UserProduct] = [
-                        UserProduct.model_validate(p) if isinstance(p, dict) else p
-                        for p in all_products_data
-                    ]
-                
-                is_update_entry = False
-                for device in all_products:
-                    if device.sn != self.sn:
-                        continue
-                    now_time = time.time()
-                    if now_time - device.server_key_reload_time > 3600*12:
-                        device.server_key = ''
-                        device.server_key_reload_time = now_time
-                        is_update_entry = True
-                    else:
-                        __LOGGER__.debug("ble key expired,last reload time in one day,don't to update again")
+        """Fetch a new BLE key from the cloud when the current one has expired.
 
-                if is_update_entry:
-                    # update existing entry
-                    self._hass.config_entries.async_update_entry(
-                        entry,
-                        data=dict(entry.data) | {"products":all_products}
-                    )
-                    __LOGGER__.info(f"Reset ble server key,Please reload to get new ble key")
-                    # send notify to reload
-                
+        The key expires ("device key have out of date") and the device then
+        refuses every connection. Previously the key was only cleared, and only
+        while connected (which an expired key prevents), and a manual reload was
+        needed to fetch a new one. Now: after a failed read, if the BLE lib
+        reports the key as not valid, or after several failed reads in a row,
+        fetch the key again and use it on the next connection. At most once
+        every 10 minutes.
+        """
+        if self.device_reader is None:
+            return
+        if data is not None:
+            self._ble_fail_count = 0
+            return
+        self._ble_fail_count = getattr(self, "_ble_fail_count", 0) + 1
+        try:
+            key_ok = await self.device_reader.is_device_key_ok()
+        except Exception:
+            key_ok = None
+        if key_ok != 0 and self._ble_fail_count < 3:
+            return
+        now_time = time.time()
+        if now_time - getattr(self, "_ble_key_refresh_time", 0.0) < 600:
+            return
+        self._ble_key_refresh_time = now_time
+        api_client = getattr(self, "_api_client", None)
+        if api_client is None:
+            return
+        __LOGGER__.warning("Device %s BLE read failing (key ok: %s, failures: %d), fetching the BLE key again",
+                           self.sn, key_ok, self._ble_fail_count)
+        try:
+            resp = await api_client.get_decrypt_info(self.sn)
+            new_key = resp.data.encryptKey
+        except Exception as err:
+            __LOGGER__.warning("Could not refresh the BLE key of %s: %s", self.sn, err)
+            return
+        if not new_key:
+            return
+        if new_key == self.server_key:
+            __LOGGER__.info("BLE key of %s unchanged", self.sn)
+            return
+        self.server_key = new_key
+        self.device_reader.oak_device.server_key = new_key
+        __LOGGER__.warning("Device %s got a new BLE key, used from the next connection", self.sn)
+
+        entry = self._entry
+        if entry:
+            all_products = [
+                UserProduct.model_validate(p) if isinstance(p, dict) else p
+                for p in entry.data.get("products", [])
+            ]
+            for device in all_products:
+                if device.sn == self.sn:
+                    device.server_key = new_key
+                    device.server_key_reload_time = now_time
+            self._hass.config_entries.async_update_entry(
+                entry,
+                data=dict(entry.data) | {"products": all_products}
+            )
 
     async def read_data_from_ble(
         self,  address = None
