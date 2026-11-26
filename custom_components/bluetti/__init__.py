@@ -16,7 +16,7 @@ from homeassistant.loader import async_get_integration
 
 from .models import BluettiData
 from .oauth import AsyncConfigEntryAuth, AuthTokenRefresh
-from .api.bluetti import APPLICATION_PROFILE
+from .api.bluetti import APPLICATION_PROFILE, apply_gateway_region
 from .api.product_client import ProductClient
 from .api.websocket import StompClient
 from .profile.application_profile import ApplicationProfile
@@ -43,6 +43,7 @@ type BluettiConfigEntry = ConfigEntry[BluettiData]
 
 async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
     await APPLICATION_PROFILE.load_config(hass)
+    apply_gateway_region(entry)
 
     # global LOCALIZATION_MANAGER
     # LOCALIZATION_MANAGER = LocalizationManager(hass, DOMAIN)
@@ -87,15 +88,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
 
     # await oAuth2Session.async_ensure_token_valid()
     access_token = oAuth2Session.token["access_token"]
-
-    # Use the data center the cloud assigned to this account (the token's "host")
-    # for API calls and the BLE proto file download too, not only for the
-    # websocket. The default gateway may not serve the proto file for accounts
-    # registered in another region (404 on .../gprotobuf/v1/down/...).
-    token_host = oAuth2Session.token.get("host") or dict(entry.data.get("token", {})).get("host")
-    if token_host and "://" in token_host:
-        APPLICATION_PROFILE.config["server"]["gateway"] = token_host.rstrip("/")
-        __LOGGER__.debug("Using cloud host %s as gateway", token_host)
     # TODO APIs should be invoked only after AccessToken processing succeeds,
     #  prioritizing the host address prefix returned by the cloud.
     product_client = ProductClient(httpSession, access_token, hass)
@@ -215,10 +207,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> 
     # remove download file
     bluetti_devices: BluettiData = hass.data[DOMAIN][entry.entry_id]["bluettiDevices"]
     await bluetti_devices.disconnect_all_ble(hass)
-    # Keep the downloaded proto file on unload (reload, reconfigure): if the
-    # download fails on the next setup, BLE devices would have nothing to decode
-    # with. The file is still removed in async_remove_entry.
-    # await bluetti_devices.remove_download_file(hass)
+    # Keep the downloaded proto file on unload (reload, reconfigure, options
+    # change): if the download fails on the next setup, BLE devices would have
+    # nothing to decode with. The file is still removed in async_remove_entry.
 
     # reload config file
     await APPLICATION_PROFILE.unload();

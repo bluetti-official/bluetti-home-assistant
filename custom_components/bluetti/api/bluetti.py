@@ -11,7 +11,7 @@ from pydantic import TypeAdapter
 from homeassistant.core import HomeAssistant
 
 from .unify_response import UnifyResponse
-from ..const import Method, EVENT_TOKEN_EXPIRED, TOKEN_REJECTED_CODES
+from ..const import Method, EVENT_TOKEN_EXPIRED, TOKEN_REJECTED_CODES, CONF_GATEWAY_REGION, GATEWAY_REGION_DEFAULT, GATEWAY_REGIONS
 from ..application_exception import ApplicationRuntimeException
 from ..profile.application_profile import ApplicationProfile
 
@@ -19,6 +19,13 @@ T = TypeVar('T')
 
 # The application profile
 APPLICATION_PROFILE = ApplicationProfile()
+
+def apply_gateway_region(entry) -> None:
+    """Use the gateway of the region chosen in the options, if any."""
+    region = entry.options.get(CONF_GATEWAY_REGION, GATEWAY_REGION_DEFAULT) if entry else GATEWAY_REGION_DEFAULT
+    if region in GATEWAY_REGIONS:
+        APPLICATION_PROFILE.config["server"]["gateway"] = GATEWAY_REGIONS[region]
+
 
 
 class Bluetti(Generic[T]):
