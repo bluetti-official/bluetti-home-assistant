@@ -71,13 +71,31 @@ class BluettiData:
                 return dev
         return None
 
+    @staticmethod
+    def _device_sn_from_ws_message(res) -> Optional[str]:
+        """Return the serial number a websocket notification is about, or None.
+
+        The cloud sends it in one of two places: data.message.deviceSn, or
+        data.deviceSn (the top-level "message" is then only a status string).
+        """
+        data = res.get("data") if isinstance(res, dict) else None
+        if not isinstance(data, dict):
+            return None
+        nested = data.get("message")
+        if isinstance(nested, dict) and nested.get("deviceSn"):
+            return nested["deviceSn"]
+        return data.get("deviceSn") or None
+
     def web_socket_message_handler(self, message: str):
         __LOGGER__.debug(f"收到ws消息 {message}")
         __LOGGER__.debug(f"received ws message: {message}")
 
         res = json.loads(message)
         # load api
-        sn = res["data"]["message"]["deviceSn"]
+        sn = self._device_sn_from_ws_message(res)
+        if not sn:
+            __LOGGER__.debug("ignoring a ws message without a deviceSn")
+            return
 
         device = self.get_device_by_sn(sn)
         if device and device.control_mode != ControlMode.BLE:
