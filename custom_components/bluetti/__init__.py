@@ -99,10 +99,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> b
     # check ble key is ok
     is_update_entry = False
     for device in selected_products:
-        if device.control_mode == ControlMode.BLE and device.server_key == None or device.server_key == '':
+        if device.control_mode != ControlMode.BLE:
+            continue
+        # Always ask the cloud for the current BLE key: a stored key can expire
+        # ("device key have out of date") and the device then refuses every
+        # connection. Keep the stored key if the cloud cannot be reached.
+        try:
             decrypt_info_resp = await product_client.get_decrypt_info(device.sn)
-            decrypt_info = decrypt_info_resp.data
-            device.server_key = decrypt_info.encryptKey
+            new_key = decrypt_info_resp.data.encryptKey
+        except Exception as err:
+            __LOGGER__.warning("Could not refresh the BLE key of %s: %s", device.sn, err)
+            continue
+        if new_key and new_key != device.server_key:
+            device.server_key = new_key
             is_update_entry = True
     if is_update_entry:
         # update existing entry
