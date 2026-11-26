@@ -116,6 +116,12 @@ class DeviceReaderV2:
                                     _LOGGER.error(f"proto data {self.oak_device.proto_file_path} load fail!!!")
                                     return None
 
+                                # The native BLE lib keeps the encrypted link state per serial
+                                # number, outside the Python crypt module. Clear it, or after
+                                # an unexpected drop the device completes a short handshake
+                                # and nothing can be decrypted until the integration reloads.
+                                self.ble_decoder_module.encrypt_link_clear()
+
                                 self.ble_decoder_module.start(self.enable_crypt)   # start bluetti crypt module
                                 await self.client.connect()
 
