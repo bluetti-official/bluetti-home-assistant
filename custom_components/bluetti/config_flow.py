@@ -5,8 +5,12 @@ import voluptuous as vol
 from homeassistant.components.application_credentials import ClientCredential, async_import_client_credential
 from homeassistant.config_entries import ConfigEntry, OptionsFlowWithReload
 from homeassistant.core import callback
-from homeassistant.helpers.selector import SelectSelector, SelectSelectorConfig, SelectSelectorMode
-from .const import DOMAIN, CONF_GATEWAY_REGION, GATEWAY_REGION_DEFAULT, GATEWAY_REGIONS
+from homeassistant.helpers.selector import (
+    SelectSelector, SelectSelectorConfig, SelectSelectorMode, TextSelector, TextSelectorConfig, TextSelectorType,
+)
+from .const import (
+    DOMAIN, CONF_GATEWAY_REGION, CONF_CUSTOM_GATEWAY, GATEWAY_REGION_GLOBAL, GATEWAY_REGION_CUSTOM, GATEWAY_REGIONS,
+)
 from .oauth import OAuth2FlowHandler
 from .api.bluetti import APPLICATION_PROFILE, apply_gateway_region
 
@@ -41,17 +45,32 @@ class BluettiOptionsFlow(OptionsFlowWithReload):
     """Choose the cloud region (gateway). The entry reloads when it changes."""
 
     async def async_step_init(self, user_input=None):
+        errors = {}
+        options = self.config_entry.options
         if user_input is not None:
-            return self.async_create_entry(data={**self.config_entry.options, **user_input})
+            custom = (user_input.get(CONF_CUSTOM_GATEWAY) or "").strip().rstrip("/")
+            if user_input[CONF_GATEWAY_REGION] == GATEWAY_REGION_CUSTOM and not custom.startswith("https://"):
+                errors[CONF_CUSTOM_GATEWAY] = "invalid_gateway"
+            else:
+                return self.async_create_entry(data={
+                    **options,
+                    CONF_GATEWAY_REGION: user_input[CONF_GATEWAY_REGION],
+                    CONF_CUSTOM_GATEWAY: custom,
+                })
 
-        current = self.config_entry.options.get(CONF_GATEWAY_REGION, GATEWAY_REGION_DEFAULT)
         schema = vol.Schema({
-            vol.Required(CONF_GATEWAY_REGION, default=current): SelectSelector(
+            vol.Required(
+                CONF_GATEWAY_REGION, default=options.get(CONF_GATEWAY_REGION, GATEWAY_REGION_GLOBAL)
+            ): SelectSelector(
                 SelectSelectorConfig(
-                    options=[GATEWAY_REGION_DEFAULT, *GATEWAY_REGIONS],
+                    options=[*GATEWAY_REGIONS, GATEWAY_REGION_CUSTOM],
                     translation_key=CONF_GATEWAY_REGION,
                     mode=SelectSelectorMode.DROPDOWN,
                 )
             ),
+            vol.Optional(
+                CONF_CUSTOM_GATEWAY,
+                description={"suggested_value": options.get(CONF_CUSTOM_GATEWAY, "")},
+            ): TextSelector(TextSelectorConfig(type=TextSelectorType.URL)),
         })
-        return self.async_show_form(step_id="init", data_schema=schema)
+        return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
