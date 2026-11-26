@@ -206,10 +206,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> 
     # remove download file
     bluetti_devices: BluettiData = hass.data[DOMAIN][entry.entry_id]["bluettiDevices"]
     await bluetti_devices.disconnect_all_ble(hass)
-    # Keep the downloaded proto file on unload: if the cloud download fails on
-    # the next setup, the integration would otherwise have nothing to decode with.
-    # The file is still removed in async_remove_entry.
-    # await bluetti_devices.remove_download_file(hass)
+    await bluetti_devices.remove_download_file(hass)
 
     # reload config file
     await APPLICATION_PROFILE.unload();
