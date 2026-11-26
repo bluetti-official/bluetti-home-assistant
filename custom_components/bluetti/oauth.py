@@ -393,6 +393,7 @@ class OAuth2FlowHandler(config_entry_oauth2_flow.AbstractOAuth2FlowHandler, doma
                     "products": merged_products
                 },
                 options={
+                    **existing_entry.options,
                     "devices": merged_devices,
                     "deviceKeyDict": existing_deviceKeyDict | deviceKeyDict,
                     "device_mapping": existing_device_mapping | device_mapping,

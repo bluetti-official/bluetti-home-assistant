@@ -16,7 +16,7 @@ from homeassistant.loader import async_get_integration
 
 from .models import BluettiData
 from .oauth import AsyncConfigEntryAuth, AuthTokenRefresh
-from .api.bluetti import APPLICATION_PROFILE
+from .api.bluetti import APPLICATION_PROFILE, apply_gateway_region
 from .api.product_client import ProductClient
 from .api.websocket import StompClient
 from .profile.application_profile import ApplicationProfile
@@ -43,6 +43,7 @@ type BluettiConfigEntry = ConfigEntry[BluettiData]
 
 async def async_setup_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> bool:
     await APPLICATION_PROFILE.load_config(hass)
+    apply_gateway_region(entry)
 
     # global LOCALIZATION_MANAGER
     # LOCALIZATION_MANAGER = LocalizationManager(hass, DOMAIN)
@@ -206,7 +207,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: BluettiConfigEntry) -> 
     # remove download file
     bluetti_devices: BluettiData = hass.data[DOMAIN][entry.entry_id]["bluettiDevices"]
     await bluetti_devices.disconnect_all_ble(hass)
-    await bluetti_devices.remove_download_file(hass)
+    # Keep the downloaded proto file on unload (reload, reconfigure, options
+    # change): if the download fails on the next setup, BLE devices would have
+    # nothing to decode with. The file is still removed in async_remove_entry.
 
     # reload config file
     await APPLICATION_PROFILE.unload();

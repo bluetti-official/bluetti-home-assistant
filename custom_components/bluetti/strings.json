@@ -78,5 +78,32 @@
         "name": "Working Mode"
       }
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Cloud region",
+        "description": "Choose the BLUETTI cloud server for your account. Accounts registered in Europe should use Europe if login, cloud data or the Bluetooth protocol file download fail with the global server. For another server choose Custom and enter its URL. The integration reloads after saving.",
+        "data": {
+          "gateway_region": "Region",
+          "custom_gateway": "Custom gateway URL"
+        },
+        "data_description": {
+          "custom_gateway": "Only used with Custom, e.g. https://gw.bluettipower.com"
+        }
+      }
+    },
+    "error": {
+      "invalid_gateway": "Enter a URL starting with https://"
+    }
+  },
+  "selector": {
+    "gateway_region": {
+      "options": {
+        "global": "Global (gw.bluettipower.com)",
+        "europe": "Europe (gwde.bluettipower.com)",
+        "custom": "Custom"
+      }
+    }
   }
 }
